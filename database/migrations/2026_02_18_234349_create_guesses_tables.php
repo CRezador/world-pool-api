@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('guesses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pool_id')->constrained('pools')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('user')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('match_id')->constrained('matches')->onDelete('cascade');
             $table->integer('home_score');
             $table->integer('away_score');

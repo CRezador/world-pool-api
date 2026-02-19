@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('teams', function (Blueprint $table) {
             $table->id();
+            $table->string('name', 255);
+            $table->string('code', 3)->unique();
+            $table->foreignId('group_id')->nullable()->constrained('groups')->onDelete('set null');
             $table->timestamps();
         });
     }
