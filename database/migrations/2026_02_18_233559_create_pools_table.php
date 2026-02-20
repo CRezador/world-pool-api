@@ -17,8 +17,7 @@ return new class extends Migration
             $table->string('join_code', 6)->unique();
             $table->foreignId('owner_id')->constrained('users')->onDelete('cascade');
             $table->boolean('is_public')->default(true);
-            $table->timestamps('created_at')->useCurrent();
-            $table->timestamps('updated_at')->useCurrentOnUpdate();
+            $table->timestamps();
         });
     }
 
