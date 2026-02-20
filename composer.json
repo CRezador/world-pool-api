@@ -3,7 +3,10 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "keywords": [
+        "laravel",
+        "framework"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.2",
@@ -33,6 +36,16 @@
         }
     },
     "scripts": {
+        "d:up": "docker compose up -d --build",
+        "d:down": "docker compose down",
+        "d:logs": "docker compose logs -f",
+        "d:artisan": "docker compose exec -T app php artisan",
+        "d:migrate": "docker compose exec -T app php artisan migrate",
+        "d:fresh": "docker compose exec -T app php artisan migrate:fresh",
+        "d:seed": "docker compose exec -T app php artisan db:seed",
+        "d:seeder": "docker compose exec -T app php artisan make:seeder",
+        "d:tinker": "docker compose exec app php artisan tinker",
+        "d:composer": "docker compose exec -T app composer",
         "setup": [
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",

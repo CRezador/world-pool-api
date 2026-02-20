@@ -19,8 +19,7 @@ return new class extends Migration
             $table->integer('home_score');
             $table->integer('away_score');
             $table->integer('points')->default(0)->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamps('updated_at')->useCurrentOnUpdate();
+            $table->timestamps();
         });
     }
 
