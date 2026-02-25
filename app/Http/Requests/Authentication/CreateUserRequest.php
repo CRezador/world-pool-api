@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Authentication;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
 
 class CreateUserRequest extends FormRequest
 {
