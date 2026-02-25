@@ -9,6 +9,8 @@ services:
     volumes:
       - ./:/var/www
     environment:
+      HOME: /tmp
+      XDG_CONFIG_HOME: /tmp/.config    
       APP_ENV: local
       APP_DEBUG: "true"
       DB_CONNECTION: mysql
