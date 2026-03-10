@@ -6,7 +6,7 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Models\Team;
 
 
-class TeamsController extends Controller
+class TeamController extends Controller
 {
 
 
