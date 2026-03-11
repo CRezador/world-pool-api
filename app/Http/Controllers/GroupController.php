@@ -11,7 +11,6 @@ class GroupController extends Controller
     public function index(): Response
     {
         $group = Group::query()->get();
-
         $data = $group->map(function ($group) {
             return [
                 $group->name => [
