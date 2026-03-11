@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('matches', function (Blueprint $table) {
             $table->id();
             $table->timestamp('kickoff_at');
-            $table->enum('stage', ['GROUP', 'ROUND_OF_16', 'QUARTER_FINALS', 'SEMI_FINALS', 'FINAL'])->default('GROUP');
+            $table->enum('stage', ['GROUP', 'ROUND_OF_16', 'QUARTER_FINALS', 'SEMI_FINALS', 'FINAL', 'THIRD_PLACE'])->default('GROUP');
             $table->foreignId('home_team_id')->constrained('teams')->onDelete('cascade');
             $table->foreignId('away_team_id')->constrained('teams')->onDelete('cascade');
             $table->foreignId('group_id')->nullable()->constrained('groups')->onDelete('set null');
