@@ -4,6 +4,8 @@ use App\Http\Controllers\TokenController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\GroupController;
+use App\Http\Controllers\MatchController;
+
 use Illuminate\Support\Facades\Route;
 
 //Users Routes
@@ -16,5 +18,8 @@ Route::middleware('auth:sanctum')->group(
         Route::get('/me', [UserController::class, 'me']);
         Route::get('/teams', [TeamController::class, 'index']);
         Route::get('/groups', [GroupController::class, 'index']);
+        Route::post('/matches/create', [MatchController::class, 'store']);
+        Route::get('/matches/{id}', [MatchController::class, 'show']);
+        Route::get('/matches', [MatchController::class, 'index']);
     }
 );
