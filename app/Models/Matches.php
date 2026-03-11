@@ -11,13 +11,17 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Matches extends Authenticatable
 {
-    use MatchStage, HasFactory, Notifiable, HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens;
 
     protected $table = 'matches';
     protected $fillable = [
+        'kickoff_at',
+        'stage',
+        'group_id',
+        'home_team_id',
+        'away_team_id',
         'home_score',
         'away_score',
-        'kickoff_at',
     ];
     protected $casts = [
         'kickoff_at' => 'datetime',
