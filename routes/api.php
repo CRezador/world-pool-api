@@ -18,8 +18,16 @@ Route::middleware('auth:sanctum')->group(
         Route::get('/me', [UserController::class, 'me']);
         Route::get('/teams', [TeamController::class, 'index']);
         Route::get('/groups', [GroupController::class, 'index']);
-        Route::post('/matches/create', [MatchController::class, 'store']);
+
         Route::get('/matches/{id}', [MatchController::class, 'show']);
         Route::get('/matches', [MatchController::class, 'index']);
+
+        //Rotas admin
+        Route::middleware('admin')->group(
+            function () {
+                Route::post('/matches/create', [MatchController::class, 'store']);
+                Route::put('/matches/{id}', [MatchController::class, 'update']);
+            }
+        );
     }
 );

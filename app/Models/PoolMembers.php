@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Http\Enums\Role;
 use App\Http\Enums\PoolMemberStatus;
+use App\Http\Enums\PoolUserRole;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -17,7 +17,7 @@ class PoolMembers extends Authenticatable
     protected $table = 'pool_members';
     protected $casts = [
         'joined_at' => 'datetime',
-        'status' => Role::class,
+        'status' => PoolUserRole::class,
         'role' => PoolMemberStatus::class,
     ];
     protected $connection = 'mysql';

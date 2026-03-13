@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Enums\UserRole;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,6 +18,7 @@ return new class extends Migration
             $table->string('email', 255)->unique();
             $table->string('password', 255);
             $table->timestamps();
+            $table->enum('role', array_column(UserRole::cases(), 'value'))->default(UserRole::USER->value);
         });
     }
 
