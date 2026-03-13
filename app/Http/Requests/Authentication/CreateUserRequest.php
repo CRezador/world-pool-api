@@ -24,7 +24,7 @@ class CreateUserRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:150'],
-            'email' => ['required', 'string', 'email', 'max:255'],
+            'email' => ['unique:users,email', 'required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'max:255']
         ];
     }
@@ -36,6 +36,7 @@ class CreateUserRequest extends FormRequest
             'name.required' => 'Nome é obrigatório',
             'email.required' => 'Email é obrigatório.',
             'email.email' => 'Email inválido.',
+            'email.unique' => 'Email já está em uso.',
             'password.required' => 'Senha é obrigatória.',
         ];
     }

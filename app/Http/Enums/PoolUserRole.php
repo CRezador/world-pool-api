@@ -2,7 +2,7 @@
 
 namespace App\Http\Enums;
 
-enum Role: string
+enum PoolUserRole: string
 {
     case OWNER = 'OWNER';
     case ADMIN = 'ADMIN';

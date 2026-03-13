@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Http\Enums\MatchStatus;
 
 class Matches extends Authenticatable
 {
@@ -18,6 +19,7 @@ class Matches extends Authenticatable
         'kickoff_at',
         'stage',
         'group_id',
+        'status',
         'home_team_id',
         'away_team_id',
         'home_score',
@@ -26,6 +28,7 @@ class Matches extends Authenticatable
     protected $casts = [
         'kickoff_at' => 'datetime',
         'stage' => MatchStage::class,
+        'status' => MatchStatus::class,
     ];
     protected $connection = 'mysql';
 
