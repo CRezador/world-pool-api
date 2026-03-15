@@ -17,6 +17,7 @@ class Matches extends Authenticatable
     protected $table = 'matches';
     protected $fillable = [
         'kickoff_at',
+        'game_day',
         'stage',
         'group_id',
         'status',
