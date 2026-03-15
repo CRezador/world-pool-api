@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\MatchRequest;
-use App\Http\Transformers\MatchTransformer;
+use App\Http\Requests\Match\MatchRequest;
+use App\Http\Requests\Match\MatchUpdateRequest;
+use App\Http\Transformers\MatchTransformers\MatchTransformer;
 use App\Models\Matches;
 use App\Models\Team;
 use App\Http\Enums\MatchStatus;
@@ -11,14 +12,11 @@ use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\Response;
 use App\Http\Controllers\Controller;
 use App\Http\Enums\MatchStage;
-use App\Http\Requests\MatchUpdateRequest;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\Request;
 
 class MatchController extends Controller
 {
     use AuthorizesRequests;
-    //Listar todas as partidas, criar uma nova partida e mostrar os detalhes de uma partida específica.
     /* 
       ---- Listar todas as partidas: GET /matches
             -Base no transformer MatchTransformer, retornar os dados de cada partida, incluindo os nomes dos times, o grupo, a fase do campeonato, o horário de início da partida (kickoff_at) e o placar atual.
@@ -39,7 +37,9 @@ class MatchController extends Controller
             - O placar deve ser atualizado apenas para partidas que já tenham sido criadas.
             - O placar deve ser um número inteiro não negativo.
             - kickoff_at deve ser uma data válida no formato d/m/Y.
-
+      ---- Deletar uma partida: DELETE /matches/{id}
+            - Somente usuários com o papel de ADMIN podem deletar partidas.
+            - Se a partida não for encontrada, retornar um erro 404.
     */
     private function kickoffFormat($kickoff_at): string|null
     {
@@ -50,11 +50,7 @@ class MatchController extends Controller
     {
         $matches = Matches::query()->get();
 
-        return response()->json([
-            'data' => $matches->map(function ($match) {
-                return MatchTransformer::transform($match);
-            })
-        ], 200);
+        return response()->json(new MatchTransformer()->collection($matches), 200);
     }
 
     public function store(MatchRequest $request): Response
@@ -92,9 +88,11 @@ class MatchController extends Controller
         try {
             $match = Matches::create([
                 'home_team_id' => $homeTeam->id,
+                'game_day' => $request->game_day,
                 'away_team_id' => $awayTeam->id,
                 'group_id' => $stageToUpper === null ? null : $homeTeam->group_id, // Considerando que ambos os times estão no mesmo grupo
                 'stage' => $stageToUpper,
+                'status' => MatchStatus::SCHEDULED,
                 'kickoff_at' => $this->kickoffFormat($request->kickoff_at),
                 'home_score' => 0,
                 'away_score' => 0
@@ -159,5 +157,41 @@ class MatchController extends Controller
             'message' => 'Partida atualizada com sucesso',
             'data' => $data
         ], 200);
+    }
+
+    public function destroy($id): Response
+    {
+        $match = Matches::query()->where('id', $id)->first();
+
+        if (!$match) {
+            return response()->json([
+                'message' => 'Partida não encontrada',
+            ], 404);
+        }
+
+        try {
+            $match->delete();
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erro ao deletar a partida',
+            ], 500);
+        }
+
+        return response()->json([
+            'message' => 'Partida deletada com sucesso',
+        ], 200);
+    }
+
+    public function matchByGroup($groupId): Response
+    {
+        $matches = Matches::query()->where('group_id', $groupId)->get();
+
+        if ($matches->isEmpty()) {
+            return response()->json([
+                'message' => 'Nenhuma partida encontrada para este grupo.',
+            ], 404);
+        }
+
+        return response()->json(new MatchTransformer()->transformMatchByGroup($matches), 200);
     }
 }
