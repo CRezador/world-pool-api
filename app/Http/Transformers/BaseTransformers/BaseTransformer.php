@@ -5,10 +5,11 @@ namespace App\Http\Transformers\BaseTransformers;
 
 abstract class BaseTransformer
 {
-  public function item($data): array
+  public function item($data, $message): array
   {
     return [
-      'data' => $this->transform($data)
+      'message' => $message,
+      'data' => $this->transform($data),
     ];
   }
 

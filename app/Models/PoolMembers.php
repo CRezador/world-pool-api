@@ -24,7 +24,7 @@ class PoolMembers extends Authenticatable
 
     public function pool(): BelongsTo
     {
-        return $this->belongsTo(Pools::class, 'pool_id');
+        return $this->belongsTo(Pool::class, 'pool_id');
     }
 
     public function user(): BelongsTo

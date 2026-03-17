@@ -34,4 +34,13 @@ class MatchTransformer extends BaseTransformer
       'Matches' => $this->collection($matches)
     ];
   }
+
+  public function transformMatchByStage($matches): array
+  {
+    return [
+      'message' => 'Partidas encontradas para o grupo',
+      'Group' => $matches->first()->stage,
+      'Matches' => $this->collection($matches)
+    ];
+  }
 }

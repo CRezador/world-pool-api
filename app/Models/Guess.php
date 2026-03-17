@@ -8,7 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class Guesses extends Authenticatable
+class Guess extends Authenticatable
 {
     use HasFactory, Notifiable, HasApiTokens;
 
@@ -26,7 +26,7 @@ class Guesses extends Authenticatable
 
     public function pool(): BelongsTo
     {
-        return $this->belongsTo(Pools::class, 'pool_id');
+        return $this->belongsTo(Pool::class, 'pool_id');
     }
 
     public function user(): BelongsTo

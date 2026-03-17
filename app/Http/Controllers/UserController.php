@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Authentication\CreateUserRequest;
 use App\Models\User;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -25,7 +24,14 @@ class UserController extends Controller
             ],
         ], 200);
     }
-
+    /* 
+        POST /api/register
+            | Cria um novo usuário no sistema
+            |
+            | Uso comum:
+            | - Registro de novos usuários
+            | - Endpoint público
+    */
     public function store(CreateUserRequest $request): Response
     {
         $validated = $request->validated();
@@ -38,17 +44,6 @@ class UserController extends Controller
                 'remember_token' => Str::random(10),
                 'password' => Hash::make($validated['password']),
             ]);
-        } catch (QueryException $e) {
-            // 23000 = violação de constraint (ex.: email unique)
-            if (($e->errorInfo[0] ?? null) === '23000') {
-                return response()->json([
-                    'message' => 'Email já está em uso.',
-                ], 409);
-            }
-
-            return response()->json([
-                'message' => 'Erro ao criar usuário.',
-            ], 500);
         } catch (Throwable $e) {
             return response()->json([
                 'message' => 'Erro inesperado ao criar usuário.' . $e,
@@ -64,4 +59,35 @@ class UserController extends Controller
             ],
         ], 201);
     }
+    /*
+        PATCH /api/users/{user}
+            | Atualiza os dados de um usuário específico
+            |
+            | Uso comum:
+            | - ADMIN editar dados de usuários
+    */
+    public function update(Request $request, $id) {}
+    /*
+        DELETE /api/users/{user}
+            | Remove ou desativa um usuário do sistema
+            |
+            | Uso comum:
+            | - Administração da plataforma
+            |
+            | Acesso:
+            | - ADMIN
+    */
+    public function destroy($id) {}
+    /*
+        PATCH /api/users/{user}/role
+            | Atualiza o papel do usuário no sistema
+            |
+            | Uso comum:
+            | - Promover usuário para ADMIN
+            | - Rebaixar ADMIN para USER
+            |
+            | Acesso:
+            | - ADMIN
+    */
+    public function updateRole(Request $request, $id) {}
 }

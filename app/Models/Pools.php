@@ -8,7 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Pools extends Authenticatable
+class Pool extends Authenticatable
 {
     use HasFactory, Notifiable, HasApiTokens;
 

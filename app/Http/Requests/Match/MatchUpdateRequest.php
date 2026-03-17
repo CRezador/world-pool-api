@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Match;
 
+use App\Http\Enums\MatchStage;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Http\Enums\MatchStatus;
@@ -26,6 +27,29 @@ class MatchUpdateRequest extends FormRequest
         }
     }
 
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+
+            $fields = [
+                'home_score',
+                'away_score',
+                'kickoff_at',
+                'status'
+            ];
+
+            $hasField = collect($this->only($fields))
+                ->filter(fn($value) => !is_null($value))
+                ->isNotEmpty();
+
+            if (!$hasField) {
+                $validator->errors()->add(
+                    'request',
+                    'Pelo menos um campo precisa ser enviado.'
+                );
+            }
+        });
+    }
     /**
      * Get the validation rules that apply to the request.
      *
@@ -34,10 +58,10 @@ class MatchUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'home_score' => ['sometimes', 'nullable', 'integer', 'gte:0',  'min:0'],
-            'away_score' => ['sometimes', 'nullable', 'integer', 'gte:0', 'min:0'],
+            'home_score' => ['sometimes', 'nullable', 'integer', 'min:0'],
+            'away_score' => ['sometimes', 'nullable', 'integer', 'min:0'],
             'kickoff_at' => ['sometimes', 'nullable', 'date_format:d/m/Y'],
-            'status' => ['sometimes', 'nullable', Rule::enum(MatchStatus::class)],
+            'status' => ['sometimes', 'nullable', Rule::enum(MatchStatus::class)]
         ];
     }
 
@@ -45,12 +69,11 @@ class MatchUpdateRequest extends FormRequest
     {
         return [
             'home_score.integer' => 'O placar do time da casa deve ser um número inteiro.',
-            'home_score.gte' => 'O placar do time da casa deve ser um número inteiro não negativo.',
             'home_score.min' => 'O placar do time da casa deve ser um número inteiro não negativo.',
             'away_score.integer' => 'O placar do time visitante deve ser um número inteiro.',
-            'away_score.gte' => 'O placar do time visitante deve ser um número inteiro não negativo.',
             'away_score.min' => 'O placar do time visitante deve ser um número inteiro não negativo.',
             'kickoff_at.date_format' => 'A data de início da partida deve estar no formato d/m/Y.',
+            'status.enum' => 'A Status da partida deve ser um dos seguintes valores: SCHEDULED, IN_PROGRESS, FINISHED.'
         ];
     }
 }
