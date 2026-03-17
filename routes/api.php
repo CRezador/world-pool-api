@@ -20,13 +20,17 @@ Route::middleware('auth:sanctum')->group(
 
         //Rotas de times
         Route::get('/teams', [TeamController::class, 'index']);
+        Route::get('/teams/{id}', [TeamController::class, 'show']);
 
         //Rotas de grupos
         Route::get('/groups', [GroupController::class, 'index']);
+        Route::get('/groups/{id}', [GroupController::class, 'show']);
 
         //Rotas de partidas
         Route::get('/matches/{id}', [MatchController::class, 'show']);
         Route::get('/matches', [MatchController::class, 'index']);
+        Route::get('/group/{id}/matches', [MatchController::class, 'matchByGroup']);
+        Route::get('/stages/matches', [MatchController::class, 'matchesByStage']);
 
         //Rotas admin
         Route::middleware('admin')->group(
@@ -35,7 +39,6 @@ Route::middleware('auth:sanctum')->group(
                 Route::post('/matches/create', [MatchController::class, 'store']);
                 Route::put('/matches/{id}', [MatchController::class, 'update']);
                 Route::delete('/matches/{id}', [MatchController::class, 'destroy']);
-                Route::get('/matches/group/{groupId}', [MatchController::class, 'matchByGroup']);
             }
         );
     }

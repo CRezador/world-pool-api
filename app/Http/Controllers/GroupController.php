@@ -9,25 +9,40 @@ use Symfony\Component\HttpFoundation\Response;
 class GroupController extends Controller
 {
     /*
-    ----Listar todas as equipes agrupadas por grupo: GET /groups
-        -Retornar os grupos, e para cada grupo, retornar as equipes que pertencem a ele. Cada equipe deve incluir seu nome e código.
-    ----Listas um grupo: GET /groups/{id}
-        -Retornar o grupo específico, e para ele, retornar as equipes que pertencem a ele. Cada equipe deve incluir seu nome e código.
+|--------------------------------------------------------------------------
+| Groups Endpoints
+|--------------------------------------------------------------------------
+|
+| Representa os grupos da copa (A, B, C...) e organiza os times
+| que pertencem a cada grupo.
+|
+*/
+
+    /*
+        GET /api/groups
+            | Retorna todos os grupos cadastrados
+            |
+            | Uso comum:
+            | - Listar todos os grupos da copa
+            | - Tela inicial de grupos
     */
     public function index(): Response
     {
         $group = Group::query()->get();
-        $data = $group->map(function ($group) {
-            return [
-                GroupTransformer::transform($group)
-            ];
-        });
 
-        return response()->json([
-            'data' => $data
-        ], 200);
+        return response()->json(
+            new GroupTransformer()->collection($group),
+            200
+        );
     }
-
+    /*
+        GET /api/groups/{group}
+            | Retorna informações de um grupo específico
+            |
+            | Uso comum:
+            | - Visualizar detalhes de um grupo
+            | - Mostrar dados do grupo em tela
+    */
     public function show($id): Response
     {
         $group = Group::query()->find($id);
@@ -38,8 +53,26 @@ class GroupController extends Controller
             ], 404);
         }
 
-        return response()->json([
-            'data' => GroupTransformer::transform($group)
-        ], 200);
+        return response()->json(
+            new GroupTransformer()->item($group, 'Grupo encontrado'),
+            200
+        );
     }
+    /*
+        GET /api/groups/{group}/teams
+            | Retorna todos os times que pertencem ao grupo
+            |
+            | Uso comum:
+            | - Mostrar tabela de times do grupo
+    */
+    public function teams($id) {}
+    /*
+        GET /api/groups/{group}/matches
+            | Retorna todas as partidas do grupo
+            |
+            | Uso comum:
+            | - Listar jogos da fase de grupos
+            | - Tela de calendário de partidas do grupo
+    */
+    public function matches($id) {}
 }

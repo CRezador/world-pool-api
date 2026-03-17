@@ -9,7 +9,14 @@ use Illuminate\Support\Facades\Hash;
 
 class TokenController extends Controller
 {
-
+    /*
+        POST /api/login
+            | Autentica um usuário e retorna um token de acesso
+            |
+            | Uso comum:
+            | - Login de usuários existentes
+            | - Endpoint público
+    */
     public function store(LoginRequest $request): Response
     {
         $credentials = $request->validated();
