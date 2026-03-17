@@ -24,11 +24,6 @@ class MatchController extends Controller
         $this->matchService = $matchService;
         $this->matchTransformer = $matchTransformer;
     }
-
-    private function kickoffFormat($kickoff_at): string|null
-    {
-        return $kickoff_at === null ? null : Carbon::createFromFormat('d/m/y', $kickoff_at)->format('Y-m-d H:i:s');
-    }
     /*
     GET /api/matches                     // Lista todas as partidas
         | Critério:
