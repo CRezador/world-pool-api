@@ -4,12 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Transformers\TeamTransformers\TeamTransformer;
 use Symfony\Component\HttpFoundation\Response;
-use App\Models\Team;
-
+use App\Repositories\TeamRepositories\TeamRepository;
+use App\Services\TeamServices\TeamService;
 
 class TeamController extends Controller
 {
-
+    public function __construct(
+        private TeamTransformer $teamTransformer,
+        private TeamService $teamService,
+        private TeamRepository $teamRepository
+    ) {}
     /*
         GET /api/teams                   // Retorna a lista de equipes
             | Critério:
@@ -17,16 +21,9 @@ class TeamController extends Controller
     */
     public function index(): Response
     {
-        $teams = Team::query()->get();
+        $teams = $this->teamRepository->findAll();
 
-        $data = $teams->map(function ($team) {
-            return [
-                'name' => $team->name,
-                'group' => $team->group->name,
-                'code' => $team->code,
-            ];
-        });
-        return response()->json(new TeamTransformer()->collection($teams), 200);
+        return response()->json($this->teamTransformer->collection($teams), 200);
     }
     /*
         GET /api/teams/{team-id}              // Retorna os detalhes de uma equipe específica
@@ -36,7 +33,7 @@ class TeamController extends Controller
     */
     public function show($id): Response
     {
-        $team = Team::query()->find($id);
+        $team = $this->teamRepository->findById($id);
 
         if (!$team) {
             return response()->json([
@@ -45,8 +42,25 @@ class TeamController extends Controller
         }
 
         return response()->json(
-            new TeamTransformer()->item($team, 'Equipe encontrada'),
+            $this->teamTransformer->item($team, 'Equipe encontrada'),
             200
         );
+    }
+    /*
+        GET /api/groups/{group}/teams
+            | Retorna todos os times que pertencem ao grupo
+            |
+            | Uso comum:
+            | - Mostrar tabela de times do grupo
+    */
+    public function groupTeams($id)
+    {
+        $groupTeams = $this->teamRepository->teamsByGroup($id);
+
+        if (!$groupTeams) {
+            return response()->json(['message' => 'Time não encontrado'], 404);
+        }
+
+        return $this->teamTransformer->transformTeamsByGroup($groupTeams);
     }
 }

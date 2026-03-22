@@ -2,7 +2,6 @@
 
 namespace App\Repositories\MatchRepositories;
 
-use App\Http\Enums\MatchStage;
 use App\Models\Matches;
 
 class MatchRepository
@@ -77,5 +76,16 @@ class MatchRepository
   {
     $match->update($data);
     return $match->refresh();
+  }
+
+  public function delete(Matches $match)
+  {
+    try {
+      $match->delete();
+    } catch (\Exception $e) {
+      return throw new \Exception('Erro ao deletar a partida');
+    }
+
+    return true;
   }
 }

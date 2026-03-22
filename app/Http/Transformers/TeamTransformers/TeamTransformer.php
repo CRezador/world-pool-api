@@ -15,4 +15,13 @@ class TeamTransformer extends BaseTransformer
       'code' => $team->code,
     ];
   }
+
+  public function transformTeamsByGroup($team): array
+  {
+    return [
+      'message' => 'Times encontrados',
+      'Group' => $team->first()->group->name,
+      'team' => $this->collection($team)
+    ];
+  }
 }

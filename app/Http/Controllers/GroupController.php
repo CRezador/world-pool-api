@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Transformers\GroupTransformers\GroupTransformer;
 use App\Models\Group;
+use App\Http\Transformers\GroupTransformers\GroupTransformer;
+use App\Services\GroupServices\GroupService;
+use App\Repositories\GroupRepositories\GroupRepository;
 use Symfony\Component\HttpFoundation\Response;
 
 class GroupController extends Controller
@@ -18,6 +20,12 @@ class GroupController extends Controller
 |
 */
 
+    public function __construct(
+        private GroupTransformer $groupTransformer,
+        private GroupService $groupService,
+        private GroupRepository $groupRepository
+    ) {}
+
     /*
         GET /api/groups
             | Retorna todos os grupos cadastrados
@@ -28,10 +36,10 @@ class GroupController extends Controller
     */
     public function index(): Response
     {
-        $group = Group::query()->get();
+        $group = $this->groupRepository->findAll();
 
         return response()->json(
-            new GroupTransformer()->collection($group),
+            $this->groupTransformer->collection($group),
             200
         );
     }
@@ -45,7 +53,7 @@ class GroupController extends Controller
     */
     public function show($id): Response
     {
-        $group = Group::query()->find($id);
+        $group = $this->groupRepository->findById($id);
 
         if (!$group) {
             return response()->json([
@@ -54,25 +62,8 @@ class GroupController extends Controller
         }
 
         return response()->json(
-            new GroupTransformer()->item($group, 'Grupo encontrado'),
+            $this->groupTransformer->item($group, 'Grupo encontrado'),
             200
         );
     }
-    /*
-        GET /api/groups/{group}/teams
-            | Retorna todos os times que pertencem ao grupo
-            |
-            | Uso comum:
-            | - Mostrar tabela de times do grupo
-    */
-    public function teams($id) {}
-    /*
-        GET /api/groups/{group}/matches
-            | Retorna todas as partidas do grupo
-            |
-            | Uso comum:
-            | - Listar jogos da fase de grupos
-            | - Tela de calendário de partidas do grupo
-    */
-    public function matches($id) {}
 }

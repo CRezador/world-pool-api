@@ -14,16 +14,12 @@ use App\Services\MatchServices\MatchService;
 
 class MatchController extends Controller
 {
-    private MatchRepository $matchRepository;
-    private MatchService $matchService;
-    private MatchTransformer $matchTransformer;
 
-    public function __construct(MatchRepository $matchRepository, MatchService $matchService, MatchTransformer $matchTransformer)
-    {
-        $this->matchRepository = $matchRepository;
-        $this->matchService = $matchService;
-        $this->matchTransformer = $matchTransformer;
-    }
+    public function __construct(
+        private MatchRepository $matchRepository,
+        private MatchService $matchService,
+        private MatchTransformer $matchTransformer
+    ) {}
     /*
     GET /api/matches                     // Lista todas as partidas
         | Critério:
@@ -35,7 +31,7 @@ class MatchController extends Controller
     public function index(): Response
     {
         $matches = $this->matchRepository->findAll();
-        return response()->json(new MatchTransformer()->collection($matches), 200);
+        return response()->json($this->matchTransformer->collection($matches), 200);
     }
     /*
     GET /api/matches/{match-id}          // Mostra os detalhes de uma partida específica
@@ -57,7 +53,7 @@ class MatchController extends Controller
         }
 
         return response()->json(
-            new MatchTransformer()->item($match, 'Partida encontrada'),
+            $this->matchTransformer->item($match, 'Partida encontrada'),
             200
         );
     }
@@ -100,7 +96,7 @@ class MatchController extends Controller
             ], 404);
         }
 
-        return response()->json(new MatchTransformer()->transformMatchByGroup($matches), 200);
+        return response()->json($this->matchTransformer->transformMatchByGroup($matches), 200);
     }
     /*
     POST /api/matches                     // Cria uma nova partida
@@ -131,7 +127,7 @@ class MatchController extends Controller
         }
 
         return response()->json(
-            new MatchTransformer()->item($match, 'Partida criada com sucesso'),
+            $this->matchTransformer->item($match, 'Partida criada com sucesso'),
             201
         );
     }
@@ -166,7 +162,7 @@ class MatchController extends Controller
         }
 
         return response()->json(
-            new MatchTransformer()->item($data, 'Partida atualizada com sucesso'),
+            $this->matchTransformer->item($data, 'Partida atualizada com sucesso'),
             200
         );
     }
@@ -179,7 +175,10 @@ class MatchController extends Controller
             | - Disparar cálculo de pontos dos palpites
             | - Endpoint interno/admin
     */
-    public function closeMatch($id) {}
+    public function closeMatch($id)
+    {
+        //@todo checar se realmente preciso dessa function
+    }
     /*
     DELETE /api/matches/{id}             // Deleta uma partida
             | Critério:
@@ -200,10 +199,10 @@ class MatchController extends Controller
         }
 
         try {
-            $match->delete();
+            $this->matchRepository->delete($match);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Erro ao deletar a partida',
+                'message' => $e,
             ], 500);
         }
 
