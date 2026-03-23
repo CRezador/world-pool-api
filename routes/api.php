@@ -5,7 +5,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\MatchController;
-
+use App\Http\Controllers\PoolController;
 use Illuminate\Support\Facades\Route;
 
 //Users Routes
@@ -32,6 +32,10 @@ Route::middleware('auth:sanctum')->group(
         Route::get('/group/{id}/matches', [MatchController::class, 'matchByGroup']);
         Route::get('/stages/matches', [MatchController::class, 'matchesByStage']);
 
+        //Rotas de Bolão
+        Route::post('/pools', [PoolController::class, 'store']);
+        Route::get('/pools', [PoolController::class, 'index']);
+        Route::get('/pools/{id}', [PoolController::class, 'show']);
         //Rotas admin
         Route::middleware('admin')->group(
             function () {
