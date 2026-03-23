@@ -8,7 +8,7 @@ use App\Http\Transformers\BaseTransformers\BaseTransformer;
 class MatchTransformer extends BaseTransformer
 {
 
-  public static function transform($match): array
+  public function transform($match): array
   {
     return [
       'id' => $match->id,

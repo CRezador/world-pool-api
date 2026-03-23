@@ -20,5 +20,5 @@ abstract class BaseTransformer
     ];
   }
 
-  abstract public static function transform($item): array;
+  abstract public function transform($item): array;
 }

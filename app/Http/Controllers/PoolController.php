@@ -2,23 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Authentication\LoginRequest;
+use App\Http\Requests\Pool\PoolRequest;
+use App\Http\Transformers\PoolTransformers\PoolTransformer;
+use App\Repositories\PoolRepositories\PoolRepository;
+use App\Services\PoolServices\PoolService;
 use Illuminate\Http\Request;
 
 class PoolController extends Controller
 {
+
+    public function __construct(
+        private PoolRepository $poolRepository,
+        private PoolService $poolService,
+        private PoolTransformer $poolTransformer
+    )
+    {
+     
+    }
     /*
-        GET    /api/pools?is_public=true
+        GET    /api/pools
             | Lista os bolões disponíveis
-            |
-            | Query params:
-            | - search (opcional)
-            | - is_public (opcional)
-            |
             | Uso comum:
             | - Descobrir bolões públicos
             | - Listagem geral de bolões
     */
-    public function index(Request $request) {}
+    public function index() {
+        return $this->poolTransformer->collection($this->poolService->showPublicPools());
+    }
     /*
         POST   /api/pools                // Cria um novo bolão
             | Critério:
@@ -29,7 +40,20 @@ class PoolController extends Controller
             | - Garantir que o bolão seja criado com o usuário como administrador
             | - Retornar um erro 401 se o usuário não estiver autenticado
     */
-    public function store(Request $request) {}
+    public function store(PoolRequest $request) {
+        $request->validated();
+
+        try{
+            $pool = $this->poolService->createPool($request);
+        }catch(\Exception $e){
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 400);
+        }
+
+        return $this->poolTransformer->item($pool, 'Bolão criado');
+                
+    }
     /*
         GET    /api/pools/{pool}         // Retorna detalhes de um bolão específico
             | Critério:
@@ -40,7 +64,15 @@ class PoolController extends Controller
             | - Retornar um erro 404 se o bolão não for encontrado
             | - Retornar um erro 403 se o usuário não tiver permissão para acessar o bolão
     */
-    public function show($id) {}
+    public function show($id) {
+        $pool = $this->poolService->showPool($id);
+
+        if(!$pool){
+            return response()->json('Bolão não encontrado',404);
+        }
+
+        return $this->poolTransformer->item($pool, 'Bolão Encontrado');
+    }
     /*
         GET    /api/me/pools             // Lista os bolões do usuário autenticado
             | Critério:

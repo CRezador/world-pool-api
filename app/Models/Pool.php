@@ -17,6 +17,7 @@ class Pool extends Authenticatable
         'name',
         'join_code',
         'is_public',
+        'owner_id'
     ];
     protected $casts = [
         'created_at' => 'datetime',
