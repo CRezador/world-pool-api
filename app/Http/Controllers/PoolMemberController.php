@@ -16,6 +16,19 @@ class PoolMemberController extends Controller
             | - Ver quem está no bolão
     */
     public function index($poolId) {}
+
+    /*
+        GET    /api/me/pools             // Lista os bolões do usuário autenticado
+            | Critério:
+            | - O usuário deve estar autenticado
+            | Uso comum:
+            | - Exibir uma lista de bolões dos quais o usuário é membro
+            | - Permitir que os usuários vejam facilmente seus bolões ativos
+                | - Retornar um erro 401 se o usuário não estiver autenticado
+                | - Retornar um erro 444 se o usuário não for membro de nenhum bolão
+    */
+    public function myPools(Request $request) {  
+    }
     /*
         GET /api/pools/{pool}/members/{member}
             | Retorna detalhes de um membro específico do bolão

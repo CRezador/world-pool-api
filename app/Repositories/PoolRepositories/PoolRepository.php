@@ -17,4 +17,8 @@ class PoolRepository{
     public function createPool(array $pool): Pool{
         return Pool::create($pool);
     }
+
+    public function deletePool($id){
+        return Pool::where('id', '=', $id)->delete();
+    }
 }

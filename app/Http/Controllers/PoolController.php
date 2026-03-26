@@ -7,7 +7,7 @@ use App\Http\Requests\Pool\PoolRequest;
 use App\Http\Transformers\PoolTransformers\PoolTransformer;
 use App\Repositories\PoolRepositories\PoolRepository;
 use App\Services\PoolServices\PoolService;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request; 
 
 class PoolController extends Controller
 {
@@ -44,7 +44,8 @@ class PoolController extends Controller
         $request->validated();
 
         try{
-            $pool = $this->poolService->createPool($request);
+            $is_public = $request->is_public;
+            $pool = $this->poolService->createPool($is_public, $request->user());
         }catch(\Exception $e){
             return response()->json([
                 'message' => $e->getMessage()
@@ -68,22 +69,11 @@ class PoolController extends Controller
         $pool = $this->poolService->showPool($id);
 
         if(!$pool){
-            return response()->json('Bolão não encontrado',404);
+            return response()->json(['message' => 'Bolão não encontrado'],404);
         }
 
         return $this->poolTransformer->item($pool, 'Bolão Encontrado');
     }
-    /*
-        GET    /api/me/pools             // Lista os bolões do usuário autenticado
-            | Critério:
-            | - O usuário deve estar autenticado
-            | Uso comum:
-            | - Exibir uma lista de bolões dos quais o usuário é membro
-            | - Permitir que os usuários vejam facilmente seus bolões ativos
-                | - Retornar um erro 401 se o usuário não estiver autenticado
-                | - Retornar um erro 444 se o usuário não for membro de nenhum bolão
-    */
-    public function myPools(Request $request) {}
     /*
         DELETE /api/pools/{pool}         // Remove um bolão (owner)
             | Critério:
@@ -94,7 +84,14 @@ class PoolController extends Controller
             | - Retornar um erro 403 se o usuário não for o proprietário do bolão
             | - Retornar um erro 404 se o bolão não for encontrado
     */
-    public function destroy($id) {}
+    public function destroy($id, Request $request) {
+        
+    $pool = $this->poolService->destroyPool($id, $request->user()->id);
+
+    return response()->json([
+        'Pool' => $this->poolTransformer->item($pool, 'Bolão removido') 
+    ], 200);
+    }
     /*
         POST /api/pools/join
             | Entrar em um bolão através do código

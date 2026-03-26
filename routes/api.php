@@ -36,6 +36,12 @@ Route::middleware('auth:sanctum')->group(
         Route::post('/pools', [PoolController::class, 'store']);
         Route::get('/pools', [PoolController::class, 'index']);
         Route::get('/pools/{id}', [PoolController::class, 'show']);
+        Route::get('/me/pools', [PoolController::class, 'myPools']);
+        Route::delete('/pools/{id}', [PoolController::class, 'destroy']);
+        Route::post('/pools/join', [PoolController::class, 'join']);
+        Route::post('/pools/{id}/join-code/regenerate', [PoolController::class, 'regenerateJoinCode']);
+        Route::put('/pools/{id}', [PoolController::class, 'update']);
+
         //Rotas admin
         Route::middleware('admin')->group(
             function () {
