@@ -4,13 +4,14 @@ namespace App\Services\PoolServices;
 
 use App\Http\Requests\Pool\PoolRequest;
 use App\Models\Pool;
+use App\Models\User;
 use App\Repositories\PoolRepositories\PoolRepository;
 
 
 class PoolService{
 
     public function __construct(
-        private PoolRepository $poolRepository
+        private PoolRepository $poolRepository,
     )
     {
         
@@ -34,20 +35,40 @@ class PoolService{
     public function showPool($id){
         return $this->poolRepository->getPool($id);
     }
-    public function createPool(PoolRequest $request){
+    public function createPool(bool $is_public, User $user){
         do {
             $code = $this->generateCode();
         } while (Pool::where('join_code', $code)->exists());
 
         try{
             $pool = $this->poolRepository->createPool([
-                'name' => $request->name,
+                'name' => $user->name,
                 'join_code' => $code,
-                'owner_id' => $request->user()->id,
-                'is_public' => $request->is_public,
+                'owner_id' => $user->id,
+                'is_public' => $is_public,
             ]);
         }catch(\Exception $e){
-            throw new \Exception('Erro ao criar a Bolão: ' . $e->getMessage());
+            throw new \Exception('Erro ao criar a Bolão: ');
+        }
+
+        return $pool;
+    }
+
+    public function destroyPool($id, $userId){
+        $pool = $this->poolRepository->getPool($id);
+
+        if(!$pool){
+            throw new \Exception(1);
+        }
+
+        if($pool->owner_id !== $userId){
+            throw new \Exception(2);
+        }
+
+        try{
+            $this->poolRepository->deletePool($pool->id);
+        }catch(\Exception $e){
+            throw new \Exception('Erro ao Remover Bolão: ' . $e);
         }
 
         return $pool;
