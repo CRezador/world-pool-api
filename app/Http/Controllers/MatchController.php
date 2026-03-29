@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Match\MatchRequest;
 use App\Http\Requests\Match\MatchUpdateRequest;
 use App\Http\Transformers\MatchTransformers\MatchTransformer;
-use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\Response;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Match\MatchStageRequest;
@@ -14,12 +13,12 @@ use App\Services\MatchServices\MatchService;
 
 class MatchController extends Controller
 {
-
     public function __construct(
         private MatchRepository $matchRepository,
         private MatchService $matchService,
         private MatchTransformer $matchTransformer
-    ) {}
+    ) {
+    }
     /*
     GET /api/matches                     // Lista todas as partidas
         | Critério:
@@ -80,7 +79,7 @@ class MatchController extends Controller
         return $this->matchTransformer->transformMatchByStage($matches);
     }
     /*
-    GET /api/group/{group-id}/matches 
+    GET /api/group/{group-id}/matches
             | Retorna todas as partidas de um grupo específico
             |
             | Uso comum:
@@ -218,5 +217,7 @@ class MatchController extends Controller
             | - Processamento interno
             | - Análise de palpites após finalização
     */
-    public function guesses($id) {}
+    public function guesses($id)
+    {
+    }
 }

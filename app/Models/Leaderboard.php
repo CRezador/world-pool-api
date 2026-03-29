@@ -10,7 +10,9 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Leaderboard extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory;
+    use Notifiable;
+    use HasApiTokens;
 
     protected $table = 'leaderboard';
     protected $fillable = [

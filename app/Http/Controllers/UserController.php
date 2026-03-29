@@ -12,7 +12,6 @@ use Throwable;
 
 class UserController extends Controller
 {
-
     public function me(Request $request): Response
     {
         return response()->json([
@@ -24,7 +23,7 @@ class UserController extends Controller
             ],
         ], 200);
     }
-    /* 
+    /*
         POST /api/register
             | Cria um novo usuário no sistema
             |
@@ -66,7 +65,9 @@ class UserController extends Controller
             | Uso comum:
             | - ADMIN editar dados de usuários
     */
-    public function update(Request $request, $id) {}
+    public function update(Request $request, $id)
+    {
+    }
     /*
         DELETE /api/users/{user}
             | Remove ou desativa um usuário do sistema
@@ -77,7 +78,9 @@ class UserController extends Controller
             | Acesso:
             | - ADMIN
     */
-    public function destroy($id) {}
+    public function destroy($id)
+    {
+    }
     /*
         PATCH /api/users/{user}/role
             | Atualiza o papel do usuário no sistema
@@ -89,5 +92,7 @@ class UserController extends Controller
             | Acesso:
             | - ADMIN
     */
-    public function updateRole(Request $request, $id) {}
+    public function updateRole(Request $request, $id)
+    {
+    }
 }

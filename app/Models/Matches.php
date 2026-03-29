@@ -12,7 +12,9 @@ use App\Http\Enums\MatchStatus;
 
 class Matches extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory;
+    use Notifiable;
+    use HasApiTokens;
 
     protected $table = 'matches';
     protected $fillable = [

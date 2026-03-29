@@ -12,7 +12,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PoolMembers extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory;
+    use Notifiable;
+    use HasApiTokens;
 
     protected $table = 'pool_members';
     protected $casts = [

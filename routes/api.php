@@ -6,6 +6,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\PoolController;
+use App\Http\Controllers\PoolMemberController;
 use Illuminate\Support\Facades\Route;
 
 //Users Routes
@@ -36,11 +37,21 @@ Route::middleware('auth:sanctum')->group(
         Route::post('/pools', [PoolController::class, 'store']);
         Route::get('/pools', [PoolController::class, 'index']);
         Route::get('/pools/{id}', [PoolController::class, 'show']);
-        Route::get('/me/pools', [PoolController::class, 'myPools']);
         Route::delete('/pools/{id}', [PoolController::class, 'destroy']);
         Route::post('/pools/join', [PoolController::class, 'join']);
-        Route::post('/pools/{id}/join-code/regenerate', [PoolController::class, 'regenerateJoinCode']);
         Route::put('/pools/{id}', [PoolController::class, 'update']);
+
+        //Rota PoolMember
+        Route::get('/pools/{poolId}/members', [PoolMemberController::class, 'index'])->middleware('PoolMember');
+        Route::get('/me/pools', [PoolMemberController::class, 'myPools']);
+        Route::get('/pools/{poolId}/members/{memberId}', [PoolMemberController::class, 'show']);
+        Route::patch('/pools/{pool}/members/{member}/role', [PoolMemberController::class, 'updateRole'])->middleware('PoolMemberAdmin');
+        Route::patch('/pools/{pool}/members/{member}/status', [PoolMemberController::class, 'updateStatus']);
+        Route::delete('/pools/{pool}/members/{member}', [PoolMemberController::class, 'destroy'])->middleware('PoolMemberAdmin');
+        Route::post('/pools/{id}/regenerate-code', [PoolController::class, 'regenerateJoinCode'])->middleware('PoolMemberAdmin');
+        Route::post('/pools/{pool}/members/join', [PoolMemberController::class, 'joinPool']);
+        Route::post('/pools/{pool}/members/{member}/ban', [PoolMemberController::class, 'ban'])->middleware('PoolMemberAdmin');
+        Route::post('/pools/{pool}/members/{member}/unban', [PoolMemberController::class, 'unban'])->middleware('PoolMemberAdmin');
 
         //Rotas admin
         Route::middleware('admin')->group(

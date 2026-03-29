@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Group;
 use App\Http\Transformers\GroupTransformers\GroupTransformer;
 use App\Services\GroupServices\GroupService;
 use App\Repositories\GroupRepositories\GroupRepository;
@@ -24,7 +23,8 @@ class GroupController extends Controller
         private GroupTransformer $groupTransformer,
         private GroupService $groupService,
         private GroupRepository $groupRepository
-    ) {}
+    ) {
+    }
 
     /*
         GET /api/groups

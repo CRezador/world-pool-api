@@ -4,9 +4,10 @@ namespace App\Http\Transformers\PoolTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
 
-class PoolTransformer extends BaseTransformer{
-
-    public function transform($pool): array{
+class PoolTransformer extends BaseTransformer
+{
+    public function transform($pool): array
+    {
         return [
             'name' => $pool->name,
             'join_code' => $pool->join_code,
@@ -14,5 +15,5 @@ class PoolTransformer extends BaseTransformer{
             'owner' => $pool->owner->name
         ];
     }
-    
+
 }

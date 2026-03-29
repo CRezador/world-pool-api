@@ -13,7 +13,8 @@ class TeamController extends Controller
         private TeamTransformer $teamTransformer,
         private TeamService $teamService,
         private TeamRepository $teamRepository
-    ) {}
+    ) {
+    }
     /*
         GET /api/teams                   // Retorna a lista de equipes
             | Critério:

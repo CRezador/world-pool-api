@@ -2,4 +2,6 @@
 
 namespace App\Services\TeamServices;
 
-class TeamService {}
+class TeamService
+{
+}
