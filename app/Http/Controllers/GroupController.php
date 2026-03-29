@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Group;
 use App\Http\Transformers\GroupTransformers\GroupTransformer;
 use App\Services\GroupServices\GroupService;
 use App\Repositories\GroupRepositories\GroupRepository;

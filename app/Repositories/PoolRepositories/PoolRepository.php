@@ -16,6 +16,11 @@ class PoolRepository
         return Pool::query()->find($id);
     }
 
+    public function getPoolByJoinCode($join_code)
+    {
+        return Pool::query()->where('join_code', $join_code)->first();
+    }
+
     public function createPool(array $pool): Pool
     {
         return Pool::create($pool);
@@ -24,5 +29,10 @@ class PoolRepository
     public function deletePool($id)
     {
         return Pool::where('id', '=', $id)->delete();
+    }
+
+    public function updatePool($id, array $data)
+    {
+        return Pool::where('id', $id)->update($data);
     }
 }

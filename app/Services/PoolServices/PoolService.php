@@ -2,7 +2,6 @@
 
 namespace App\Services\PoolServices;
 
-use App\Http\Requests\Pool\PoolRequest;
 use App\Models\Pool;
 use App\Models\User;
 use App\Repositories\PoolRepositories\PoolRepository;
@@ -20,9 +19,15 @@ class PoolService
         $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         $code = '';
 
-        for ($i = 0; $i < 6; $i++) {
-            $code .= $characters[random_int(0, strlen($characters) - 1)];
-        }
+        do {
+            for ($i = 0; $i < 6; $i++) {
+                $code .= $characters[random_int(0, strlen($characters) - 1)];
+            }
+            $i++;
+            if ($i > 5) {
+                throw new \Exception('Não foi possível gerar um código de acesso único após várias tentativas. Tente novamente mais tarde.');
+            }
+        } while (Pool::where('join_code', $code)->exists());
 
         return $code;
     }
@@ -38,9 +43,7 @@ class PoolService
     }
     public function createPool(bool $is_public, User $user)
     {
-        do {
-            $code = $this->generateCode();
-        } while (Pool::where('join_code', $code)->exists());
+        $code = $this->generateCode();
 
         try {
             $pool = $this->poolRepository->createPool([
@@ -75,5 +78,41 @@ class PoolService
         }
 
         return $pool;
+    }
+
+    public function regenerateJoinCode($id, $ownerId)
+    {
+        $pool = $this->poolRepository->getPool($id);
+
+        if (!$pool) {
+            throw new \Exception("Bolão não encontrado.");
+        }
+        $code = $this->generateCode();
+
+        try {
+            $pool->join_code = $code;
+            $pool->save();
+        } catch (\Exception $e) {
+            throw new \Exception('Erro ao Regenerar Código de Acesso: ' . $e);
+        }
+
+        return $pool;
+    }
+
+    public function updatePool($id, $ownerId, array $data)
+    {
+        $pool = $this->poolRepository->getPool($id);
+
+        if (!$pool) {
+            throw new \Exception("Bolão não encontrado.");
+        }
+
+        try {
+            $poolUpdate = $this->poolRepository->updatePool($id, $data);
+        } catch (\Exception $e) {
+            throw new \Exception('Erro ao Atualizar Bolão: ' . $e);
+        }
+
+        return $poolUpdate;
     }
 }

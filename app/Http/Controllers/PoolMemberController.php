@@ -2,10 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PoolMember\PoolMemberJoinRequest;
+use App\Http\Transformers\PoolTransformers\PoolTransformer;
+use App\Services\PoolMemberServices\PoolMemberService;
 use Illuminate\Http\Request;
 
 class PoolMemberController extends Controller
 {
+    public function __construct(
+        private PoolMemberService $poolMemberService,
+        private PoolTransformer $poolTransformer
+    ) {
+
+    }
     /*
         GET /api/pools/{pool}/members
             | Lista todos os membros de um bolão
@@ -44,7 +53,7 @@ class PoolMemberController extends Controller
     {
     }
     /*
-        POST /api/pools/{pool}/members/owner
+        Private
             | Cria automaticamente o owner do bolão na tabela pool_members
             |
             | Uso comum:
@@ -68,8 +77,19 @@ class PoolMemberController extends Controller
             | - Retornar um erro 404 se o bolão não for encontrado
             | - Retornar um erro 400 se o código de acesso for inválido
     */
-    public function join(Request $request)
+    public function join(PoolMemberJoinRequest $request)
     {
+        $request->validated();
+
+        try {
+            $pool = $this->poolMemberService->joinPool($request->join_code, $request->user());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 400);
+        }
+
+        return $this->poolTransformer->item($pool, 'Entrou no bolão');
     }
     /*
      PATCH /api/pools/{pool}/members/{member}/role

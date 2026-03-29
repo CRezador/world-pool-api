@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Pool\PoolRequest;
+use App\Http\Requests\PoolOwnerRequest;
 use App\Http\Transformers\PoolTransformers\PoolTransformer;
-use App\Repositories\PoolRepositories\PoolRepository;
+use App\Models\Pool;
 use App\Services\PoolServices\PoolService;
 use Illuminate\Http\Request;
 
 class PoolController extends Controller
 {
     public function __construct(
-        private PoolRepository $poolRepository,
         private PoolService $poolService,
         private PoolTransformer $poolTransformer
     ) {
@@ -94,19 +94,6 @@ class PoolController extends Controller
         ], 200);
     }
     /*
-        POST /api/pools/join
-            | Entrar em um bolão através do código
-            |
-            | Body:
-            | - join_code
-            |
-            | Uso comum:
-            | - Usuário entra em um bolão privado ou público
-    */
-    public function join(Request $request)
-    {
-    }
-    /*
         POST /api/pools/{pool}/join-code/regenerate   // Gera um novo join_code para o bolão
             | Critério:
             | - O usuário deve ser o owner do bolão
@@ -116,8 +103,24 @@ class PoolController extends Controller
             | - Retornar um erro 403 se o usuário não for o proprietário do bolão
             | - Retornar um erro 404 se o bolão não for encontrado
     */
-    public function regenerateJoinCode($id)
+    public function regenerateJoinCode($id, Request $request)
     {
+
+        if ($request->user()->id !== $request->owner_id) {
+            return response()->json([
+                'message' => 'Apenas o proprietário do bolão pode regenerar o código de acesso.'
+            ], 403);
+        }
+
+        try {
+            $pool = $this->poolService->regenerateJoinCode($id, $request->owner_id);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 400);
+        }
+
+        return $this->poolTransformer->item($pool, 'Código de acesso regenerado');
     }
     /*
         PUT    /api/pools/{pool}              // Atualiza dados do bolão (nome, visibilidade, etc.)
@@ -131,5 +134,20 @@ class PoolController extends Controller
     */
     public function update(Request $request, $id)
     {
+        if ($request->user()->id !== $request->owner_id) {
+            return response()->json([
+                'message' => 'Apenas o proprietário do bolão pode regenerar o código de acesso.'
+            ], 403);
+        }
+
+        try {
+            $pool = $this->poolService->updatePool($id, $request->owner_id, $request->only(['name', 'is_public']));
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 400);
+        }
+
+        return $this->poolTransformer->item($pool, 'Bolão atualizado');
     }
 }
