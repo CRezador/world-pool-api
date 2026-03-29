@@ -11,7 +11,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Team extends Authenticatable
 {
-    use HasFactory, HasApiTokens, Notifiable;
+    use HasFactory;
+    use HasApiTokens;
+    use Notifiable;
 
     protected $table = 'teams';
     protected $fillable = ['name', 'group', 'code'];

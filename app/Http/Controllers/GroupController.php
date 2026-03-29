@@ -24,7 +24,8 @@ class GroupController extends Controller
         private GroupTransformer $groupTransformer,
         private GroupService $groupService,
         private GroupRepository $groupRepository
-    ) {}
+    ) {
+    }
 
     /*
         GET /api/groups

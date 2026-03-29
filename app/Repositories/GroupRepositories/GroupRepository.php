@@ -6,14 +6,13 @@ use App\Models\Group;
 
 class GroupRepository
 {
+    public function findAll()
+    {
+        return Group::query()->get();
+    }
 
-  public function findAll()
-  {
-    return Group::query()->get();
-  }
-
-  public function findById($id)
-  {
-    return Group::query()->find($id);
-  }
+    public function findById($id)
+    {
+        return Group::query()->find($id);
+    }
 }

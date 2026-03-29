@@ -4,21 +4,25 @@ namespace App\Repositories\PoolRepositories;
 
 use App\Models\Pool;
 
-class PoolRepository{
-
-    public function getPublicPools(){
+class PoolRepository
+{
+    public function getPublicPools()
+    {
         return Pool::select()->where('is_public', true)->get();
     }
 
-    public function getPool($id){
+    public function getPool($id)
+    {
         return Pool::query()->find($id);
     }
 
-    public function createPool(array $pool): Pool{
+    public function createPool(array $pool): Pool
+    {
         return Pool::create($pool);
     }
 
-    public function deletePool($id){
+    public function deletePool($id)
+    {
         return Pool::where('id', '=', $id)->delete();
     }
 }

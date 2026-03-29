@@ -2,4 +2,6 @@
 
 namespace App\Services\GroupServices;
 
-class GroupService {}
+class GroupService
+{
+}
