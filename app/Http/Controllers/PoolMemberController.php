@@ -26,6 +26,7 @@ class PoolMemberController extends Controller
     */
     public function index($poolId)
     {
+        $poolId;
     }
 
     /*
