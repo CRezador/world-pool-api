@@ -15,6 +15,14 @@ class PoolMemberRepository
             ->exists();
     }
 
+    public function getMembersByPoolId($poolId)
+    {
+        return PoolMembers::query()
+            ->where('pool_id', $poolId)
+            ->with('user:id,name') // Carrega os dados do usuário relacionado, selecionando apenas id e name
+            ->get();
+    }
+
     public function addMember($poolId, $userId)
     {
         PoolMembers::create([

@@ -14,6 +14,11 @@ class PoolMemberService
 
     }
 
+    public function listMembers($poolId)
+    {
+        return $this->poolMemberRepository->getMembersByPoolId($poolId);
+    }
+
     public function joinPool($join_code, $user)
     {
         $pool = $this->poolRepository->getPoolByJoinCode($join_code);
