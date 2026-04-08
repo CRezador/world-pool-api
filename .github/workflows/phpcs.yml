@@ -1,4 +1,4 @@
-name: PHPCS
+name: Code Quality
 
 on:
   push:
@@ -6,20 +6,24 @@ on:
   pull_request:
 
 jobs:
-  phpcs:
+  code-quality:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do código
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.2
+          extensions: xml
 
-      - name: Instalar dependências
+      - name: Install dependencies
         run: composer install --no-progress --prefer-dist
 
-      - name: Rodar PHPCS
-        run: vendor/bin/phpcs --standard=PSR12 app/ routes/ tests/
+      - name: Run PHPCS
+        run: vendor/bin/phpcs
+
+      - name: Run PHP-CS-Fixer (dry-run)
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff --verbose
