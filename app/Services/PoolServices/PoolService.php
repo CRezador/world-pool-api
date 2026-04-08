@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\PoolServices;
 
 use App\Models\Pool;
@@ -10,9 +12,7 @@ class PoolService
 {
     public function __construct(
         private PoolRepository $poolRepository,
-    ) {
-
-    }
+    ) {}
 
     private function generateCode(): string
     {
@@ -21,7 +21,7 @@ class PoolService
 
         do {
             for ($i = 0; $i < 6; $i++) {
-                $code .= $characters[random_int(0, strlen($characters) - 1)];
+                $code .= $characters[random_int(0, \strlen($characters) - 1)];
             }
             $i++;
             if ($i > 5) {

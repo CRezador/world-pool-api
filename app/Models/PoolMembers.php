@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Http\Enums\PoolMemberStatus;
@@ -12,9 +14,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PoolMembers extends Authenticatable
 {
+    use HasApiTokens;
     use HasFactory;
     use Notifiable;
-    use HasApiTokens;
 
     protected $table = 'pool_members';
     protected $casts = [

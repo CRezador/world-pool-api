@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -23,8 +25,8 @@ class PoolUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-                'is_public' => ['sometimes', 'boolean'],
-                'name' => ['sometimes', 'string', 'max:255'],
+            'is_public' => ['sometimes', 'boolean'],
+            'name' => ['sometimes', 'string', 'max:255'],
         ];
     }
 }

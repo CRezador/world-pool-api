@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Match\MatchRequest;
@@ -17,8 +19,7 @@ class MatchController extends Controller
         private MatchRepository $matchRepository,
         private MatchService $matchService,
         private MatchTransformer $matchTransformer
-    ) {
-    }
+    ) {}
     /*
     GET /api/matches                     // Lista todas as partidas
         | Critério:
@@ -121,7 +122,7 @@ class MatchController extends Controller
         } catch (\Exception $e) {
 
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
 
@@ -174,7 +175,7 @@ class MatchController extends Controller
             | - Disparar cálculo de pontos dos palpites
             | - Endpoint interno/admin
     */
-    public function closeMatch($id)
+    public function closeMatch($id): void
     {
         //@todo checar se realmente preciso dessa function
     }
@@ -217,7 +218,5 @@ class MatchController extends Controller
             | - Processamento interno
             | - Análise de palpites após finalização
     */
-    public function guesses($id)
-    {
-    }
+    public function guesses($id): void {}
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\TokenController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TeamController;
@@ -15,7 +17,7 @@ Route::post('/register', [UserController::class, 'store']);
 
 //Authenticate Routes
 Route::middleware('auth:sanctum')->group(
-    function () {
+    static function (): void {
         //Rotas de usuário
         Route::get('/me', [UserController::class, 'me']);
 
@@ -55,7 +57,7 @@ Route::middleware('auth:sanctum')->group(
 
         //Rotas admin
         Route::middleware('admin')->group(
-            function () {
+            static function (): void {
                 //Rotas de partidas
                 Route::post('/matches/create', [MatchController::class, 'store']);
                 Route::put('/matches/{id}', [MatchController::class, 'update']);

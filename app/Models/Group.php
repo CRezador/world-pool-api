@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,9 +12,9 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Group extends Authenticatable
 {
+    use HasApiTokens;
     use HasFactory;
     use Notifiable;
-    use HasApiTokens;
 
     protected $table = 'groups';
     protected $fillable = ['name'];

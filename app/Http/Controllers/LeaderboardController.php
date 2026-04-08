@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -24,9 +26,7 @@ class LeaderboardController extends Controller
             | - Tela principal de classificação
             | - Listar todos os participantes ordenados por pontos
     */
-    public function index($poolId)
-    {
-    }
+    public function index($poolId): void {}
     /*
         GET /api/pools/{pool}/leaderboard/top
             | Retorna os primeiros colocados do ranking
@@ -37,9 +37,7 @@ class LeaderboardController extends Controller
             | Uso comum:
             | - Mostrar top 3 ou top 10 do bolão
     */
-    public function top($poolId, Request $request)
-    {
-    }
+    public function top($poolId, Request $request): void {}
     /*
         GET /api/pools/{pool}/leaderboard/me
             | Retorna a posição do usuário autenticado no ranking
@@ -48,9 +46,7 @@ class LeaderboardController extends Controller
             | - Mostrar posição pessoal no ranking
             | - Destacar desempenho do usuário
     */
-    public function myPosition($poolId, Request $request)
-    {
-    }
+    public function myPosition($poolId, Request $request): void {}
     /*
         GET /api/pools/{pool}/leaderboard/{user}
             | Retorna as estatísticas de ranking de um participante específico
@@ -59,9 +55,7 @@ class LeaderboardController extends Controller
             | - Ver pontuação detalhada de um participante
             | - Comparar desempenho entre membros
     */
-    public function show($poolId, $userId)
-    {
-    }
+    public function show($poolId, $userId): void {}
     /*
         POST /api/pools/{pool}/leaderboard/recalculate
             | Recalcula e atualiza o ranking do bolão após finalização de partidas
@@ -70,9 +64,7 @@ class LeaderboardController extends Controller
             | - Atualizar pontuação após fechamento de uma rodada
             | - Processar pontos dos palpites com base nos resultados das partidas
     */
-    public function recalculate($poolId)
-    {
-    }
+    public function recalculate($poolId): void {}
     /*
         POST /api/pools/{pool}/leaderboard/{user}/sync
             | Atualiza o ranking de um usuário específico no bolão
@@ -83,9 +75,7 @@ class LeaderboardController extends Controller
             | Interno:
             | - Usado por serviços internos ou jobs
     */
-    public function syncUser($poolId, $userId)
-    {
-    }
+    public function syncUser($poolId, $userId): void {}
     /*
         POST /api/pools/{pool}/leaderboard/{user}/create
             | Cria a entrada inicial de ranking para um usuário ao entrar no bolão
@@ -96,9 +86,7 @@ class LeaderboardController extends Controller
             | Interno:
             | - Chamado pelo PoolMemberController
     */
-    public function createUser($poolId, $userId)
-    {
-    }
+    public function createUser($poolId, $userId): void {}
     /*
         DELETE /api/pools/{pool}/leaderboard/{user}
             | Remove o usuário do ranking do bolão
@@ -109,9 +97,7 @@ class LeaderboardController extends Controller
             | Interno:
             | - Chamado pelo PoolMemberController
     */
-    public function removeUser($poolId, $userId)
-    {
-    }
+    public function removeUser($poolId, $userId): void {}
     /*
         POST /api/pools/{pool}/leaderboard/rebuild
             | Reconstrói completamente o leaderboard com base nos palpites existentes

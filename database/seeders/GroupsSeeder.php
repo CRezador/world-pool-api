@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -13,7 +15,7 @@ class GroupsSeeder extends Seeder
      */
     public function run(): void
     {
-        $rows = collect(range('A', 'L'))->map(fn($l) => [
+        $rows = collect(range('A', 'L'))->map(static fn($l) => [
             'name' => $l,
         ])->all();
 

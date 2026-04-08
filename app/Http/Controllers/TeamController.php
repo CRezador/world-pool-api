@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Transformers\TeamTransformers\TeamTransformer;
@@ -13,8 +15,7 @@ class TeamController extends Controller
         private TeamTransformer $teamTransformer,
         private TeamService $teamService,
         private TeamRepository $teamRepository
-    ) {
-    }
+    ) {}
     /*
         GET /api/teams                   // Retorna a lista de equipes
             | Critério:
@@ -38,7 +39,7 @@ class TeamController extends Controller
 
         if (!$team) {
             return response()->json([
-                'message' => 'Equipe não encontrada'
+                'message' => 'Equipe não encontrada',
             ], 404);
         }
 

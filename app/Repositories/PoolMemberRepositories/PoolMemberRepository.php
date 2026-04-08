@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\PoolMemberRepositories;
 
 use App\Http\Enums\PoolUserRole;
@@ -23,7 +25,7 @@ class PoolMemberRepository
             ->get();
     }
 
-    public function addMember($poolId, $userId)
+    public function addMember($poolId, $userId): void
     {
         PoolMembers::create([
             'pool_id' => $poolId,

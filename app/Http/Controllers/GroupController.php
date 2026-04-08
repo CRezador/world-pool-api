@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Transformers\GroupTransformers\GroupTransformer;
@@ -23,8 +25,7 @@ class GroupController extends Controller
         private GroupTransformer $groupTransformer,
         private GroupService $groupService,
         private GroupRepository $groupRepository
-    ) {
-    }
+    ) {}
 
     /*
         GET /api/groups
@@ -57,7 +58,7 @@ class GroupController extends Controller
 
         if (!$group) {
             return response()->json([
-                'message' => 'Grupo não encontrado'
+                'message' => 'Grupo não encontrado',
             ], 404);
         }
 

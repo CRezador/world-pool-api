@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\PoolMember;
 
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -23,7 +25,7 @@ class PoolMemberJoinRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'join_code' => ['required', 'string', 'exists:pools,join_code']
+            'join_code' => ['required', 'string', 'exists:pools,join_code'],
         ];
     }
 }

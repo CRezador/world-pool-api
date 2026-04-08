@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Http\Enums\UserRole;
@@ -20,7 +22,7 @@ class User extends Authenticatable
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
-        'role' => UserRole::class
+        'role' => UserRole::class,
     ];
     protected $connection = 'mysql';
     protected $primaryKey = 'id';
@@ -30,7 +32,7 @@ class User extends Authenticatable
         return $this->remember_token;
     }
 
-    public function setRememberToken($value)
+    public function setRememberToken($value): void
     {
         $this->remember_token = $value;
     }

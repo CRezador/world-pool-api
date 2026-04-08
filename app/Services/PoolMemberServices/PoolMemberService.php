@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\PoolMemberServices;
 
 use App\Repositories\PoolMemberRepositories\PoolMemberRepository;
@@ -10,9 +12,7 @@ class PoolMemberService
     public function __construct(
         private PoolMemberRepository $poolMemberRepository,
         private PoolRepository $poolRepository
-    ) {
-
-    }
+    ) {}
 
     public function listMembers($poolId)
     {

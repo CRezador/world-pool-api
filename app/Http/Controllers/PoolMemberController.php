@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PoolMember\PoolMemberJoinRequest;
@@ -12,9 +14,7 @@ class PoolMemberController extends Controller
     public function __construct(
         private PoolMemberService $poolMemberService,
         private PoolTransformer $poolTransformer
-    ) {
-
-    }
+    ) {}
     /*
         GET /api/pools/{pool}/members
             | Lista todos os membros de um bolão
@@ -40,9 +40,7 @@ class PoolMemberController extends Controller
                 | - Retornar um erro 401 se o usuário não estiver autenticado
                 | - Retornar um erro 444 se o usuário não for membro de nenhum bolão
     */
-    public function myPools(Request $request)
-    {
-    }
+    public function myPools(Request $request): void {}
     /*
         GET /api/pools/{pool}/members/{member}
             | Retorna detalhes de um membro específico do bolão
@@ -51,9 +49,7 @@ class PoolMemberController extends Controller
             | - Ver dados de participação
             | - Ver papel do usuário (admin/member)
     */
-    public function show($poolId, $memberId)
-    {
-    }
+    public function show($poolId, $memberId): void {}
     /*
         Private
             | Cria automaticamente o owner do bolão na tabela pool_members
@@ -62,9 +58,7 @@ class PoolMemberController extends Controller
             | - Executado após criação do Pool
             | - Sincroniza owner_user_id com pool_members
     */
-    public function storeOwner(Request $request, $poolId)
-    {
-    }
+    public function storeOwner(Request $request, $poolId): void {}
     /*
         POST /api/pools/{pool}/members/join
             | Usuário entra em um bolão usando join_code
@@ -87,7 +81,7 @@ class PoolMemberController extends Controller
             $pool = $this->poolMemberService->joinPool($request->join_code, $request->user());
         } catch (\Exception $e) {
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
 
@@ -108,9 +102,7 @@ class PoolMemberController extends Controller
         | - Retornar um erro 403 se o usuário não tiver permissão para alterar o papel
         | - Retornar um erro 404 se o bolão ou o membro não for encontrado
     */
-    public function updateRole(Request $request, $poolId, $memberId)
-    {
-    }
+    public function updateRole(Request $request, $poolId, $memberId): void {}
     /*
         PATCH /api/pools/{pool}/members/{member}/status
             | Atualiza o status do membro no bolão
@@ -119,9 +111,7 @@ class PoolMemberController extends Controller
             | - Banir membro
             | - Reativar membro
     */
-    public function updateStatus(Request $request, $poolId, $memberId)
-    {
-    }
+    public function updateStatus(Request $request, $poolId, $memberId): void {}
     /*
         DELETE /api/pools/{pool}/members/{member}
             | Remove um membro do bolão
@@ -133,9 +123,7 @@ class PoolMemberController extends Controller
             | - Retornar um erro 403 se o usuário não tiver permissão para remover o membro
             | - Retornar um erro 404 se o bolão ou o membro não for encontrado
     */
-    public function destroy($poolId, $memberId)
-    {
-    }
+    public function destroy($poolId, $memberId): void {}
     /*
         POST /api/pools/{pool}/members/leave
             | Usuário autenticado sai do bolão
@@ -143,9 +131,7 @@ class PoolMemberController extends Controller
             | Uso comum:
             | - Usuário decide sair do bolão
     */
-    public function leave(Request $request, $poolId)
-    {
-    }
+    public function leave(Request $request, $poolId): void {}
     /*
         POST /api/pools/{pool}/members/{member}/ban
             | Bane um membro do bolão
@@ -153,9 +139,7 @@ class PoolMemberController extends Controller
             | Uso comum:
             | - Administração do bolão
     */
-    public function ban($poolId, $memberId)
-    {
-    }
+    public function ban($poolId, $memberId): void {}
     /*
         POST /api/pools/{pool}/members/{member}/unban
             | Remove banimento de um membro
@@ -163,7 +147,5 @@ class PoolMemberController extends Controller
             | Uso comum:
             | - Reabilitar participante
     */
-    public function unban($poolId, $memberId)
-    {
-    }
+    public function unban($poolId, $memberId): void {}
 }

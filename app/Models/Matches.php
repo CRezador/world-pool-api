@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,9 +14,9 @@ use App\Http\Enums\MatchStatus;
 
 class Matches extends Authenticatable
 {
+    use HasApiTokens;
     use HasFactory;
     use Notifiable;
-    use HasApiTokens;
 
     protected $table = 'matches';
     protected $fillable = [

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\MatchServices;
 
 use App\Http\Enums\MatchStage;
@@ -19,7 +21,7 @@ class MatchService
     {
         $this->matchRepository = $matchRepository;
     }
-    private function kickoffFormat($kickoff_at): string|null
+    private function kickoffFormat($kickoff_at): ?string
     {
         return $kickoff_at === null ? null : Carbon::createFromFormat('d/m/Y', $kickoff_at)->format('Y-m-d H:i:s');
     }
@@ -50,15 +52,15 @@ class MatchService
 
         try {
             $match = $this->matchRepository->create([
-              'home_team_id' => $homeTeam->id,
-              'game_day' => $request->game_day,
-              'away_team_id' => $awayTeam->id,
-              'group_id' => $stageToUpper === null ? null : $homeTeam->group_id, // Considerando que ambos os times estão no mesmo grupo
-              'stage' => $stageToUpper,
-              'status' => MatchStatus::SCHEDULED,
-              'kickoff_at' => $this->kickoffFormat($request->kickoff_at),
-              'home_score' => 0,
-              'away_score' => 0
+                'home_team_id' => $homeTeam->id,
+                'game_day' => $request->game_day,
+                'away_team_id' => $awayTeam->id,
+                'group_id' => $stageToUpper === null ? null : $homeTeam->group_id, // Considerando que ambos os times estão no mesmo grupo
+                'stage' => $stageToUpper,
+                'status' => MatchStatus::SCHEDULED,
+                'kickoff_at' => $this->kickoffFormat($request->kickoff_at),
+                'home_score' => 0,
+                'away_score' => 0,
             ]);
         } catch (\Exception $e) {
             throw new \Exception('Erro ao criar a partida');

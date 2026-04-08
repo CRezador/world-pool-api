@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Pool\PoolRequest;
@@ -14,9 +16,7 @@ class PoolController extends Controller
     public function __construct(
         private PoolService $poolService,
         private PoolTransformer $poolTransformer
-    ) {
-
-    }
+    ) {}
     /*
         GET    /api/pools
             | Lista os bolões disponíveis
@@ -47,7 +47,7 @@ class PoolController extends Controller
             $pool = $this->poolService->createPool($is_public, $request->user());
         } catch (\Exception $e) {
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
 
@@ -90,7 +90,7 @@ class PoolController extends Controller
         $pool = $this->poolService->destroyPool($id, $request->user()->id);
 
         return response()->json([
-            'Pool' => $this->poolTransformer->item($pool, 'Bolão removido')
+            'Pool' => $this->poolTransformer->item($pool, 'Bolão removido'),
         ], 200);
     }
     /*
@@ -108,7 +108,7 @@ class PoolController extends Controller
 
         if ($request->user()->id !== $request->owner_id) {
             return response()->json([
-                'message' => 'Apenas o proprietário do bolão pode regenerar o código de acesso.'
+                'message' => 'Apenas o proprietário do bolão pode regenerar o código de acesso.',
             ], 403);
         }
 
@@ -116,7 +116,7 @@ class PoolController extends Controller
             $pool = $this->poolService->regenerateJoinCode($id, $request->owner_id);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
 
@@ -136,7 +136,7 @@ class PoolController extends Controller
     {
         if ($request->user()->id !== $request->owner_id) {
             return response()->json([
-                'message' => 'Apenas o proprietário do bolão pode regenerar o código de acesso.'
+                'message' => 'Apenas o proprietário do bolão pode regenerar o código de acesso.',
             ], 403);
         }
 
@@ -144,7 +144,7 @@ class PoolController extends Controller
             $pool = $this->poolService->updatePool($id, $request->owner_id, $request->only(['name', 'is_public']));
         } catch (\Exception $e) {
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
 

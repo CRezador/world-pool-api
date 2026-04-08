@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Transformers\PoolTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
@@ -12,8 +14,7 @@ class PoolTransformer extends BaseTransformer
             'name' => $pool->name,
             'join_code' => $pool->join_code,
             'is_public' => $pool->is_public === 1 ? true : false,
-            'owner' => $pool->owner->name
+            'owner' => $pool->owner->name,
         ];
     }
-
 }

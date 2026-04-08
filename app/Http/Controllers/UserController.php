@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Authentication\CreateUserRequest;
@@ -19,7 +21,7 @@ class UserController extends Controller
                 'name' => $request->user()->name,
                 'email' => $request->user()->email,
                 'created_at' => $request->user()->created_at,
-                'updated_at' => $request->user()->updated_at
+                'updated_at' => $request->user()->updated_at,
             ],
         ], 200);
     }
@@ -65,9 +67,7 @@ class UserController extends Controller
             | Uso comum:
             | - ADMIN editar dados de usuários
     */
-    public function update(Request $request, $id)
-    {
-    }
+    public function update(Request $request, $id): void {}
     /*
         DELETE /api/users/{user}
             | Remove ou desativa um usuário do sistema
@@ -78,9 +78,7 @@ class UserController extends Controller
             | Acesso:
             | - ADMIN
     */
-    public function destroy($id)
-    {
-    }
+    public function destroy($id): void {}
     /*
         PATCH /api/users/{user}/role
             | Atualiza o papel do usuário no sistema
@@ -92,7 +90,5 @@ class UserController extends Controller
             | Acesso:
             | - ADMIN
     */
-    public function updateRole(Request $request, $id)
-    {
-    }
+    public function updateRole(Request $request, $id): void {}
 }

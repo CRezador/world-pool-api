@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,15 +12,15 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Guess extends Authenticatable
 {
+    use HasApiTokens;
     use HasFactory;
     use Notifiable;
-    use HasApiTokens;
 
     protected $table = 'guesses';
     protected $fillable = [
         'home_score',
         'away_score',
-        'points'
+        'points',
     ];
     protected $casts = [
         'created_at' => 'datetime',

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Pool;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -23,7 +25,7 @@ class PoolRequest extends FormRequest
     {
         return [
             'name' => ['required', 'max:30', 'min:5'],
-            'is_public' => ['required']
+            'is_public' => ['required'],
         ];
     }
 }
