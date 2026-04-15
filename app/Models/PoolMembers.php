@@ -17,10 +17,15 @@ class PoolMembers extends Authenticatable
     use HasApiTokens;
 
     protected $table = 'pool_members';
+    protected $fillable = [
+        'pool_id',
+        'user_id',
+        'role',
+    ];
     protected $casts = [
         'joined_at' => 'datetime',
-        'status' => PoolUserRole::class,
-        'role' => PoolMemberStatus::class,
+        'status' => PoolMemberStatus::class,
+        'role' => PoolUserRole::class,
     ];
     protected $connection = 'mysql';
 

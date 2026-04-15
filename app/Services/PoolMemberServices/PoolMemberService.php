@@ -2,6 +2,7 @@
 
 namespace App\Services\PoolMemberServices;
 
+use App\Http\Enums\PoolUserRole;
 use App\Repositories\PoolMemberRepositories\PoolMemberRepository;
 use App\Repositories\PoolRepositories\PoolRepository;
 
@@ -28,8 +29,29 @@ class PoolMemberService
         }
 
         // Adicionar o usuário como membro do bolão
-        $this->poolMemberRepository->addMember($pool->id, $user->id);
+        $this->poolMemberRepository->addMember($pool->id, PoolUserRole::MEMBER->value, $user->id);
 
         return $pool;
     }
+
+    public function addMember($pool, $role, $userId)
+    {
+        $this->poolMemberRepository->addMember($pool, $role, $userId);
+    }
+
+    public function listMembers($poolId)
+    {
+        return $this->poolMemberRepository->getMembersByPoolId($poolId);
+    }
+
+    public function isMember($poolId, $userId)
+    {
+        return $this->poolMemberRepository->isMember($poolId, $userId);
+    }
+
+    public function isAdmin($poolId, $userId)
+    {
+        return $this->poolMemberRepository->isAdmin($poolId, $userId);
+    }
+
 }

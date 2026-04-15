@@ -2,14 +2,17 @@
 
 namespace App\Services\PoolServices;
 
+use App\Http\Enums\PoolUserRole;
 use App\Models\Pool;
 use App\Models\User;
 use App\Repositories\PoolRepositories\PoolRepository;
+use App\Services\PoolMemberServices\PoolMemberService;
 
 class PoolService
 {
     public function __construct(
         private PoolRepository $poolRepository,
+        private PoolMemberService $poolMemberService
     ) {
 
     }
@@ -24,7 +27,8 @@ class PoolService
                 $code .= $characters[random_int(0, strlen($characters) - 1)];
             }
             $i++;
-            if ($i > 5) {
+            if ($i <= 5) {
+
                 throw new \Exception('Não foi possível gerar um código de acesso único após várias tentativas. Tente novamente mais tarde.');
             }
         } while (Pool::where('join_code', $code)->exists());
@@ -41,6 +45,7 @@ class PoolService
     {
         return $this->poolRepository->getPool($id);
     }
+
     public function createPool(bool $is_public, User $user)
     {
         $code = $this->generateCode();
@@ -52,9 +57,12 @@ class PoolService
                 'owner_id' => $user->id,
                 'is_public' => $is_public,
             ]);
+            $this->poolMemberService->addMember($pool, PoolUserRole::OWNER->value, $user->id);
         } catch (\Exception $e) {
-            throw new \Exception('Erro ao criar a Bolão: ');
+            throw new \Exception('Erro ao criar a Bolão: ' . $e->getMessage());
         }
+
+
 
         return $pool;
     }

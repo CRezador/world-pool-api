@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api();
         $middleware->alias([
             'admin' => AdminMiddleware::class,
+            'PoolMember' => \App\Http\Middleware\PoolMemberMiddleware::class,
+            'PoolMemberAdmin' => \App\Http\Middleware\PoolMemberAdminMiddleware::class
         ]);
         $middleware->redirectGuestsTo(fn () => null);
     })

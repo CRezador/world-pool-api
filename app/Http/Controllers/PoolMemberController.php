@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PoolMember\PoolMemberJoinRequest;
+use App\Http\Transformers\PoolMemberTransformers\PoolMemberTransformer;
 use App\Http\Transformers\PoolTransformers\PoolTransformer;
 use App\Services\PoolMemberServices\PoolMemberService;
 use Illuminate\Http\Request;
@@ -11,6 +12,7 @@ class PoolMemberController extends Controller
 {
     public function __construct(
         private PoolMemberService $poolMemberService,
+        private PoolMemberTransformer $poolMemberTransformer,
         private PoolTransformer $poolTransformer
     ) {
 
@@ -26,6 +28,8 @@ class PoolMemberController extends Controller
     */
     public function index($poolId)
     {
+        $members = $this->poolMemberService->listMembers($poolId);
+        return response()->json($this->poolMemberTransformer->collection($members, 'Lista de membros do bolão'));
     }
 
     /*
