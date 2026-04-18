@@ -24,12 +24,12 @@ class PoolMemberService
         return $this->poolMemberRepository->getMembersByPoolId($poolId);
     }
 
-    public function isMember(int $poolId, int $userId): PoolMembers
+    public function isMember(int $poolId, int $userId): bool
     {
         return $this->poolMemberRepository->isMember($poolId, $userId);
     }
 
-    public function isAdmin(int $poolId, int $userId): PoolMembers
+    public function isAdmin(int $poolId, int $userId): bool
     {
         return $this->poolMemberRepository->isAdmin($poolId, $userId);
     }
