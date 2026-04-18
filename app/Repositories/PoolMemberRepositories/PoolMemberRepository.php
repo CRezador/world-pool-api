@@ -9,7 +9,7 @@ use App\Models\PoolMembers;
 
 class PoolMemberRepository
 {
-    public function isMember($poolId, $userId)
+    public function isMember(int $poolId, int $userId)
     {
         return PoolMembers::query()
             ->where('pool_id', $poolId)
@@ -17,19 +17,19 @@ class PoolMemberRepository
             ->exists();
     }
 
-    public function isAdmin($poolId, $userId)
+    public function isAdmin(int $poolId, int $userId): PoolMembers
     {
         return PoolMembers::query()
             ->where('pool_id', $poolId)
             ->where('user_id', $userId)
             ->where('role', PoolUserRole::ADMIN->value)
-            ->exists();
+            ->first();
     }
 
-    public function addMember($pool, $role, $userId)
+    public function addMember(int $poolId, string $role, int $userId): PoolMembers
     {
-        PoolMembers::create([
-            'pool_id' => $pool->id,
+        return PoolMembers::create([
+            'pool_id' => $poolId,
             'user_id' => $userId,
             'role' => $role,
             'status' => PoolMemberStatus::ACTIVE->value,
@@ -37,11 +37,21 @@ class PoolMemberRepository
         ]);
     }
 
-    public function getMembersByPoolId($poolId)
+    public function getMembersByPoolId(int $poolId): string
     {
         return PoolMembers::query()
             ->where('pool_id', $poolId)
             ->with('user:id,name') // Carrega os dados do usuário relacionado, selecionando apenas id e name
+            ->get();
+    }
+
+    public function getPoolsByUserId(int $userId)
+    {
+        //pegue todos os Pool onde o userId é membro em poolmembers e retorne os Pool relacionados
+        return Pool::query()
+            ->whereHas('members', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
             ->get();
     }
 }
