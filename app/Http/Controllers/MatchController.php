@@ -64,7 +64,7 @@ class MatchController extends Controller
             | - Listar partidas por fase da competição
             | - Mostrar jogos de oitavas, quartas, semifinal ou final
     */
-    public function matchesByStage(MatchStageRequest $request)
+    public function matchesByStage(MatchStageRequest $request): Response
     {
         $request->validated();
 
@@ -76,7 +76,7 @@ class MatchController extends Controller
             ], 404);
         }
 
-        return $this->matchTransformer->transformMatchByStage($matches);
+        return response()->json([$this->matchTransformer->transformMatchByStage($matches)], 200);
     }
     /*
     GET /api/group/{group-id}/matches
