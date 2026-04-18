@@ -3,10 +3,11 @@
 namespace App\Repositories\MatchRepositories;
 
 use App\Models\Matches;
+use Illuminate\Database\Eloquent\Collection;
 
 class MatchRepository
 {
-    public function findAll()
+    public function findAll(): Collection
     {
         return Matches::query()->get();
     }
@@ -16,7 +17,7 @@ class MatchRepository
         return Matches::query()->find($id);
     }
 
-    public function findByStage($stage)
+    public function findByStage($stage): Collection
     {
         return Matches::query()
           ->select([
@@ -40,7 +41,7 @@ class MatchRepository
           ->get();
     }
 
-    public function findByGroup($groupId)
+    public function findByGroup($groupId): Collection
     {
         return Matches::query()
           ->select([
@@ -78,7 +79,7 @@ class MatchRepository
         return $match->refresh();
     }
 
-    public function delete(Matches $match)
+    public function delete(Matches $match): bool
     {
         try {
             $match->delete();
