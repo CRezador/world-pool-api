@@ -6,10 +6,11 @@ use App\Http\Enums\PoolMemberStatus;
 use App\Http\Enums\PoolUserRole;
 use App\Models\Pool;
 use App\Models\PoolMembers;
+use Illuminate\Database\Eloquent\Collection;
 
 class PoolMemberRepository
 {
-    public function isMember(int $poolId, int $userId)
+    public function isMember(int $poolId, int $userId): bool
     {
         return PoolMembers::query()
             ->where('pool_id', $poolId)
@@ -17,13 +18,13 @@ class PoolMemberRepository
             ->exists();
     }
 
-    public function isAdmin(int $poolId, int $userId): PoolMembers
+    public function isAdmin(int $poolId, int $userId): bool
     {
         return PoolMembers::query()
             ->where('pool_id', $poolId)
             ->where('user_id', $userId)
             ->where('role', PoolUserRole::ADMIN->value)
-            ->first();
+            ->exists();
     }
 
     public function addMember(int $poolId, string $role, int $userId): PoolMembers
@@ -45,7 +46,7 @@ class PoolMemberRepository
             ->get();
     }
 
-    public function getPoolsByUserId(int $userId)
+    public function getPoolsByUserId(int $userId): Collection
     {
         //pegue todos os Pool onde o userId é membro em poolmembers e retorne os Pool relacionados
         return Pool::query()
