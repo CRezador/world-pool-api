@@ -21,7 +21,6 @@ class GroupController extends Controller
 
     public function __construct(
         private GroupTransformer $groupTransformer,
-        private GroupService $groupService,
         private GroupRepository $groupRepository
     ) {
     }
