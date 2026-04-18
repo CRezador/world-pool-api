@@ -3,21 +3,27 @@
 namespace App\Repositories\TeamRepositories;
 
 use App\Models\Team;
+use Illuminate\Database\Eloquent\Collection;
 
 class TeamRepository
 {
-    public function findAll()
+    public function findAll(): Collection
     {
         return Team::query()->get();
     }
 
-    public function findById($id)
+    public function findById($id): ?Team
     {
         return Team::query()->find($id);
     }
 
-    public function teamsByGroup($id)
+    public function teamsByGroup($id): Collection
     {
-        return Team::select()->where('group_id')->get();
+        return Team::select()->where('group_id', $id)->get();
+    }
+
+    public function findByCode(string $code): ?Team
+    {
+        return Team::query()->where('code', $code)->firstOrFail();
     }
 }

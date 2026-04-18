@@ -5,13 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Transformers\TeamTransformers\TeamTransformer;
 use Symfony\Component\HttpFoundation\Response;
 use App\Repositories\TeamRepositories\TeamRepository;
-use App\Services\TeamServices\TeamService;
 
 class TeamController extends Controller
 {
     public function __construct(
         private TeamTransformer $teamTransformer,
-        private TeamService $teamService,
         private TeamRepository $teamRepository
     ) {
     }
@@ -42,10 +40,9 @@ class TeamController extends Controller
             ], 404);
         }
 
-        return response()->json(
-            $this->teamTransformer->item($team, 'Equipe encontrada'),
-            200
-        );
+        return response()->json([
+            $this->teamTransformer->item($team, 'Equipe encontrada')
+        ], 200);
     }
     /*
         GET /api/groups/{group}/teams
@@ -54,7 +51,7 @@ class TeamController extends Controller
             | Uso comum:
             | - Mostrar tabela de times do grupo
     */
-    public function groupTeams($id)
+    public function groupTeams($id): Response
     {
         $groupTeams = $this->teamRepository->teamsByGroup($id);
 
@@ -62,6 +59,8 @@ class TeamController extends Controller
             return response()->json(['message' => 'Time não encontrado'], 404);
         }
 
-        return $this->teamTransformer->transformTeamsByGroup($groupTeams);
+        return response()->json([
+            $this->teamTransformer->transformTeamsByGroup($groupTeams)
+        ], 200);
     }
 }

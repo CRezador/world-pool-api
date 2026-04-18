@@ -7,6 +7,7 @@ use App\Http\Requests\Match\MatchUpdateRequest;
 use App\Http\Transformers\MatchTransformers\MatchTransformer;
 use Symfony\Component\HttpFoundation\Response;
 use App\Http\Controllers\Controller;
+use App\Http\Enums\MatchStatus;
 use App\Http\Requests\Match\MatchStageRequest;
 use App\Repositories\MatchRepositories\MatchRepository;
 use App\Services\MatchServices\MatchService;
@@ -115,9 +116,18 @@ class MatchController extends Controller
     public function store(MatchRequest $request): Response
     {
         $request->validated();
-
+        $match = [
+            'game_day' => $request->game_day,
+            'code_home_team' => $request->code_home_team,
+            'code_away_team' => $request->code_away_team,
+            'home_score' => $request->home_score ?? 0,
+            'away_score' => $request->away_score ?? 0,
+            'kickoff_at' => $request->kickoff_at,
+            'stage' => $request->stage,
+            'status' => $request->status ?? MatchStatus::SCHEDULED
+        ];
         try {
-            $match = $this->matchService->createMatch($request);
+            $matchCreated = $this->matchService->createMatch($match);
         } catch (\Exception $e) {
 
             return response()->json([
@@ -126,7 +136,7 @@ class MatchController extends Controller
         }
 
         return response()->json(
-            $this->matchTransformer->item($match, 'Partida criada com sucesso'),
+            $this->matchTransformer->item($matchCreated, 'Partida criada com sucesso'),
             201
         );
     }
