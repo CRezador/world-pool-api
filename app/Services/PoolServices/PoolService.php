@@ -5,14 +5,17 @@ namespace App\Services\PoolServices;
 use App\Http\Enums\PoolUserRole;
 use App\Models\Pool;
 use App\Models\User;
+use App\Repositories\PoolMemberRepositories\PoolMemberRepository;
 use App\Repositories\PoolRepositories\PoolRepository;
 use App\Services\PoolMemberServices\PoolMemberService;
+use Illuminate\Database\Eloquent\Collection;
 
 class PoolService
 {
     public function __construct(
         private PoolRepository $poolRepository,
-        private PoolMemberService $poolMemberService
+        private PoolMemberService $poolMemberService,
+        private PoolMemberRepository $poolMemberRepository
     ) {
 
     }
@@ -36,38 +39,36 @@ class PoolService
         return $code;
     }
 
-    public function showPublicPools()
+    public function showPublicPools(): Collection
     {
         return $this->poolRepository->getPublicPools();
     }
 
-    public function showPool($id)
+    public function showPool($id): Pool
     {
         return $this->poolRepository->getPool($id);
     }
 
-    public function createPool(bool $is_public, User $user)
+    public function createPool(bool $is_public, User $user, string $name): Pool
     {
         $code = $this->generateCode();
 
         try {
             $pool = $this->poolRepository->createPool([
-                'name' => $user->name,
+                'name' => $name,
                 'join_code' => $code,
                 'owner_id' => $user->id,
                 'is_public' => $is_public,
             ]);
-            $this->poolMemberService->addMember($pool, PoolUserRole::OWNER->value, $user->id);
+            $member = $this->poolMemberService->addMember($pool->id, PoolUserRole::OWNER->value, $user->id);
         } catch (\Exception $e) {
             throw new \Exception('Erro ao criar a Bolão: ' . $e->getMessage());
         }
 
-
-
         return $pool;
     }
 
-    public function destroyPool($id, $userId)
+    public function destroyPool($id, $userId): Pool
     {
         $pool = $this->poolRepository->getPool($id);
 
@@ -88,7 +89,7 @@ class PoolService
         return $pool;
     }
 
-    public function regenerateJoinCode($id, $ownerId)
+    public function regenerateJoinCode($id): Pool
     {
         $pool = $this->poolRepository->getPool($id);
 
@@ -107,7 +108,7 @@ class PoolService
         return $pool;
     }
 
-    public function updatePool($id, $ownerId, array $data)
+    public function updatePool($id, array $data): Pool
     {
         $pool = $this->poolRepository->getPool($id);
 
@@ -122,5 +123,37 @@ class PoolService
         }
 
         return $poolUpdate;
+    }
+
+    public function getPoolsByUserId(int $userId): Collection
+    {
+        return $this->poolRepository->getPoolsByUserId($userId);
+    }
+
+    public function getPoolByJoinCode(string $join_code): Pool
+    {
+        return $this->poolRepository->getPoolByJoinCode($join_code);
+    }
+
+    public function joinPool(string $join_code, int $userId): array
+    {
+        $pool = $this->poolRepository->getPoolByJoinCode($join_code);
+
+        if (!$pool) {
+            throw new \Exception('Bolão não encontrado.');
+        }
+
+        // Verificar se o usuário já é membro do bolão
+        if ($this->poolMemberRepository->isMember($pool->id, $userId)) {
+            throw new \Exception('Você já é membro deste bolão.');
+        }
+
+        // Adicionar o usuário como membro do bolão
+        $member = $this->poolMemberRepository->addMember($pool->id, PoolUserRole::MEMBER->value, $userId);
+
+        return [
+            "Pool" => $pool,
+            "Member" => $member
+        ];
     }
 }

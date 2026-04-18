@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\PoolMember\PoolMemberJoinRequest;
 use App\Http\Transformers\PoolMemberTransformers\PoolMemberTransformer;
-use App\Http\Transformers\PoolTransformers\PoolTransformer;
 use App\Services\PoolMemberServices\PoolMemberService;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class PoolMemberController extends Controller
 {
     public function __construct(
         private PoolMemberService $poolMemberService,
         private PoolMemberTransformer $poolMemberTransformer,
-        private PoolTransformer $poolTransformer
     ) {
 
     }
@@ -26,24 +24,12 @@ class PoolMemberController extends Controller
             | - Exibir ranking
             | - Ver quem está no bolão
     */
-    public function index($poolId)
+    public function index($poolId): Response
     {
         $members = $this->poolMemberService->listMembers($poolId);
-        return response()->json($this->poolMemberTransformer->collection($members, 'Lista de membros do bolão'));
-    }
-
-    /*
-        GET    /api/me/pools             // Lista os bolões do usuário autenticado
-            | Critério:
-            | - O usuário deve estar autenticado
-            | Uso comum:
-            | - Exibir uma lista de bolões dos quais o usuário é membro
-            | - Permitir que os usuários vejam facilmente seus bolões ativos
-                | - Retornar um erro 401 se o usuário não estiver autenticado
-                | - Retornar um erro 444 se o usuário não for membro de nenhum bolão
-    */
-    public function myPools(Request $request)
-    {
+        return response()->json([
+            $this->poolMemberTransformer->collection($members, 'Lista de membros do bolão')
+        ], 200);
     }
     /*
         GET /api/pools/{pool}/members/{member}
@@ -66,34 +52,6 @@ class PoolMemberController extends Controller
     */
     public function storeOwner(Request $request, $poolId)
     {
-    }
-    /*
-        POST /api/pools/{pool}/members/join
-            | Usuário entra em um bolão usando join_code
-            |
-            | Body:
-            | - join_code
-            |
-            | Uso comum:
-            | - Fluxo de convite
-            | - Entrar em bolão compartilhado
-            | - Validar código de acesso
-            | - Retornar um erro 404 se o bolão não for encontrado
-            | - Retornar um erro 400 se o código de acesso for inválido
-    */
-    public function join(PoolMemberJoinRequest $request)
-    {
-        $request->validated();
-
-        try {
-            $pool = $this->poolMemberService->joinPool($request->join_code, $request->user());
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 400);
-        }
-
-        return $this->poolTransformer->item($pool, 'Entrou no bolão');
     }
     /*
      PATCH /api/pools/{pool}/members/{member}/role
