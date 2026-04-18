@@ -90,7 +90,7 @@ class MatchController extends Controller
     {
         $matches = $this->matchRepository->findByGroup($id);
 
-        if ($matches === null) {
+        if ($matches->isEmpty()) {
             return response()->json([
                 'message' => 'Nenhuma partida encontrada para este grupo.',
             ], 404);
