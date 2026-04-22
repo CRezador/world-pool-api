@@ -2,6 +2,7 @@
 
 namespace App\Services\PoolMemberServices;
 
+use App\Http\Enums\PoolUserRole;
 use App\Models\PoolMembers;
 use App\Repositories\PoolMemberRepositories\PoolMemberRepository;
 use Illuminate\Database\Eloquent\Collection;
@@ -19,7 +20,7 @@ class PoolMemberService
         return $this->poolMemberRepository->addMember($poolId, $role, $userId);
     }
 
-    public function listMembers(int $poolId): string
+    public function listMembers(int $poolId): Collection
     {
         return $this->poolMemberRepository->getMembersByPoolId($poolId);
     }
@@ -27,6 +28,11 @@ class PoolMemberService
     public function isMember(int $poolId, int $userId): bool
     {
         return $this->poolMemberRepository->isMember($poolId, $userId);
+    }
+
+    public function isOwner(int $poolId, int $userId): bool
+    {
+        return $this->poolMemberRepository->isOwner($poolId, $userId);
     }
 
     public function isAdmin(int $poolId, int $userId): bool
@@ -37,6 +43,30 @@ class PoolMemberService
     public function getPoolsByUserId(int $userId): Collection
     {
         return $this->poolMemberRepository->getPoolsByUserId($userId);
+    }
+
+    public function getRole(int $poolId, int $userId): PoolUserRole
+    {
+        return $this->poolMemberRepository->getRole($poolId, $userId);
+    }
+
+    public function updateRole(int $poolId, int $userId, PoolUserRole $role): void
+    {
+
+        if ($this->isOwner($poolId, $userId)) {
+            throw new \Exception('Não é possível alterar o papel do proprietário do bolão');
+        }
+
+        if (!$this->isMember($poolId, $userId)) {
+            throw new \Exception('Membro não encontrado no bolão');
+        }
+
+        $memberRole = $this->getRole($poolId, $userId);
+        if ($memberRole->value === $role->value) {
+            throw new \Exception('O membro já possui o papel informado');
+        }
+
+        $this->poolMemberRepository->updateRole($poolId, $userId, $role->value);
     }
 
 }

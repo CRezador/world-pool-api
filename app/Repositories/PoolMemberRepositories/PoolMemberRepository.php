@@ -27,6 +27,15 @@ class PoolMemberRepository
             ->exists();
     }
 
+    public function isOwner(int $poolId, int $userId): bool
+    {
+        return PoolMembers::query()
+            ->where('pool_id', $poolId)
+            ->where('user_id', $userId)
+            ->where('role', PoolUserRole::OWNER->value)
+            ->exists();
+    }
+
     public function addMember(int $poolId, string $role, int $userId): PoolMembers
     {
         return PoolMembers::create([
@@ -38,7 +47,7 @@ class PoolMemberRepository
         ]);
     }
 
-    public function getMembersByPoolId(int $poolId): string
+    public function getMembersByPoolId(int $poolId): Collection
     {
         return PoolMembers::query()
             ->where('pool_id', $poolId)
@@ -54,5 +63,24 @@ class PoolMemberRepository
                 $query->where('user_id', $userId);
             })
             ->get();
+    }
+
+    public function updateRole(int $poolId, int $userId, string $role): void
+    {
+        PoolMembers::query()
+            ->where('pool_id', $poolId)
+            ->where('user_id', $userId)
+            ->update(['role' => $role]);
+
+    }
+
+    public function getRole(int $poolId, int $userId): PoolUserRole|null
+    {
+        $member = PoolMembers::query()
+            ->where('pool_id', $poolId)
+            ->where('user_id', $userId)
+            ->first();
+
+        return $member ? $member->role : null;
     }
 }

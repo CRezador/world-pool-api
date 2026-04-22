@@ -20,11 +20,11 @@ class PoolMemberAdminMiddleware
             new \App\Repositories\PoolMemberRepositories\PoolMemberRepository(),
             new \App\Repositories\PoolRepositories\PoolRepository()
         );
-
-        if (!$request->user() || !$isAdmin->isAdmin($request->route('poolId'), $request->user()->id)) {
+        // Verifica se o usuário é admin ou owner do bolão
+        if (!$isAdmin->isAdmin($request->route('poolId'), $request->user()->id) && !$isAdmin->isOwner($request->route('poolId'), $request->user()->id)) {
             return response()->json([
-                'message' => 'Acesso negado',
-            ], 403);
+                    'message' => 'Acesso negado',
+                ], 403);
         }
         return $next($request);
     }

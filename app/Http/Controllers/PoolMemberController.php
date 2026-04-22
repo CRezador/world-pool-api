@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Enums\PoolUserRole;
+use App\Http\Requests\PoolMember\PoolMemberUpdateRequest;
 use App\Http\Transformers\PoolMemberTransformers\PoolMemberTransformer;
 use App\Services\PoolMemberServices\PoolMemberService;
 use Illuminate\Http\Request;
@@ -43,18 +45,7 @@ class PoolMemberController extends Controller
     {
     }
     /*
-        Private
-            | Cria automaticamente o owner do bolão na tabela pool_members
-            |
-            | Uso comum:
-            | - Executado após criação do Pool
-            | - Sincroniza owner_user_id com pool_members
-    */
-    public function storeOwner(Request $request, $poolId)
-    {
-    }
-    /*
-     PATCH /api/pools/{pool}/members/{member}/role
+     PATCH /api/pools/{pool}/members/role
         | Atualiza o papel de um membro no bolão (admin/owner)
         |
         | Body:
@@ -68,8 +59,21 @@ class PoolMemberController extends Controller
         | - Retornar um erro 403 se o usuário não tiver permissão para alterar o papel
         | - Retornar um erro 404 se o bolão ou o membro não for encontrado
     */
-    public function updateRole(Request $request, $poolId, $memberId)
+    public function updateRole(PoolMemberUpdateRequest $request, $poolId)
     {
+        $data = $request->validated();
+
+        try {
+            $this->poolMemberService->updateRole($poolId, $data['user_id'], PoolUserRole::from($data['role']));
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+
+        return response()->json([
+            'message' => 'Papel do membro atualizado com sucesso',
+        ], 200);
     }
     /*
         PATCH /api/pools/{pool}/members/{member}/status
@@ -81,6 +85,7 @@ class PoolMemberController extends Controller
     */
     public function updateStatus(Request $request, $poolId, $memberId)
     {
+
     }
     /*
         DELETE /api/pools/{pool}/members/{member}

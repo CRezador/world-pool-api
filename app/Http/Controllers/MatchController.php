@@ -229,5 +229,6 @@ class MatchController extends Controller
     */
     public function guesses($id)
     {
+        //@todo implementar função para retornar os palpites relacionados a uma partida
     }
 }
