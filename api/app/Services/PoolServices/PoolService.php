@@ -9,6 +9,7 @@ use App\Repositories\PoolMemberRepositories\PoolMemberRepository;
 use App\Repositories\PoolRepositories\PoolRepository;
 use App\Services\PoolMemberServices\PoolMemberService;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Str;
 
 class PoolService
 {
@@ -22,16 +23,11 @@ class PoolService
 
     private function generateCode(): string
     {
-        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        $code = '';
+        $attempts = 0;
 
         do {
-            for ($i = 0; $i < 6; $i++) {
-                $code .= $characters[random_int(0, strlen($characters) - 1)];
-            }
-            $i++;
-            if ($i <= 5) {
-
+            $code = strtoupper(Str::random(6));
+            if (++$attempts > 10) {
                 throw new \Exception('Não foi possível gerar um código de acesso único após várias tentativas. Tente novamente mais tarde.');
             }
         } while (Pool::where('join_code', $code)->exists());
@@ -73,11 +69,11 @@ class PoolService
         $pool = $this->poolRepository->getPool($id);
 
         if (!$pool) {
-            throw new \Exception(1);
+            throw new \Exception('Bolão não encontrado.');
         }
 
         if ($pool->owner_id !== $userId) {
-            throw new \Exception(2);
+            throw new \Exception('Apenas o proprietário do bolão pode removê-lo.');
         }
 
         try {

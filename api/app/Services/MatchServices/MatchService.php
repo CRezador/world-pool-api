@@ -56,7 +56,7 @@ class MatchService
               'home_team_id' => $homeTeam->id,
               'game_day' => $match['game_day'],
               'away_team_id' => $awayTeam->id,
-              'group_id' => $stageToUpper === null ? null : $homeTeam->group_id, // Considerando que ambos os times estão no mesmo grupo
+              'group_id' => $stageToUpper === MatchStage::GROUP_STAGE->value ? $homeTeam->group_id : null,
               'stage' => $stageToUpper,
               'status' => MatchStatus::SCHEDULED,
               'kickoff_at' => $this->kickoffFormat($match['kickoff_at']),
