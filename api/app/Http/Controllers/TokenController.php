@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Http\Requests\Authentication\LoginRequest;
+use App\Http\Transformers\TokenTransformers\TokenTransformer;
+use App\Services\UserServices\UserService;
 use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Support\Facades\Hash;
 
 class TokenController extends Controller
 {
+    public function __construct(
+        private UserService $userService,
+        private TokenTransformer $tokenTransformer
+    ) {}
+
     /*
         POST /api/login
             | Autentica um usuário e retorna um token de acesso
@@ -21,24 +26,17 @@ class TokenController extends Controller
     {
         $credentials = $request->validated();
 
-        $user = User::where('email', $credentials['email'])->first();
-
-
-        if (!$user) {
-            return response()->json(['message' => 'Usuário não encontrado'], 404);
-        }
-
-        if (!Hash::check($credentials['password'], $user->password)) {
-            return response()->json([
-                'message' => 'Credenciais inválidas',
-            ], 401);
+        try {
+            $user = $this->userService->login($credentials['email'], $credentials['password']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-        ], 201);
+        return response()->json(
+            $this->tokenTransformer->item($token, 'Login realizado com sucesso'),
+            200
+        );
     }
 }

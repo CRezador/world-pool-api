@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Services\UserServices;
+
+use App\Models\User;
+use App\Repositories\UserRepositories\UserRepository;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+
+class UserService
+{
+    public function __construct(
+        private UserRepository $userRepository
+    ) {}
+
+    public function login(string $email, string $password): User
+    {
+        $user = $this->userRepository->findByEmail($email);
+
+        if (!$user) {
+            throw new \Exception('Usuário não encontrado.', 404);
+        }
+
+        if (!Hash::check($password, $user->password)) {
+            throw new \Exception('Credenciais inválidas.', 401);
+        }
+
+        return $user;
+    }
+
+    public function findByEmail(string $email): ?User
+    {
+        return $this->userRepository->findByEmail($email);
+    }
+
+    public function createUser(array $data): User
+    {
+        return $this->userRepository->create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'email_verified_at' => now(),
+            'remember_token' => Str::random(10),
+            'password' => Hash::make($data['password']),
+        ]);
+    }
+}

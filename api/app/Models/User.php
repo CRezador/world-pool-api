@@ -22,24 +22,6 @@ class User extends Authenticatable
         'updated_at' => 'datetime',
         'role' => UserRole::class
     ];
-    protected $connection = 'mysql';
-    protected $primaryKey = 'id';
-
-    public function getRememberToken()
-    {
-        return $this->remember_token;
-    }
-
-    public function setRememberToken($value)
-    {
-        $this->remember_token = $value;
-    }
-
-    public function getRememberTokenName()
-    {
-        return 'remember_token';
-    }
-
     public function isAdmin(): bool
     {
         return $this->role === UserRole::ADMIN;

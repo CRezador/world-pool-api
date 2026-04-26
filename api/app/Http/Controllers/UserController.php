@@ -3,25 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Authentication\CreateUserRequest;
-use App\Models\User;
+use App\Http\Transformers\UserTransformers\UserTransformer;
+use App\Services\UserServices\UserService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 class UserController extends Controller
 {
+    public function __construct(
+        private UserService $userService,
+        private UserTransformer $userTransformer
+    ) {}
+
     public function me(Request $request): Response
     {
-        return response()->json([
-            'data' => [
-                'name' => $request->user()->name,
-                'email' => $request->user()->email,
-                'created_at' => $request->user()->created_at,
-                'updated_at' => $request->user()->updated_at
-            ],
-        ], 200);
+        return response()->json(
+            $this->userTransformer->item($request->user(), 'Dados do usuário'),
+            200
+        );
     }
     /*
         POST /api/register
@@ -36,27 +36,17 @@ class UserController extends Controller
         $validated = $request->validated();
 
         try {
-            User::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'email_verified_at' => now(),
-                'remember_token' => Str::random(10),
-                'password' => Hash::make($validated['password']),
-            ]);
+            $user = $this->userService->createUser($validated);
         } catch (Throwable $e) {
             return response()->json([
-                'message' => 'Erro inesperado ao criar usuário.' . $e,
+                'message' => 'Erro inesperado ao criar usuário.' . $e->getMessage(),
             ], 500);
         }
 
-
-        return response()->json([
-            'message' => "User Created",
-            'data' => [
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-            ],
-        ], 201);
+        return response()->json(
+            $this->userTransformer->item($user, 'Usuário criado'),
+            201
+        );
     }
     /*
         PATCH /api/users/{user}
