@@ -127,7 +127,7 @@ A arquitetura é **API + SPA**: o backend Laravel expõe uma API REST e o fronte
 │       └── Dockerfile        # imagem PHP-FPM customizada
 ├── docker-compose.yml
 ├── .env                      # variáveis usadas pelo compose (DB_*, APP_*)
-├── backend/         # Projeto Laravel (API)
+├── api/             # Projeto Laravel (API)
 │   ├── app/
 │   ├── database/
 │   │   ├── migrations/
@@ -135,7 +135,7 @@ A arquitetura é **API + SPA**: o backend Laravel expõe uma API REST e o fronte
 │   ├── routes/
 │   │   └── api.php
 │   └── ...
-└── frontend/        # Projeto Vue 3 + Vite (rodando local por enquanto)
+└── front/           # Projeto Vue 3 + Vite (rodando local por enquanto)
     ├── src/
     │   ├── api/         # Configuração do Axios e chamadas
     │   ├── components/
@@ -147,7 +147,7 @@ A arquitetura é **API + SPA**: o backend Laravel expõe uma API REST e o fronte
     └── ...
 ```
 
-> Se o projeto estiver em monorepo, manter `backend/` e `frontend/` na raiz. Caso esteja separado em dois repositórios, este arquivo se aplica ao serviço correspondente.
+> O projeto está organizado em monorepo com `api/` e `front/` na raiz.
 
 ---
 
@@ -198,7 +198,8 @@ Tabelas principais (via Eloquent):
 - Models no singular (`User`, `Pool`, `Match`), tabelas no plural (`users`, `pools`, `matches`).
 - **Migrations** sempre via `php artisan make:migration` — não editar migrations já aplicadas em produção.
 - Validação de entrada: usar **FormRequest** dedicado por endpoint quando houver mais de 2 campos.
-- Respostas: retornar arrays/objetos diretamente do controller (`return response()->json([...])`).
+- Respostas: formatadas via **Transformer** e retornadas no controller com `response()->json([...])`.
+- **Transformers** (`app/Http/Transformers/`): camada de serialização customizada do projeto. Cada entidade tem seu próprio Transformer (`PoolTransformer`, `MatchTransformer`, etc.) que estende `BaseTransformer`. Usar `$transformer->item($model, 'mensagem')` para um único registro e `$transformer->collection($collection)` para listas. Os Transformers são injetados no controller via construtor.
 - Códigos HTTP corretos: `200`, `201`, `204`, `400`, `401`, `403`, `404`, `422`, `500`.
 - Não usar SQL puro; usar Eloquent ou Query Builder do Laravel.
 
@@ -220,12 +221,12 @@ Tabelas principais (via Eloquent):
 
 1. **Antes de codar**, ler este arquivo e qualquer arquivo relevante já existente.
 2. **Não inventar dependências** — usar apenas o que já está em `composer.json` / `package.json`. Se precisar de algo novo, perguntar antes.
-3. **Não criar API Resources, Fractal, etc.** — manter respostas diretas no controller.
+3. **Não criar API Resources, Fractal ou libs externas de serialização** — o projeto usa Transformers customizados em `app/Http/Transformers/`. Ao adicionar uma nova entidade, criar o Transformer correspondente seguindo o padrão existente.
 4. **Não usar SQL puro** no backend — sempre via Eloquent.
 5. **Não introduzir filas/jobs/scheduler** sem pedido explícito.
 6. **Respeitar PHPCS no backend e ESLint no frontend** — código deve passar nos dois.
 7. **Migrations:** criar nova migration em vez de editar uma existente.
-8. **Tipos TS:** se criar uma nova entidade no backend, atualizar os tipos correspondentes em `frontend/src/types/`.
+8. **Tipos TS:** se criar uma nova entidade no backend, atualizar os tipos correspondentes em `front/src/types/`.
 9. Em caso de dúvida sobre regra de negócio (especialmente cálculo de pontuação ou regras de palpite), **perguntar antes de assumir**.
 
 ---
@@ -235,7 +236,7 @@ Tabelas principais (via Eloquent):
 A stack do backend roda inteiramente em containers através de um **Docker Compose customizado** (não usamos Laravel Sail).
 
 ### Serviços
-- **app** — PHP-FPM (imagem custom em `docker/php/Dockerfile`), monta o diretório `./backend`
+- **app** — PHP-FPM (imagem custom em `docker/php/Dockerfile`), monta o diretório `./api`
 - **nginx** — Nginx servindo o backend, config em `docker/nginx/default.conf`, expõe a porta `8000` (ou definida no `.env`)
 - **db** — MySQL/MariaDB, com volume nomeado para persistência
 - **frontend** — *(planejado, comentado no compose)* Node servindo `vite` em modo dev
