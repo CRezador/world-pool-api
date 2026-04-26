@@ -27,14 +27,15 @@ class PoolRepository
         return Pool::create($pool);
     }
 
-    public function deletePool($id): Pool
+    public function deletePool($id): bool
     {
-        return Pool::where('id', '=', $id)->delete();
+        return Pool::where('id', '=', $id)->delete() > 0;
     }
 
     public function updatePool($id, array $data): Pool
     {
-        return Pool::where('id', $id)->update($data);
+        Pool::where('id', $id)->update($data);
+        return Pool::query()->find($id);
     }
 
     public function getPoolsByUserId(int $userId): Collection
