@@ -60,7 +60,7 @@ class PoolService
                 'owner_id' => $user->id,
                 'is_public' => $is_public,
             ]);
-            $member = $this->poolMemberService->addMember($pool->id, PoolUserRole::OWNER->value, $user->id);
+            $this->poolMemberService->addMember($pool->id, PoolUserRole::OWNER->value, $user->id);
         } catch (\Exception $e) {
             throw new \Exception('Erro ao criar a Bolão: ' . $e->getMessage());
         }
@@ -81,9 +81,12 @@ class PoolService
         }
 
         try {
-            $this->poolRepository->deletePool($pool->id);
+            $deleted = $this->poolRepository->deletePool($pool->id);
+            if (!$deleted) {
+                throw new \Exception('Bolão não encontrado.');
+            }
         } catch (\Exception $e) {
-            throw new \Exception('Erro ao Remover Bolão: ' . $e);
+            throw new \Exception('Erro ao Remover Bolão: ' . $e->getMessage());
         }
 
         return $pool;
