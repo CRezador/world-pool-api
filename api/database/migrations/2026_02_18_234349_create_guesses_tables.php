@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('away_score');
             $table->integer('points')->default(0)->nullable();
             $table->timestamps();
+            $table->unique(['pool_id', 'user_id', 'match_id']);
         });
     }
 
@@ -28,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('guesses_tables');
+        Schema::dropIfExists('guesses');
     }
 };

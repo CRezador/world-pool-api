@@ -18,6 +18,7 @@ return new class extends Migration
             $table->enum('role', ['MEMBER', 'ADMIN', 'OWNER'])->default('MEMBER');
             $table->enum('status', ['ACTIVE', 'LEFT', 'BANNED'])->default('ACTIVE');
             $table->timestamp('joined_at')->useCurrent();
+            $table->unique(['pool_id', 'user_id']);
         });
     }
 
