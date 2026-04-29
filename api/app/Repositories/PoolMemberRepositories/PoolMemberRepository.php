@@ -36,6 +36,15 @@ class PoolMemberRepository
             ->exists();
     }
 
+    public function isOwnerByMemberId(int $poolId, int $memberId): bool
+    {
+        return PoolMembers::query()
+            ->where('id', $memberId)
+            ->where('pool_id', $poolId)
+            ->where('role', PoolUserRole::OWNER->value)
+            ->exists();
+    }
+
     public function addMember(int $poolId, string $role, int $userId): PoolMembers
     {
         return PoolMembers::create([

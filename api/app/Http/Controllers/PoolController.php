@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Pool\PoolRequest;
 use App\Http\Requests\Pool\PoolJoinRequest;
+use App\Http\Requests\Pool\PoolRequest;
+use App\Http\Requests\Pool\PoolUpdateRequest;
 use App\Http\Transformers\PoolMemberTransformers\PoolMemberTransformer;
 use App\Http\Transformers\PoolTransformers\PoolTransformer;
 use App\Services\PoolServices\PoolService;
@@ -173,22 +174,10 @@ class PoolController extends Controller
             | - Retornar um erro 403 se o usuário não for o proprietário do bolão
             | - Retornar um erro 404 se o bolão não for encontrado
     */
-    public function update(Request $request, $id): Response
+    public function update(PoolUpdateRequest $request, $id): Response
     {
-        $pool = $this->poolService->showPool($id);
-
-        if (!$pool) {
-            return response()->json(['message' => 'Bolão não encontrado.'], 404);
-        }
-
-        if ($request->user()->id !== $pool->owner_id) {
-            return response()->json([
-                'message' => 'Apenas o proprietário do bolão pode atualizar o bolão.'
-            ], 403);
-        }
-
         try {
-            $pool = $this->poolService->updatePool($id, $request->only(['name', 'is_public']));
+            $pool = $this->poolService->updatePool($id, $request->validated());
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage()

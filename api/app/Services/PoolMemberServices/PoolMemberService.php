@@ -35,6 +35,11 @@ class PoolMemberService
         return $this->poolMemberRepository->isOwner($poolId, $userId);
     }
 
+    public function isOwnerByMemberId(int $poolId, int $memberId): bool
+    {
+        return $this->poolMemberRepository->isOwnerByMemberId($poolId, $memberId);
+    }
+
     public function isAdmin(int $poolId, int $userId): bool
     {
         return $this->poolMemberRepository->isAdmin($poolId, $userId);
