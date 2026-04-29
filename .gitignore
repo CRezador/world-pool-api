@@ -7,4 +7,6 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
-.jira/
+
+# Environment variables
+.env

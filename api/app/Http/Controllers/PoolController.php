@@ -139,15 +139,20 @@ class PoolController extends Controller
     */
     public function regenerateJoinCode($id, Request $request): Response
     {
+        $pool = $this->poolService->showPool($id);
 
-        if ($request->user()->id !== $request->owner_id) {
+        if (!$pool) {
+            return response()->json(['message' => 'Bolão não encontrado.'], 404);
+        }
+
+        if ($request->user()->id !== $pool->owner_id) {
             return response()->json([
                 'message' => 'Apenas o proprietário do bolão pode regenerar o código de acesso.'
             ], 403);
         }
 
         try {
-            $pool = $this->poolService->regenerateJoinCode($id, $request->owner_id);
+            $pool = $this->poolService->regenerateJoinCode($id);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage()
@@ -170,14 +175,20 @@ class PoolController extends Controller
     */
     public function update(Request $request, $id): Response
     {
-        if ($request->user()->id !== $request->owner_id) {
+        $pool = $this->poolService->showPool($id);
+
+        if (!$pool) {
+            return response()->json(['message' => 'Bolão não encontrado.'], 404);
+        }
+
+        if ($request->user()->id !== $pool->owner_id) {
             return response()->json([
-                'message' => 'Apenas o proprietário do bolão pode regenerar o código de acesso.'
+                'message' => 'Apenas o proprietário do bolão pode atualizar o bolão.'
             ], 403);
         }
 
         try {
-            $pool = $this->poolService->updatePool($id, $request->owner_id, $request->only(['name', 'is_public']));
+            $pool = $this->poolService->updatePool($id, $request->only(['name', 'is_public']));
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage()
