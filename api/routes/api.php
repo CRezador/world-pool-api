@@ -40,7 +40,7 @@ Route::middleware('auth:sanctum')->group(
         Route::get('/pools/{id}', [PoolController::class, 'show']);
         Route::delete('/pools/{id}', [PoolController::class, 'destroy']);
         Route::post('/pools/join', [PoolController::class, 'join']);
-        Route::put('/pools/{id}', [PoolController::class, 'update']);
+        Route::put('/pools/{id}', [PoolController::class, 'update'])->middleware('PoolOwner');
 
         //Rota PoolMember
         Route::get('/pools/{poolId}/members', [PoolMemberController::class, 'index'])->middleware('PoolMember');
