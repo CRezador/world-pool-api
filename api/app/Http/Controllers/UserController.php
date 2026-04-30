@@ -55,7 +55,7 @@ class UserController extends Controller
             | Uso comum:
             | - ADMIN editar dados de usuários
     */
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
     }
     /*
@@ -68,7 +68,7 @@ class UserController extends Controller
             | Acesso:
             | - ADMIN
     */
-    public function destroy($id)
+    public function destroy(int $id)
     {
     }
     /*
@@ -82,7 +82,7 @@ class UserController extends Controller
             | Acesso:
             | - ADMIN
     */
-    public function updateRole(Request $request, $id)
+    public function updateRole(Request $request, int $id)
     {
     }
 }

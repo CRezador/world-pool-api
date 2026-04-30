@@ -91,7 +91,7 @@ class PoolController extends Controller
             | - Retornar um erro 404 se o bolão não for encontrado
             | - Retornar um erro 403 se o usuário não tiver permissão para acessar o bolão
     */
-    public function show($id): Response
+    public function show(int $id): Response
     {
         $pool = $this->poolService->showPool($id);
 
@@ -113,7 +113,7 @@ class PoolController extends Controller
             | - Retornar um erro 403 se o usuário não for o proprietário do bolão
             | - Retornar um erro 404 se o bolão não for encontrado
     */
-    public function destroy($id, Request $request): Response
+    public function destroy(int $id, Request $request): Response
     {
 
         $pool = $this->poolService->destroyPool($id, $request->user()->id);
@@ -132,7 +132,7 @@ class PoolController extends Controller
             | - Retornar um erro 403 se o usuário não for o proprietário do bolão
             | - Retornar um erro 404 se o bolão não for encontrado
     */
-    public function regenerateJoinCode($id, Request $request): Response
+    public function regenerateJoinCode(int $id, Request $request): Response
     {
         $pool = $this->poolService->showPool($id);
 
@@ -168,7 +168,7 @@ class PoolController extends Controller
             | - Retornar um erro 403 se o usuário não for o proprietário do bolão
             | - Retornar um erro 404 se o bolão não for encontrado
     */
-    public function update(PoolUpdateRequest $request, $id): Response
+    public function update(PoolUpdateRequest $request, int $id): Response
     {
         try {
             $pool = $this->poolService->updatePool($id, $request->validated());

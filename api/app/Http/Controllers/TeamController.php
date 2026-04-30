@@ -30,7 +30,7 @@ class TeamController extends Controller
             | - Retornar o nome, o grupo e o código da equipe
             | - Retornar um erro 404 se a equipe não for encontrada
     */
-    public function show($id): Response
+    public function show(int $id): Response
     {
         $team = $this->teamRepository->findById($id);
 
@@ -51,7 +51,7 @@ class TeamController extends Controller
             | Uso comum:
             | - Mostrar tabela de times do grupo
     */
-    public function groupTeams($id): Response
+    public function groupTeams(int $id): Response
     {
         $groupTeams = $this->teamRepository->teamsByGroup($id);
 
