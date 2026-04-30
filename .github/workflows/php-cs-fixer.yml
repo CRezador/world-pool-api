@@ -1,0 +1,47 @@
+name: PHP CS Fixer
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'api/**/*.php'
+      - 'api/php-cs-fixer.php'
+      - 'api/composer.lock'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'api/**/*.php'
+      - 'api/php-cs-fixer.php'
+      - 'api/composer.lock'
+
+jobs:
+  php-cs-fixer:
+    name: Check code style
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+          coverage: none
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: api/vendor
+          key: composer-${{ hashFiles('api/composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run PHP CS Fixer (dry-run)
+        run: vendor/bin/php-cs-fixer check --config=php-cs-fixer.php --diff --ansi
