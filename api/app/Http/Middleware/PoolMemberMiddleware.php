@@ -9,23 +9,16 @@ use Symfony\Component\HttpFoundation\Response;
 
 class PoolMemberMiddleware
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  Closure(Request): (Response)  $next
-     */
+    public function __construct(private PoolMemberService $poolMemberService) {}
+
     public function handle(Request $request, Closure $next): Response
     {
-        $isPoolMember = new PoolMemberService(
-            new \App\Repositories\PoolMemberRepositories\PoolMemberRepository(),
-            new \App\Repositories\PoolRepositories\PoolRepository()
-        );
-
-        if (!$request->user() || !$isPoolMember->isMember($request->route('poolId'), $request->user()->id)) {
+        if (!$request->user() || !$this->poolMemberService->isMember($request->route('poolId'), $request->user()->id)) {
             return response()->json([
                 'message' => 'Acesso negado',
             ], 403);
         }
+
         return $next($request);
     }
 }
