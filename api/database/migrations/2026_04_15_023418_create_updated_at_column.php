@@ -20,6 +20,8 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('updated_at_column');
+        Schema::table('pool_members', function (Blueprint $table) {
+            $table->dropTimestamps();
+        });
     }
 };
