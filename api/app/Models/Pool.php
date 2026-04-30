@@ -2,19 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use App\Models\PoolMembers;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Pool extends Authenticatable
+class Pool extends Model
 {
     use HasFactory;
-    use Notifiable;
-    use HasApiTokens;
 
     protected $table = 'pools';
     protected $fillable = [
@@ -34,8 +29,8 @@ class Pool extends Authenticatable
         return $this->hasMany(PoolMembers::class, 'pool_id');
     }
 
-    public function owner(): HasOne
+    public function owner(): BelongsTo
     {
-        return $this->hasOne(User::class, 'id', 'owner_id');
+        return $this->belongsTo(User::class, 'owner_id');
     }
 }
