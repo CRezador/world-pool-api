@@ -14,7 +14,8 @@ class UserController extends Controller
     public function __construct(
         private UserService $userService,
         private UserTransformer $userTransformer
-    ) {}
+    ) {
+    }
 
     public function me(Request $request): Response
     {

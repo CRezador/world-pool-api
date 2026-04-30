@@ -9,13 +9,13 @@ class GroupTransformer extends BaseTransformer
     public function transform($group): array
     {
         return [
-          'name' => $group->name,
-          'teams' => $group->teams->map(function ($team) {
-              return [
-                'name' => $team->name,
-                'code' => $team->code,
-              ];
-          }),
+            'name' => $group->name,
+            'teams' => $group->teams->map(function ($team) {
+                return [
+                    'name' => $team->name,
+                    'code' => $team->code,
+                ];
+            }),
         ];
     }
 }

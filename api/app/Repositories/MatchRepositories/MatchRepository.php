@@ -21,20 +21,20 @@ class MatchRepository
     {
         return Matches::query()
           ->select([
-            'matches.id',
-            'matches.kickoff_at',
-            'matches.stage',
-            'matches.group_id',
-            'matches.home_team_id',
-            'matches.away_team_id',
-            'matches.status',
-            'matches.home_score',
-            'matches.away_score'
+              'matches.id',
+              'matches.kickoff_at',
+              'matches.stage',
+              'matches.group_id',
+              'matches.home_team_id',
+              'matches.away_team_id',
+              'matches.status',
+              'matches.home_score',
+              'matches.away_score',
           ])
           ->with([
-            'homeTeam:id,name,code',
-            'awayTeam:id,name,code',
-            'group:id,name'
+              'homeTeam:id,name,code',
+              'awayTeam:id,name,code',
+              'group:id,name',
           ])
           ->where('stage', $stage)
           ->orderBy('kickoff_at')
@@ -45,15 +45,15 @@ class MatchRepository
     {
         return Matches::query()
           ->select([
-            'matches.id',
-            'matches.kickoff_at',
-            'matches.stage',
-            'matches.group_id',
-            'matches.home_team_id',
-            'matches.away_team_id',
-            'matches.status',
-            'matches.home_score',
-            'matches.away_score'
+              'matches.id',
+              'matches.kickoff_at',
+              'matches.stage',
+              'matches.group_id',
+              'matches.home_team_id',
+              'matches.away_team_id',
+              'matches.status',
+              'matches.home_score',
+              'matches.away_score',
           ])
           ->where('group_id', $groupId)
           ->orderBy('kickoff_at')
@@ -76,6 +76,7 @@ class MatchRepository
     public function update(Matches $match, array $data): Matches
     {
         $match->update($data);
+
         return $match->refresh();
     }
 

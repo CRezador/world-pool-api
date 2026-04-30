@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'foo',
             'email' => 'teste@email.com',
-            'password' => Hash::make('password')
+            'password' => Hash::make('password'),
         ]);
         $this->call(GroupsSeeder::class);
         $this->call(TeamsSeeder::class);

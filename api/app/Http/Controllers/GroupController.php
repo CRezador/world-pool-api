@@ -55,7 +55,7 @@ class GroupController extends Controller
 
         if (!$group) {
             return response()->json([
-                'message' => 'Grupo não encontrado'
+                'message' => 'Grupo não encontrado',
             ], 404);
         }
 

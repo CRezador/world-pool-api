@@ -53,15 +53,15 @@ class MatchService
 
         try {
             $matchCreated = $this->matchRepository->create([
-              'home_team_id' => $homeTeam->id,
-              'game_day' => $match['game_day'],
-              'away_team_id' => $awayTeam->id,
-              'group_id' => $stageToUpper === MatchStage::GROUP_STAGE->value ? $homeTeam->group_id : null,
-              'stage' => $stageToUpper,
-              'status' => MatchStatus::SCHEDULED,
-              'kickoff_at' => $this->kickoffFormat($match['kickoff_at']),
-              'home_score' => 0,
-              'away_score' => 0
+                'home_team_id' => $homeTeam->id,
+                'game_day' => $match['game_day'],
+                'away_team_id' => $awayTeam->id,
+                'group_id' => $stageToUpper === MatchStage::GROUP_STAGE->value ? $homeTeam->group_id : null,
+                'stage' => $stageToUpper,
+                'status' => MatchStatus::SCHEDULED,
+                'kickoff_at' => $this->kickoffFormat($match['kickoff_at']),
+                'home_score' => 0,
+                'away_score' => 0,
             ]);
         } catch (\Exception $e) {
             throw new \Exception('Erro ao criar a partida');

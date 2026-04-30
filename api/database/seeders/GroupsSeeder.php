@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -13,7 +12,7 @@ class GroupsSeeder extends Seeder
      */
     public function run(): void
     {
-        $rows = collect(range('A', 'L'))->map(fn($l) => [
+        $rows = collect(range('A', 'L'))->map(fn ($l) => [
             'name' => $l,
         ])->all();
 

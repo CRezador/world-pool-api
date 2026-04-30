@@ -29,8 +29,9 @@ class PoolMemberController extends Controller
     public function index(int $poolId): Response
     {
         $members = $this->poolMemberService->listMembers($poolId);
+
         return response()->json([
-            $this->poolMemberTransformer->collection($members, 'Lista de membros do bolão')
+            $this->poolMemberTransformer->collection($members, 'Lista de membros do bolão'),
         ], 200);
     }
     /*

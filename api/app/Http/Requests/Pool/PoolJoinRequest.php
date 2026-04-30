@@ -22,7 +22,7 @@ class PoolJoinRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'join_code' => ['required', 'string', 'exists:pools,join_code']
+            'join_code' => ['required', 'string', 'exists:pools,join_code'],
         ];
     }
 

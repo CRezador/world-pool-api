@@ -36,12 +36,12 @@ class TeamController extends Controller
 
         if (!$team) {
             return response()->json([
-                'message' => 'Equipe não encontrada'
+                'message' => 'Equipe não encontrada',
             ], 404);
         }
 
         return response()->json([
-            $this->teamTransformer->item($team, 'Equipe encontrada')
+            $this->teamTransformer->item($team, 'Equipe encontrada'),
         ], 200);
     }
     /*
@@ -60,7 +60,7 @@ class TeamController extends Controller
         }
 
         return response()->json([
-            $this->teamTransformer->transformTeamsByGroup($groupTeams)
+            $this->teamTransformer->transformTeamsByGroup($groupTeams),
         ], 200);
     }
 }

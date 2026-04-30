@@ -35,6 +35,7 @@ class PoolRepository
     public function updatePool(int $id, array $data): Pool
     {
         Pool::where('id', $id)->update($data);
+
         return Pool::query()->find($id);
     }
 

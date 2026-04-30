@@ -16,7 +16,7 @@ class Pool extends Model
         'name',
         'join_code',
         'is_public',
-        'owner_id'
+        'owner_id',
     ];
     protected $casts = [
         'created_at' => 'datetime',

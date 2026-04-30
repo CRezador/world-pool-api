@@ -93,7 +93,7 @@ class PoolService
         $pool = $this->poolRepository->getPool($id);
 
         if (!$pool) {
-            throw new \Exception("Bolão não encontrado.");
+            throw new \Exception('Bolão não encontrado.');
         }
         $code = $this->generateCode();
 
@@ -112,7 +112,7 @@ class PoolService
         $pool = $this->poolRepository->getPool($id);
 
         if (!$pool) {
-            throw new \Exception("Bolão não encontrado.");
+            throw new \Exception('Bolão não encontrado.');
         }
 
         try {
@@ -151,8 +151,8 @@ class PoolService
         $member = $this->poolMemberRepository->addMember($pool->id, PoolUserRole::MEMBER->value, $userId);
 
         return [
-            "Pool" => $pool,
-            "Member" => $member
+            'Pool' => $pool,
+            'Member' => $member,
         ];
     }
 }
