@@ -129,7 +129,7 @@ class PoolService
         return $this->poolRepository->getPoolsByUserId($userId);
     }
 
-    public function getPoolByJoinCode(string $join_code): Pool
+    public function getPoolByJoinCode(string $join_code): ?Pool
     {
         return $this->poolRepository->getPoolByJoinCode($join_code);
     }
