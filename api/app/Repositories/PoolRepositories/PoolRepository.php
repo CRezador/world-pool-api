@@ -12,12 +12,12 @@ class PoolRepository
         return Pool::select()->where('is_public', true)->get();
     }
 
-    public function getPool($id): Pool
+    public function getPool(int $id): ?Pool
     {
         return Pool::query()->find($id);
     }
 
-    public function getPoolByJoinCode($join_code): Pool
+    public function getPoolByJoinCode(string $join_code): ?Pool
     {
         return Pool::query()->where('join_code', $join_code)->first();
     }
@@ -27,12 +27,12 @@ class PoolRepository
         return Pool::create($pool);
     }
 
-    public function deletePool($id): bool
+    public function deletePool(int $id): bool
     {
         return Pool::where('id', '=', $id)->delete() > 0;
     }
 
-    public function updatePool($id, array $data): Pool
+    public function updatePool(int $id, array $data): Pool
     {
         Pool::where('id', $id)->update($data);
         return Pool::query()->find($id);

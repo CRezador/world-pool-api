@@ -12,12 +12,12 @@ class TeamRepository
         return Team::query()->get();
     }
 
-    public function findById($id): ?Team
+    public function findById(int $id): ?Team
     {
         return Team::query()->find($id);
     }
 
-    public function teamsByGroup($id): Collection
+    public function teamsByGroup(int $id): Collection
     {
         return Team::select()->where('group_id', $id)->get();
     }

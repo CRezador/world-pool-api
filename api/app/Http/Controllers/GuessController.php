@@ -24,7 +24,7 @@ class GuessController extends Controller
             | - Tela "Meus palpites"
             | - Listar palpites já realizados
     */
-    public function index($poolId, Request $request)
+    public function index(int $poolId, Request $request)
     {
     }
     /*
@@ -35,7 +35,7 @@ class GuessController extends Controller
             | - Preencher tela de edição de palpite
             | - Ver palpite já registrado
     */
-    public function show($poolId, $matchId, Request $request)
+    public function show(int $poolId, int $matchId, Request $request)
     {
     }
     /*
@@ -50,7 +50,7 @@ class GuessController extends Controller
             | Uso comum:
             | - Registrar palpite antes do início da partida
     */
-    public function store(Request $request, $poolId)
+    public function store(Request $request, int $poolId)
     {
     }
     /*
@@ -64,7 +64,7 @@ class GuessController extends Controller
             | Uso comum:
             | - Alterar palpite antes do kickoff
     */
-    public function update(Request $request, $poolId, $guessId)
+    public function update(Request $request, int $poolId, int $guessId)
     {
     }
     /*
@@ -75,7 +75,7 @@ class GuessController extends Controller
             | - Corrigir erro de palpite
             | - Remover palpite antes do início da partida
     */
-    public function destroy($poolId, $guessId)
+    public function destroy(int $poolId, int $guessId)
     {
     }
     /*
@@ -86,7 +86,7 @@ class GuessController extends Controller
             | - Ver palpites de outros participantes
             | - Comparação entre usuários
     */
-    public function memberGuesses($poolId, $memberId)
+    public function memberGuesses(int $poolId, int $memberId)
     {
     }
     /*
@@ -97,7 +97,7 @@ class GuessController extends Controller
             | - Ver estatísticas de palpites
             | - Comparar palpites da rodada
     */
-    public function matchGuesses($poolId, $matchId)
+    public function matchGuesses(int $poolId, int $matchId)
     {
     }
     /*
@@ -108,7 +108,7 @@ class GuessController extends Controller
             | - Executado após o resultado da partida ser definido
             | - Atualiza o campo points da tabela guesses
     */
-    public function scoreGuessesForMatch($matchId)
+    public function scoreGuessesForMatch(int $matchId)
     {
     }
     /*
@@ -119,7 +119,7 @@ class GuessController extends Controller
             | - Após atualizar pontos dos palpites
             | - Reprocessar ranking caso necessário
     */
-    public function recalculateLeaderboard($poolId)
+    public function recalculateLeaderboard(int $poolId)
     {
     }
     /*
@@ -134,7 +134,7 @@ class GuessController extends Controller
             | Uso comum:
             | - Fluxo automático após atualização do resultado
     */
-    public function processMatchResult($matchId)
+    public function processMatchResult(int $matchId)
     {
     }
     /*
@@ -145,7 +145,7 @@ class GuessController extends Controller
             | - Correções administrativas
             | - Reprocessamento pontual
     */
-    public function scoreGuess($guessId)
+    public function scoreGuess(int $guessId)
     {
     }
 }

@@ -22,7 +22,7 @@ class MatchService
         $this->matchRepository = $matchRepository;
         $this->teamRepository = $teamRepository;
     }
-    private function kickoffFormat($kickoff_at): string|null
+    private function kickoffFormat(?string $kickoff_at): string|null
     {
         return $kickoff_at === null ? null : Carbon::createFromFormat('d/m/Y', $kickoff_at)->format('Y-m-d H:i:s');
     }

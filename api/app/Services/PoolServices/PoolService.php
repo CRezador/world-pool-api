@@ -40,7 +40,7 @@ class PoolService
         return $this->poolRepository->getPublicPools();
     }
 
-    public function showPool($id): Pool
+    public function showPool(int $id): ?Pool
     {
         return $this->poolRepository->getPool($id);
     }
@@ -64,7 +64,7 @@ class PoolService
         return $pool;
     }
 
-    public function destroyPool($id, $userId): Pool
+    public function destroyPool(int $id, int $userId): Pool
     {
         $pool = $this->poolRepository->getPool($id);
 
@@ -88,7 +88,7 @@ class PoolService
         return $pool;
     }
 
-    public function regenerateJoinCode($id): Pool
+    public function regenerateJoinCode(int $id): Pool
     {
         $pool = $this->poolRepository->getPool($id);
 
@@ -107,7 +107,7 @@ class PoolService
         return $pool;
     }
 
-    public function updatePool($id, array $data): Pool
+    public function updatePool(int $id, array $data): Pool
     {
         $pool = $this->poolRepository->getPool($id);
 

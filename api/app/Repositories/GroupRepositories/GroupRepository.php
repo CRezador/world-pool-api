@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Collection;
 
 class GroupRepository
 {
-    public function findAll(): ?Collection
+    public function findAll(): Collection
     {
         return Group::query()->get();
     }
 
-    public function findById($id): ?Group
+    public function findById(int $id): ?Group
     {
         return Group::query()->find($id);
     }
