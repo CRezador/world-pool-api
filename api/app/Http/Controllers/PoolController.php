@@ -71,11 +71,11 @@ class PoolController extends Controller
     */
     public function store(PoolRequest $request): Response
     {
-        $request->validated();
+        $validated = $request->validated();
 
         try {
-            $is_public = $request->is_public;
-            $name = $request->name;
+            $is_public = $validated['is_public'];
+            $name = $validated['name'];
             $pool = $this->poolService->createPool($is_public, $request->user(), $name);
         } catch (\Exception $e) {
             return response()->json([
@@ -204,10 +204,10 @@ class PoolController extends Controller
     */
     public function join(PoolJoinRequest $request): Response
     {
-        $request->validated();
+        $validated = $request->validated();
 
         try {
-            $joinPool = $this->poolService->joinPool($request->join_code, $request->user()->id);
+            $joinPool = $this->poolService->joinPool($validated['join_code'], $request->user()->id);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
