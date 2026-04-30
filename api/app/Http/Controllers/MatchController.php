@@ -67,9 +67,9 @@ class MatchController extends Controller
     */
     public function matchesByStage(MatchStageRequest $request): Response
     {
-        $request->validated();
+        $validated = $request->validated();
 
-        $matches = $this->matchRepository->findByStage($request->stage);
+        $matches = $this->matchRepository->findByStage($validated['stage']);
 
         if ($matches->isEmpty()) {
             return response()->json([
@@ -115,7 +115,7 @@ class MatchController extends Controller
     */
     public function store(MatchRequest $request): Response
     {
-        $request->validated();
+        $validated = $request->validated();
         $match = [
             'game_day' => $request->game_day,
             'code_home_team' => $request->code_home_team,

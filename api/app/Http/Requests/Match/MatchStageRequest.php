@@ -32,7 +32,7 @@ class MatchStageRequest extends FormRequest
     {
         return [
             'stage.required' => 'Informe o stage da partida',
-            'stage.enum' => 'A fase da partida deve ser um dos seguintes valores: GROUP, ROUND_OF_16, QUARTER_FINALS, SEMI_FINALS, FINAL.'
+            'stage.enum' => 'A fase da partida deve ser um dos seguintes valores: GROUP_STAGE, ROUND_OF_16, QUARTER_FINALS, SEMI_FINALS, THIRD_PLACE, FINAL.'
         ];
     }
 }
