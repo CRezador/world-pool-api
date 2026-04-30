@@ -5,7 +5,6 @@ namespace App\Services\PoolServices;
 use App\Http\Enums\PoolUserRole;
 use App\Models\Pool;
 use App\Models\User;
-use App\Repositories\PoolMemberRepositories\PoolMemberRepository;
 use App\Repositories\PoolRepositories\PoolRepository;
 use App\Services\PoolMemberServices\PoolMemberService;
 use Illuminate\Database\Eloquent\Collection;
@@ -16,7 +15,6 @@ class PoolService
     public function __construct(
         private PoolRepository $poolRepository,
         private PoolMemberService $poolMemberService,
-        private PoolMemberRepository $poolMemberRepository
     ) {
 
     }
@@ -142,13 +140,11 @@ class PoolService
             throw new \Exception('Bolão não encontrado.');
         }
 
-        // Verificar se o usuário já é membro do bolão
-        if ($this->poolMemberRepository->isMember($pool->id, $userId)) {
+        if ($this->poolMemberService->isMember($pool->id, $userId)) {
             throw new \Exception('Você já é membro deste bolão.');
         }
 
-        // Adicionar o usuário como membro do bolão
-        $member = $this->poolMemberRepository->addMember($pool->id, PoolUserRole::MEMBER->value, $userId);
+        $member = $this->poolMemberService->addMember($pool->id, PoolUserRole::MEMBER->value, $userId);
 
         return [
             "Pool" => $pool,
