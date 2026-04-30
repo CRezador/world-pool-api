@@ -45,11 +45,6 @@ class PoolMemberService
         return $this->poolMemberRepository->isAdmin($poolId, $userId);
     }
 
-    public function getPoolsByUserId(int $userId): Collection
-    {
-        return $this->poolMemberRepository->getPoolsByUserId($userId);
-    }
-
     public function getRole(int $poolId, int $userId): PoolUserRole
     {
         return $this->poolMemberRepository->getRole($poolId, $userId);

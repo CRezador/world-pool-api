@@ -166,7 +166,7 @@ class MatchController extends Controller
             $data = $this->matchService->updateMatch($request, $match);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Erro ao Atualizar a partida: ' . $e,
+                'message' => 'Erro ao atualizar a partida: ' . $e->getMessage(),
             ], 500);
         }
 
@@ -211,7 +211,7 @@ class MatchController extends Controller
             $this->matchRepository->delete($match);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => $e,
+                'message' => $e->getMessage(),
             ], 500);
         }
 
