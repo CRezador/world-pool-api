@@ -26,7 +26,7 @@ class PoolMemberController extends Controller
             | - Exibir ranking
             | - Ver quem está no bolão
     */
-    public function index(int $poolId): Response
+    public function index($poolId): Response
     {
         $members = $this->poolMemberService->listMembers($poolId);
         return response()->json([
@@ -41,7 +41,7 @@ class PoolMemberController extends Controller
             | - Ver dados de participação
             | - Ver papel do usuário (admin/member)
     */
-    public function show(int $poolId, int $memberId)
+    public function show($poolId, $memberId)
     {
     }
     /*
@@ -59,7 +59,7 @@ class PoolMemberController extends Controller
         | - Retornar um erro 403 se o usuário não tiver permissão para alterar o papel
         | - Retornar um erro 404 se o bolão ou o membro não for encontrado
     */
-    public function updateRole(PoolMemberUpdateRequest $request, int $poolId): Response
+    public function updateRole(PoolMemberUpdateRequest $request, $poolId)
     {
         $data = $request->validated();
 
@@ -83,7 +83,7 @@ class PoolMemberController extends Controller
             | - Banir membro
             | - Reativar membro
     */
-    public function updateStatus(Request $request, int $poolId, int $memberId)
+    public function updateStatus(Request $request, $poolId, $memberId)
     {
 
     }
@@ -98,7 +98,7 @@ class PoolMemberController extends Controller
             | - Retornar um erro 403 se o usuário não tiver permissão para remover o membro
             | - Retornar um erro 404 se o bolão ou o membro não for encontrado
     */
-    public function destroy(int $poolId, int $memberId)
+    public function destroy($poolId, $memberId)
     {
     }
     /*
@@ -108,7 +108,7 @@ class PoolMemberController extends Controller
             | Uso comum:
             | - Usuário decide sair do bolão
     */
-    public function leave(Request $request, int $poolId)
+    public function leave(Request $request, $poolId)
     {
     }
     /*
@@ -118,7 +118,7 @@ class PoolMemberController extends Controller
             | Uso comum:
             | - Administração do bolão
     */
-    public function ban(int $poolId, int $memberId)
+    public function ban($poolId, $memberId)
     {
     }
     /*
@@ -128,7 +128,7 @@ class PoolMemberController extends Controller
             | Uso comum:
             | - Reabilitar participante
     */
-    public function unban(int $poolId, int $memberId)
+    public function unban($poolId, $memberId)
     {
     }
 }

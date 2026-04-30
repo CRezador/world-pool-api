@@ -42,7 +42,7 @@ class MatchController extends Controller
                 | - Permitir que os usuários vejam os detalhes de uma partida específica
                 | - Retornar um erro 404 se a partida não for encontrada
     */
-    public function show(int $id): Response
+    public function show($id): Response
     {
         $match = $this->matchRepository->findById($id);
 
@@ -86,7 +86,7 @@ class MatchController extends Controller
             | Uso comum:
             | - Listar partidas por um grupo da competição
     */
-    public function matchByGroup(int $id): Response
+    public function matchByGroup($id): Response
     {
         $matches = $this->matchRepository->findByGroup($id);
 
@@ -149,7 +149,7 @@ class MatchController extends Controller
             | - Ajustar times ou fase
             | - Uso administrativo
     */
-    public function update(MatchUpdateRequest $request, int $id): Response
+    public function update(MatchUpdateRequest $request, $id): Response
     {
         $request->validated();
 
@@ -184,7 +184,7 @@ class MatchController extends Controller
             | - Disparar cálculo de pontos dos palpites
             | - Endpoint interno/admin
     */
-    public function closeMatch(int $id)
+    public function closeMatch($id)
     {
         //@todo checar se realmente preciso dessa function
     }
@@ -197,7 +197,7 @@ class MatchController extends Controller
             | - Permitir que administradores deletem uma partida
             | - Retornar um erro 404 se a partida não for encontrada
     */
-    public function destroy(int $id): Response
+    public function destroy($id): Response
     {
         $match = $this->matchRepository->findById($id);
 
@@ -227,7 +227,7 @@ class MatchController extends Controller
             | - Processamento interno
             | - Análise de palpites após finalização
     */
-    public function guesses(int $id)
+    public function guesses($id)
     {
         //@todo implementar função para retornar os palpites relacionados a uma partida
     }

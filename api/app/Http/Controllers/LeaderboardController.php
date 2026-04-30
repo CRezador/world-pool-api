@@ -24,7 +24,7 @@ class LeaderboardController extends Controller
             | - Tela principal de classificação
             | - Listar todos os participantes ordenados por pontos
     */
-    public function index(int $poolId)
+    public function index($poolId)
     {
     }
     /*
@@ -37,7 +37,7 @@ class LeaderboardController extends Controller
             | Uso comum:
             | - Mostrar top 3 ou top 10 do bolão
     */
-    public function top(int $poolId, Request $request)
+    public function top($poolId, Request $request)
     {
     }
     /*
@@ -48,7 +48,7 @@ class LeaderboardController extends Controller
             | - Mostrar posição pessoal no ranking
             | - Destacar desempenho do usuário
     */
-    public function myPosition(int $poolId, Request $request)
+    public function myPosition($poolId, Request $request)
     {
     }
     /*
@@ -59,7 +59,7 @@ class LeaderboardController extends Controller
             | - Ver pontuação detalhada de um participante
             | - Comparar desempenho entre membros
     */
-    public function show(int $poolId, int $userId)
+    public function show($poolId, $userId)
     {
     }
     /*
@@ -70,7 +70,7 @@ class LeaderboardController extends Controller
             | - Atualizar pontuação após fechamento de uma rodada
             | - Processar pontos dos palpites com base nos resultados das partidas
     */
-    public function recalculate(int $poolId)
+    public function recalculate($poolId)
     {
     }
     /*
@@ -83,7 +83,7 @@ class LeaderboardController extends Controller
             | Interno:
             | - Usado por serviços internos ou jobs
     */
-    public function syncUser(int $poolId, int $userId)
+    public function syncUser($poolId, $userId)
     {
     }
     /*
@@ -96,7 +96,7 @@ class LeaderboardController extends Controller
             | Interno:
             | - Chamado pelo PoolMemberController
     */
-    public function createUser(int $poolId, int $userId)
+    public function createUser($poolId, $userId)
     {
     }
     /*
@@ -109,7 +109,7 @@ class LeaderboardController extends Controller
             | Interno:
             | - Chamado pelo PoolMemberController
     */
-    public function removeUser(int $poolId, int $userId)
+    public function removeUser($poolId, $userId)
     {
     }
     /*

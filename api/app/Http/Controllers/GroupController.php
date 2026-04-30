@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Transformers\GroupTransformers\GroupTransformer;
+use App\Services\GroupServices\GroupService;
 use App\Repositories\GroupRepositories\GroupRepository;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -49,7 +50,7 @@ class GroupController extends Controller
             | - Visualizar detalhes de um grupo
             | - Mostrar dados do grupo em tela
     */
-    public function show(int $id): Response
+    public function show($id): Response
     {
         $group = $this->groupRepository->findById($id);
 

@@ -12,12 +12,12 @@ class MatchRepository
         return Matches::query()->get();
     }
 
-    public function findById(int $id): ?Matches
+    public function findById($id): ?Matches
     {
         return Matches::query()->find($id);
     }
 
-    public function findByStage(string $stage): Collection
+    public function findByStage($stage): Collection
     {
         return Matches::query()
           ->select([
@@ -41,7 +41,7 @@ class MatchRepository
           ->get();
     }
 
-    public function findByGroup(int $groupId): Collection
+    public function findByGroup($groupId): Collection
     {
         return Matches::query()
           ->select([
@@ -65,7 +65,7 @@ class MatchRepository
         return Matches::create($data);
     }
 
-    public function matchAlreadyExits(int $homeId, int $awayId, string $stage): bool
+    public function matchAlreadyExits($homeId, $awayId, $stage): bool
     {
         return Matches::query()->where('home_team_id', $homeId)
           ->where('away_team_id', $awayId)

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Match;
 
+use App\Http\Enums\MatchStage;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Http\Enums\MatchStatus;
@@ -26,7 +27,7 @@ class MatchUpdateRequest extends FormRequest
         }
     }
 
-    public function withValidator(\Illuminate\Contracts\Validation\Validator $validator): void
+    public function withValidator($validator)
     {
         $validator->after(function ($validator) {
 
