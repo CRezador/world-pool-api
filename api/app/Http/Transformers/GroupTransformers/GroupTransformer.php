@@ -10,12 +10,10 @@ class GroupTransformer extends BaseTransformer
     {
         return [
             'name' => $group->name,
-            'teams' => $group->teams->map(function ($team) {
-                return [
-                    'name' => $team->name,
-                    'code' => $team->code,
-                ];
-            }),
+            'teams' => $group->teams->map(fn($team) => [
+                'name' => $team->name,
+                'code' => $team->code,
+            ]),
         ];
     }
 }

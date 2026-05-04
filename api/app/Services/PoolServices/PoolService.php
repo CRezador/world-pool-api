@@ -15,9 +15,8 @@ class PoolService
     public function __construct(
         private PoolRepository $poolRepository,
         private PoolMemberService $poolMemberService,
-    ) {
-
-    }
+        private PoolMemberRepository $poolMemberRepository
+    ) {}
 
     private function generateCode(): string
     {

@@ -17,8 +17,7 @@ class MatchController extends Controller
         private MatchRepository $matchRepository,
         private MatchService $matchService,
         private MatchTransformer $matchTransformer
-    ) {
-    }
+    ) {}
     /*
     GET /api/matches                     // Lista todas as partidas
         | Critério:

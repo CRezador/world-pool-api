@@ -38,7 +38,7 @@ class MatchUpdateRequest extends FormRequest
             ];
 
             $hasField = collect($this->only($fields))
-                ->filter(fn ($value) => !is_null($value))
+                ->filter(fn($value) => null !== $value)
                 ->isNotEmpty();
 
             if (!$hasField) {

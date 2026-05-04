@@ -11,9 +11,7 @@ class PoolMemberService
 {
     public function __construct(
         private PoolMemberRepository $poolMemberRepository,
-    ) {
-
-    }
+    ) {}
 
     public function addMember(int $poolId, string $role, int $userId): PoolMembers
     {

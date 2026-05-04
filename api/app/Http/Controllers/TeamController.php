@@ -11,8 +11,7 @@ class TeamController extends Controller
     public function __construct(
         private TeamTransformer $teamTransformer,
         private TeamRepository $teamRepository
-    ) {
-    }
+    ) {}
     /*
         GET /api/teams                   // Retorna a lista de equipes
             | Critério:

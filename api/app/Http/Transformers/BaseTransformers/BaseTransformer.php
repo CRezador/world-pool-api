@@ -15,7 +15,7 @@ abstract class BaseTransformer
     public function collection($items): array
     {
         return [
-            'data' => $items->map(fn ($item) => $this->transform($item))->values()->toArray(),
+            'data' => $items->map(fn($item) => $this->transform($item))->values()->toArray(),
         ];
     }
 

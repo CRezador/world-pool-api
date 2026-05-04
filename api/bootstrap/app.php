@@ -18,9 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => AdminMiddleware::class,
             'PoolMember' => \App\Http\Middleware\PoolMemberMiddleware::class,
             'PoolMemberAdmin' => \App\Http\Middleware\PoolMemberAdminMiddleware::class,
-            'PoolOwner' => \App\Http\Middleware\PoolOwnerMiddleware::class
+            'PoolOwner' => \App\Http\Middleware\PoolOwnerMiddleware::class,
         ]);
-        $middleware->redirectGuestsTo(fn () => null);
+        $middleware->redirectGuestsTo(fn() => null);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

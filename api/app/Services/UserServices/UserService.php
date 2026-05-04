@@ -11,8 +11,7 @@ class UserService
 {
     public function __construct(
         private UserRepository $userRepository
-    ) {
-    }
+    ) {}
 
     public function login(string $email, string $password): User
     {

@@ -12,8 +12,7 @@ class TokenController extends Controller
     public function __construct(
         private UserService $userService,
         private TokenTransformer $tokenTransformer
-    ) {
-    }
+    ) {}
 
     /*
         POST /api/login

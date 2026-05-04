@@ -9,9 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class PoolMemberMiddleware
 {
-    public function __construct(private PoolMemberService $poolMemberService)
-    {
-    }
+    public function __construct(private PoolMemberService $poolMemberService) {}
 
     public function handle(Request $request, Closure $next): Response
     {

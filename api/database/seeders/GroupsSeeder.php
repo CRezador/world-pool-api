@@ -12,7 +12,7 @@ class GroupsSeeder extends Seeder
      */
     public function run(): void
     {
-        $rows = collect(range('A', 'L'))->map(fn ($l) => [
+        $rows = collect(range('A', 'L'))->map(fn($l) => [
             'name' => $l,
         ])->all();
 

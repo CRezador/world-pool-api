@@ -17,9 +17,7 @@ class PoolController extends Controller
         private PoolService $poolService,
         private PoolTransformer $poolTransformer,
         private PoolMemberTransformer $poolMemberTransformer
-    ) {
-
-    }
+    ) {}
     /*
         GET    /api/pools
             | Lista os bolões disponíveis

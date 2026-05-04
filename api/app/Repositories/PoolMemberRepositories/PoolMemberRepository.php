@@ -72,7 +72,7 @@ class PoolMemberRepository
 
     }
 
-    public function getRole(int $poolId, int $userId): PoolUserRole|null
+    public function getRole(int $poolId, int $userId): ?PoolUserRole
     {
         $member = PoolMembers::query()
             ->where('pool_id', $poolId)
