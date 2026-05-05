@@ -5,13 +5,13 @@ on:
     branches: [main]
     paths:
       - 'api/**/*.php'
-      - 'api/php-cs-fixer.php'
+      - 'api/.php-cs-fixer.dist.php'
       - 'api/composer.lock'
   pull_request:
     branches: [main]
     paths:
       - 'api/**/*.php'
-      - 'api/php-cs-fixer.php'
+      - 'api/.php-cs-fixer.dist.php'
       - 'api/composer.lock'
 
 jobs:
@@ -44,4 +44,4 @@ jobs:
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Run PHP CS Fixer (dry-run)
-        run: vendor/bin/php-cs-fixer check --config=php-cs-fixer.php --diff --ansi
+        run: vendor/bin/php-cs-fixer check --config=.php-cs-fixer.dist.php --diff --ansi
