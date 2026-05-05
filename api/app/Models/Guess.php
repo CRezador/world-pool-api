@@ -14,7 +14,7 @@ class Guess extends Model
     protected $fillable = [
         'home_score',
         'away_score',
-        'points'
+        'points',
     ];
     protected $casts = [
         'created_at' => 'datetime',

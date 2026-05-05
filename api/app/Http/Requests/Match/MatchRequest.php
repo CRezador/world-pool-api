@@ -53,7 +53,7 @@ class MatchRequest extends FormRequest
             'kickoff_at.date_format' => 'A data de início da partida deve estar no formato d/m/Y.',
             'stage.required' => 'A fase da partida é obrigatória.',
             'stage.enum' => 'A fase da partida deve ser um dos seguintes valores: GROUP_STAGE, ROUND_OF_16, QUARTER_FINALS, SEMI_FINALS, FINAL.',
-            'status.enum' => 'A Status da partida deve ser um dos seguintes valores: SCHEDULED, IN_PROGRESS, FINISHED.'
+            'status.enum' => 'A Status da partida deve ser um dos seguintes valores: SCHEDULED, IN_PROGRESS, FINISHED.',
         ];
     }
 }

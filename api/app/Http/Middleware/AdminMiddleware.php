@@ -20,6 +20,7 @@ class AdminMiddleware
                 'message' => 'Acesso negado',
             ], 403);
         }
+
         return $next($request);
     }
 }

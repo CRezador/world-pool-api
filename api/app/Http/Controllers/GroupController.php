@@ -21,8 +21,7 @@ class GroupController extends Controller
     public function __construct(
         private GroupTransformer $groupTransformer,
         private GroupRepository $groupRepository
-    ) {
-    }
+    ) {}
 
     /*
         GET /api/groups
@@ -55,7 +54,7 @@ class GroupController extends Controller
 
         if (!$group) {
             return response()->json([
-                'message' => 'Grupo não encontrado'
+                'message' => 'Grupo não encontrado',
             ], 404);
         }
 

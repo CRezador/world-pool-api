@@ -12,7 +12,7 @@ class PoolTransformer extends BaseTransformer
             'name' => $pool->name,
             'join_code' => $pool->join_code,
             'is_public' => $pool->is_public === 1 ? true : false,
-            'owner' => $pool->owner->name
+            'owner' => $pool->owner->name,
         ];
     }
 

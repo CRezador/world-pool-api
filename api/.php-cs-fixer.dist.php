@@ -10,21 +10,15 @@ return (new Config())
     ->setRules([
         '@auto' => true,
         '@auto:risky' => true,
-        '@PhpCsFixer:risky' => true
+        '@PhpCsFixer:risky' => true,
+        'declare_strict_types' => false,
+        'static_lambda' => false,
+        'void_return' => false,
     ])
     // 💡 by default, Fixer looks for `*.php` files excluding `./vendor/` - here, you can groom this config
     ->setFinder(
         (new Finder())
-            // 💡 root folder to check
             ->in(__DIR__)
-        // 💡 additional files, eg bin entry file
-        // ->append([__DIR__.'/bin-entry-file'])
-        // 💡 folders to exclude, if any
-        // ->exclude([/* ... */])
-        // 💡 path patterns to exclude, if any
-        // ->notPath([/* ... */])
-        // 💡 extra configs
-        // ->ignoreDotFiles(false) // true by default in v3, false in v4 or future mode
-        // ->ignoreVCS(true) // true by default
+            ->exclude(['bootstrap/cache', 'vendor', 'storage'])
     )
 ;

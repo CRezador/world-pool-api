@@ -23,7 +23,7 @@ class PoolRequest extends FormRequest
     {
         return [
             'name' => ['required', 'max:30', 'min:5'],
-            'is_public' => ['required']
+            'is_public' => ['required'],
         ];
     }
 }

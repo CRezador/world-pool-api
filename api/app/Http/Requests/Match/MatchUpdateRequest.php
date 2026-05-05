@@ -34,11 +34,11 @@ class MatchUpdateRequest extends FormRequest
                 'home_score',
                 'away_score',
                 'kickoff_at',
-                'status'
+                'status',
             ];
 
             $hasField = collect($this->only($fields))
-                ->filter(fn ($value) => !is_null($value))
+                ->filter(fn($value) => null !== $value)
                 ->isNotEmpty();
 
             if (!$hasField) {
@@ -60,7 +60,7 @@ class MatchUpdateRequest extends FormRequest
             'home_score' => ['sometimes', 'nullable', 'integer', 'min:0'],
             'away_score' => ['sometimes', 'nullable', 'integer', 'min:0'],
             'kickoff_at' => ['sometimes', 'nullable', 'date_format:d/m/Y'],
-            'status' => ['sometimes', 'nullable', Rule::enum(MatchStatus::class)]
+            'status' => ['sometimes', 'nullable', Rule::enum(MatchStatus::class)],
         ];
     }
 
@@ -72,7 +72,7 @@ class MatchUpdateRequest extends FormRequest
             'away_score.integer' => 'O placar do time visitante deve ser um número inteiro.',
             'away_score.min' => 'O placar do time visitante deve ser um número inteiro não negativo.',
             'kickoff_at.date_format' => 'A data de início da partida deve estar no formato d/m/Y.',
-            'status.enum' => 'A Status da partida deve ser um dos seguintes valores: SCHEDULED, IN_PROGRESS, FINISHED.'
+            'status.enum' => 'A Status da partida deve ser um dos seguintes valores: SCHEDULED, IN_PROGRESS, FINISHED.',
         ];
     }
 }

@@ -55,9 +55,7 @@ class UserController extends Controller
             | Uso comum:
             | - ADMIN editar dados de usuários
     */
-    public function update(Request $request, int $id)
-    {
-    }
+    public function update(Request $request, int $id) {}
     /*
         DELETE /api/users/{user}
             | Remove ou desativa um usuário do sistema
@@ -68,9 +66,7 @@ class UserController extends Controller
             | Acesso:
             | - ADMIN
     */
-    public function destroy(int $id)
-    {
-    }
+    public function destroy(int $id) {}
     /*
         PATCH /api/users/{user}/role
             | Atualiza o papel do usuário no sistema
@@ -82,7 +78,5 @@ class UserController extends Controller
             | Acesso:
             | - ADMIN
     */
-    public function updateRole(Request $request, int $id)
-    {
-    }
+    public function updateRole(Request $request, int $id) {}
 }

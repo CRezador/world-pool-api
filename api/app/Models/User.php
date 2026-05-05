@@ -20,7 +20,7 @@ class User extends Authenticatable
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
-        'role' => UserRole::class
+        'role' => UserRole::class,
     ];
     public function isAdmin(): bool
     {

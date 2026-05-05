@@ -6,7 +6,6 @@ use App\Http\Requests\Match\MatchRequest;
 use App\Http\Requests\Match\MatchUpdateRequest;
 use App\Http\Transformers\MatchTransformers\MatchTransformer;
 use Symfony\Component\HttpFoundation\Response;
-use App\Http\Controllers\Controller;
 use App\Http\Enums\MatchStatus;
 use App\Http\Requests\Match\MatchStageRequest;
 use App\Repositories\MatchRepositories\MatchRepository;
@@ -18,8 +17,7 @@ class MatchController extends Controller
         private MatchRepository $matchRepository,
         private MatchService $matchService,
         private MatchTransformer $matchTransformer
-    ) {
-    }
+    ) {}
     /*
     GET /api/matches                     // Lista todas as partidas
         | Critério:
@@ -31,6 +29,7 @@ class MatchController extends Controller
     public function index(): Response
     {
         $matches = $this->matchRepository->findAll();
+
         return response()->json($this->matchTransformer->collection($matches), 200);
     }
     /*
@@ -124,14 +123,15 @@ class MatchController extends Controller
             'away_score' => $request->away_score ?? 0,
             'kickoff_at' => $request->kickoff_at,
             'stage' => $request->stage,
-            'status' => $request->status ?? MatchStatus::SCHEDULED
+            'status' => $request->status ?? MatchStatus::SCHEDULED,
         ];
+
         try {
             $matchCreated = $this->matchService->createMatch($match);
         } catch (\Exception $e) {
 
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
 
