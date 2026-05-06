@@ -72,6 +72,23 @@ class PoolMemberRepository
 
     }
 
+    public function getMemberById(int $poolId, int $memberId): ?PoolMembers
+    {
+        return PoolMembers::query()
+            ->where('pool_id', $poolId)
+            ->where('id', $memberId)
+            ->with('user:id,name')
+            ->first();
+    }
+
+    public function leavePool(int $poolId, int $userId): void
+    {
+        PoolMembers::query()
+            ->where('pool_id', $poolId)
+            ->where('user_id', $userId)
+            ->update(['status' => PoolMemberStatus::LEFT->value]);
+    }
+
     public function getRole(int $poolId, int $userId): ?PoolUserRole
     {
         $member = PoolMembers::query()
@@ -81,4 +98,31 @@ class PoolMemberRepository
 
         return $member ? $member->role : null;
     }
+
+    public function getRoleByMemberId(int $poolId, int $memberId): ?PoolUserRole
+    {
+        $member = PoolMembers::query()
+            ->where('pool_id', $poolId)
+            ->where('id', $memberId)
+            ->first();
+
+        return $member ? $member->role : null;
+    }
+
+    public function banMember(int $poolId, int $memberId): void
+    {
+        PoolMembers::query()
+            ->where('pool_id', $poolId)
+            ->where('id', $memberId)
+            ->update(['status' => PoolMemberStatus::BANNED->value]);
+    }
+
+    public function unbanMember(int $poolId, int $memberId): void
+    {
+        PoolMembers::query()
+            ->where('pool_id', $poolId)
+            ->where('id', $memberId)
+            ->update(['status' => PoolMemberStatus::ACTIVE->value]);
+    }
+
 }

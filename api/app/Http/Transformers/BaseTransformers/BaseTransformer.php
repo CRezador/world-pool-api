@@ -12,9 +12,10 @@ abstract class BaseTransformer
         ];
     }
 
-    public function collection($items): array
+    public function collection($items, $message): array
     {
         return [
+            'message' => $message,
             'data' => $items->map(fn($item) => $this->transform($item))->values()->toArray(),
         ];
     }

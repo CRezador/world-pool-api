@@ -29,7 +29,7 @@ class PoolMemberController extends Controller
         $members = $this->poolMemberService->listMembers($poolId);
 
         return response()->json([
-            $this->poolMemberTransformer->collection($members, 'Lista de membros do bolão'),
+            $this->poolMemberTransformer->collection($members, 'Membros listados com sucesso'),
         ], 200);
     }
     /*
@@ -40,7 +40,19 @@ class PoolMemberController extends Controller
             | - Ver dados de participação
             | - Ver papel do usuário (admin/member)
     */
-    public function show(int $poolId, int $memberId) {}
+    public function show(int $poolId, int $memberId): Response
+    {
+        try {
+            $member = $this->poolMemberService->getMember($poolId, $memberId);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 404);
+        }
+
+        return response()->json(
+            $this->poolMemberTransformer->item($member, 'Membro encontrado'),
+            200
+        );
+    }
     /*
      PATCH /api/pools/{pool}/members/role
         | Atualiza o papel de um membro no bolão (admin/owner)
@@ -73,34 +85,22 @@ class PoolMemberController extends Controller
         ], 200);
     }
     /*
-        PATCH /api/pools/{pool}/members/{member}/status
-            | Atualiza o status do membro no bolão
-            |
-            | Uso comum:
-            | - Banir membro
-            | - Reativar membro
-    */
-    public function updateStatus(Request $request, int $poolId, int $memberId) {}
-    /*
-        DELETE /api/pools/{pool}/members/{member}
-            | Remove um membro do bolão
-            |
-            | Permissões:
-            | - owner/admin pode remover qualquer membro
-            | - usuário pode sair do bolão
-            | - usuário fica marcado como "BANNED" em vez de ser deletado, para manter histórico
-            | - Retornar um erro 403 se o usuário não tiver permissão para remover o membro
-            | - Retornar um erro 404 se o bolão ou o membro não for encontrado
-    */
-    public function destroy(int $poolId, int $memberId) {}
-    /*
-        POST /api/pools/{pool}/members/leave
+        POST /api/pools/{pool}/leave
             | Usuário autenticado sai do bolão
             |
             | Uso comum:
             | - Usuário decide sair do bolão
     */
-    public function leave(Request $request, int $poolId) {}
+    public function leave(Request $request, int $poolId): Response
+    {
+        try {
+            $this->poolMemberService->leavePool($poolId, $request->user()->id);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
+        }
+
+        return response()->json(['message' => 'Você saiu do bolão com sucesso'], 200);
+    }
     /*
         POST /api/pools/{pool}/members/{member}/ban
             | Bane um membro do bolão
@@ -108,7 +108,16 @@ class PoolMemberController extends Controller
             | Uso comum:
             | - Administração do bolão
     */
-    public function ban(int $poolId, int $memberId) {}
+    public function ban(Request $request, int $poolId, int $memberId): Response
+    {
+        try {
+            $this->poolMemberService->banMember($poolId, $memberId, $request->user()->id);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
+        }
+
+        return response()->json(['message' => 'Membro banido com sucesso'], 200);
+    }
     /*
         POST /api/pools/{pool}/members/{member}/unban
             | Remove banimento de um membro
@@ -116,5 +125,14 @@ class PoolMemberController extends Controller
             | Uso comum:
             | - Reabilitar participante
     */
-    public function unban(int $poolId, int $memberId) {}
+    public function unban(Request $request, int $poolId, int $memberId): Response
+    {
+        try {
+            $this->poolMemberService->unbanMember($poolId, $memberId, $request->user()->id);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
+        }
+
+        return response()->json(['message' => 'Membro desbanido com sucesso'], 200);
+    }
 }
