@@ -44,9 +44,10 @@ Route::middleware('auth:sanctum')->group(
 
         //Rota PoolMember
         Route::get('/pools/{poolId}/members', [PoolMemberController::class, 'index'])->middleware('PoolMember');
-        Route::patch('/pools/{poolId}/members/role', [PoolMemberController::class, 'updateRole'])->middleware('PoolMemberAdmin');
-        Route::patch('/pools/{poolId}/members/{memberId}/status', [PoolMemberController::class, 'updateStatus']);
-        Route::delete('/pools/{poolId}/members/{memberId}', [PoolMemberController::class, 'destroy'])->middleware('PoolMemberAdmin');
+        Route::get('/pools/{poolId}/members/me', [PoolMemberController::class, 'me'])->middleware('PoolMember');
+        Route::get('/pools/{poolId}/members/{memberId}', [PoolMemberController::class, 'show'])->middleware('PoolMember');
+        Route::patch('/pools/{poolId}/members/{memberId}/role', [PoolMemberController::class, 'updateRole'])->middleware('PoolMemberAdmin');
+        Route::post('/pools/{poolId}/leave', [PoolMemberController::class, 'leave'])->middleware('PoolMember');
         Route::post('/pools/{poolId}/regenerate-code', [PoolController::class, 'regenerateJoinCode'])->middleware('PoolMemberAdmin');
         Route::post('/pools/{poolId}/members/{memberId}/ban', [PoolMemberController::class, 'ban'])->middleware('PoolMemberAdmin');
         Route::post('/pools/{poolId}/members/{memberId}/unban', [PoolMemberController::class, 'unban'])->middleware('PoolMemberAdmin');

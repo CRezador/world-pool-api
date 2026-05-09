@@ -25,8 +25,7 @@ class PoolMemberUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'role' => [Rule::enum(PoolUserRole::class), 'required'],
-            'user_id' => 'required|exists:pool_members,user_id',
+            'role' => ['required', Rule::in([PoolUserRole::ADMIN->value, PoolUserRole::MEMBER->value])],
         ];
     }
 
@@ -34,9 +33,7 @@ class PoolMemberUpdateRequest extends FormRequest
     {
         return [
             'role.required' => 'O campo role é obrigatório.',
-            'role.enum' => 'O campo role deve ser ADMIN ou MEMBER.',
-            'user_id.required' => 'O campo user_id é obrigatório.',
-            'user_id.exists' => 'O user_id fornecido não existe.',
+            'role.in' => 'O campo role deve ser ADMIN ou MEMBER.',
         ];
     }
 }
