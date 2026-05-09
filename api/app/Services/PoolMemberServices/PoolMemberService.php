@@ -4,7 +4,7 @@ namespace App\Services\PoolMemberServices;
 
 use App\Http\Enums\PoolMemberStatus;
 use App\Http\Enums\PoolUserRole;
-use App\Models\PoolMembers;
+use App\Models\PoolMember;
 use App\Repositories\PoolMemberRepositories\PoolMemberRepository;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -14,7 +14,7 @@ class PoolMemberService
         private PoolMemberRepository $poolMemberRepository,
     ) {}
 
-    public function addMember(int $poolId, PoolUserRole $role, int $userId): PoolMembers
+    public function addMember(int $poolId, PoolUserRole $role, int $userId): PoolMember
     {
         return $this->poolMemberRepository->addMember($poolId, $role, $userId);
     }
@@ -24,7 +24,7 @@ class PoolMemberService
         return $this->poolMemberRepository->getMembersByPoolId($poolId);
     }
 
-    public function getMember(int $poolId, int $memberId): PoolMembers
+    public function getMember(int $poolId, int $memberId): PoolMember
     {
         $member = $this->poolMemberRepository->getMemberById($poolId, $memberId);
 

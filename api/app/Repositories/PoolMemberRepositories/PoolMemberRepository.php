@@ -4,14 +4,14 @@ namespace App\Repositories\PoolMemberRepositories;
 
 use App\Http\Enums\PoolMemberStatus;
 use App\Http\Enums\PoolUserRole;
-use App\Models\PoolMembers;
+use App\Models\PoolMember;
 use Illuminate\Database\Eloquent\Collection;
 
 class PoolMemberRepository
 {
     public function isMember(int $poolId, int $userId): bool
     {
-        return PoolMembers::query()
+        return PoolMember::query()
             ->where('pool_id', $poolId)
             ->where('user_id', $userId)
             ->where('status', PoolMemberStatus::ACTIVE->value)
@@ -20,7 +20,7 @@ class PoolMemberRepository
 
     public function isAdmin(int $poolId, int $userId): bool
     {
-        return PoolMembers::query()
+        return PoolMember::query()
             ->where('pool_id', $poolId)
             ->where('user_id', $userId)
             ->where('role', PoolUserRole::ADMIN->value)
@@ -30,7 +30,7 @@ class PoolMemberRepository
 
     public function isOwner(int $poolId, int $userId): bool
     {
-        return PoolMembers::query()
+        return PoolMember::query()
             ->where('pool_id', $poolId)
             ->where('user_id', $userId)
             ->where('role', PoolUserRole::OWNER->value)
@@ -39,16 +39,16 @@ class PoolMemberRepository
 
     public function isOwnerByMemberId(int $poolId, int $memberId): bool
     {
-        return PoolMembers::query()
+        return PoolMember::query()
             ->where('id', $memberId)
             ->where('pool_id', $poolId)
             ->where('role', PoolUserRole::OWNER->value)
             ->exists();
     }
 
-    public function addMember(int $poolId, PoolUserRole $role, int $userId): PoolMembers
+    public function addMember(int $poolId, PoolUserRole $role, int $userId): PoolMember
     {
-        return PoolMembers::create([
+        return PoolMember::create([
             'pool_id' => $poolId,
             'user_id' => $userId,
             'role' => $role->value,
@@ -57,9 +57,9 @@ class PoolMemberRepository
         ]);
     }
 
-    public function getMemberByUserId(int $poolId, int $userId): ?PoolMembers
+    public function getMemberByUserId(int $poolId, int $userId): ?PoolMember
     {
-        return PoolMembers::query()
+        return PoolMember::query()
             ->where('pool_id', $poolId)
             ->where('user_id', $userId)
             ->first();
@@ -67,7 +67,7 @@ class PoolMemberRepository
 
     public function getMembersByPoolId(int $poolId): Collection
     {
-        return PoolMembers::query()
+        return PoolMember::query()
             ->where('pool_id', $poolId)
             ->where('status', PoolMemberStatus::ACTIVE->value)
             ->with('user:id,name')
@@ -76,16 +76,16 @@ class PoolMemberRepository
 
     public function updateRole(int $poolId, int $userId, string $role): void
     {
-        PoolMembers::query()
+        PoolMember::query()
             ->where('pool_id', $poolId)
             ->where('user_id', $userId)
             ->update(['role' => $role]);
 
     }
 
-    public function getMemberById(int $poolId, int $memberId): ?PoolMembers
+    public function getMemberById(int $poolId, int $memberId): ?PoolMember
     {
-        return PoolMembers::query()
+        return PoolMember::query()
             ->where('pool_id', $poolId)
             ->where('id', $memberId)
             ->with('user:id,name')
@@ -94,7 +94,7 @@ class PoolMemberRepository
 
     public function leavePool(int $poolId, int $userId): void
     {
-        PoolMembers::query()
+        PoolMember::query()
             ->where('pool_id', $poolId)
             ->where('user_id', $userId)
             ->update(['status' => PoolMemberStatus::LEFT->value]);
@@ -102,7 +102,7 @@ class PoolMemberRepository
 
     public function getRole(int $poolId, int $userId): ?PoolUserRole
     {
-        $member = PoolMembers::query()
+        $member = PoolMember::query()
             ->where('pool_id', $poolId)
             ->where('user_id', $userId)
             ->first();
@@ -112,7 +112,7 @@ class PoolMemberRepository
 
     public function getRoleByMemberId(int $poolId, int $memberId): ?PoolUserRole
     {
-        $member = PoolMembers::query()
+        $member = PoolMember::query()
             ->where('pool_id', $poolId)
             ->where('id', $memberId)
             ->first();
@@ -122,7 +122,7 @@ class PoolMemberRepository
 
     public function banMember(int $poolId, int $memberId): void
     {
-        PoolMembers::query()
+        PoolMember::query()
             ->where('pool_id', $poolId)
             ->where('id', $memberId)
             ->update(['status' => PoolMemberStatus::BANNED->value]);
@@ -130,7 +130,7 @@ class PoolMemberRepository
 
     public function unbanMember(int $poolId, int $memberId): void
     {
-        PoolMembers::query()
+        PoolMember::query()
             ->where('pool_id', $poolId)
             ->where('id', $memberId)
             ->update(['status' => PoolMemberStatus::ACTIVE->value]);

@@ -28,9 +28,10 @@ class PoolMemberController extends Controller
     {
         $members = $this->poolMemberService->listMembers($poolId);
 
-        return response()->json([
+        return response()->json(
             $this->poolMemberTransformer->collection($members, 'Membros listados com sucesso'),
-        ], 200);
+            200
+        );
     }
     /*
         GET /api/pools/{pool}/members/{member}

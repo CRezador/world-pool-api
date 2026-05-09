@@ -26,7 +26,7 @@ class Pool extends Model
 
     public function members(): HasMany
     {
-        return $this->hasMany(PoolMembers::class, 'pool_id');
+        return $this->hasMany(PoolMember::class, 'pool_id');
     }
 
     public function owner(): BelongsTo
