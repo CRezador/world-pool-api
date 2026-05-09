@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Authentication\LoginRequest;
 use App\Http\Transformers\TokenTransformers\TokenTransformer;
 use App\Services\UserServices\UserService;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
 class TokenController extends Controller
@@ -14,14 +15,25 @@ class TokenController extends Controller
         private TokenTransformer $tokenTransformer
     ) {}
 
-    /*
-        POST /api/login
-            | Autentica um usuário e retorna um token de acesso
-            |
-            | Uso comum:
-            | - Login de usuários existentes
-            | - Endpoint público
-    */
+    #[OA\Post(
+        path: '/api/login',
+        summary: 'Autentica usuário e retorna token de acesso',
+        tags: ['Auth'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['email', 'password'],
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'user@example.com'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password', example: 'secret'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Token gerado com sucesso'),
+            new OA\Response(response: 401, description: 'Credenciais inválidas'),
+        ]
+    )]
     public function store(LoginRequest $request): Response
     {
         $credentials = $request->validated();

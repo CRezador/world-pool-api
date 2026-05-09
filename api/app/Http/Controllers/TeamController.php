@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Transformers\TeamTransformers\TeamTransformer;
-use Symfony\Component\HttpFoundation\Response;
 use App\Repositories\TeamRepositories\TeamRepository;
+use OpenApi\Attributes as OA;
+use Symfony\Component\HttpFoundation\Response;
 
 class TeamController extends Controller
 {
@@ -12,23 +13,37 @@ class TeamController extends Controller
         private TeamTransformer $teamTransformer,
         private TeamRepository $teamRepository
     ) {}
-    /*
-        GET /api/teams                   // Retorna a lista de equipes
-            | Critério:
-            | - Retornar um array de equipes, cada equipe deve conter o nome, o grupo e o código da equipe
-    */
+
+    #[OA\Get(
+        path: '/api/teams',
+        summary: 'Lista todas as equipes',
+        security: [['sanctum' => []]],
+        tags: ['Teams'],
+        responses: [
+            new OA\Response(response: 200, description: 'Lista de equipes'),
+            new OA\Response(response: 401, description: 'Não autenticado'),
+        ]
+    )]
     public function index(): Response
     {
         $teams = $this->teamRepository->findAll();
 
         return response()->json($this->teamTransformer->collection($teams), 200);
     }
-    /*
-        GET /api/teams/{team-id}              // Retorna os detalhes de uma equipe específica
-            | Critério:
-            | - Retornar o nome, o grupo e o código da equipe
-            | - Retornar um erro 404 se a equipe não for encontrada
-    */
+
+    #[OA\Get(
+        path: '/api/teams/{id}',
+        summary: 'Retorna detalhes de uma equipe específica',
+        security: [['sanctum' => []]],
+        tags: ['Teams'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Equipe encontrada'),
+            new OA\Response(response: 404, description: 'Equipe não encontrada'),
+        ]
+    )]
     public function show(int $id): Response
     {
         $team = $this->teamRepository->findById($id);
@@ -43,13 +58,20 @@ class TeamController extends Controller
             $this->teamTransformer->item($team, 'Equipe encontrada'),
         ], 200);
     }
-    /*
-        GET /api/groups/{group}/teams
-            | Retorna todos os times que pertencem ao grupo
-            |
-            | Uso comum:
-            | - Mostrar tabela de times do grupo
-    */
+
+    #[OA\Get(
+        path: '/api/groups/{id}/teams',
+        summary: 'Lista todas as equipes de um grupo',
+        security: [['sanctum' => []]],
+        tags: ['Teams'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Equipes do grupo'),
+            new OA\Response(response: 404, description: 'Grupo ou equipes não encontradas'),
+        ]
+    )]
     public function groupTeams(int $id): Response
     {
         $groupTeams = $this->teamRepository->teamsByGroup($id);

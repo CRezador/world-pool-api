@@ -4,33 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Http\Transformers\GroupTransformers\GroupTransformer;
 use App\Repositories\GroupRepositories\GroupRepository;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
 class GroupController extends Controller
 {
-    /*
-|--------------------------------------------------------------------------
-| Groups Endpoints
-|--------------------------------------------------------------------------
-|
-| Representa os grupos da copa (A, B, C...) e organiza os times
-| que pertencem a cada grupo.
-|
-*/
-
     public function __construct(
         private GroupTransformer $groupTransformer,
         private GroupRepository $groupRepository
     ) {}
 
-    /*
-        GET /api/groups
-            | Retorna todos os grupos cadastrados
-            |
-            | Uso comum:
-            | - Listar todos os grupos da copa
-            | - Tela inicial de grupos
-    */
+    #[OA\Get(
+        path: '/api/groups',
+        summary: 'Lista todos os grupos da copa',
+        security: [['sanctum' => []]],
+        tags: ['Groups'],
+        responses: [
+            new OA\Response(response: 200, description: 'Lista de grupos'),
+            new OA\Response(response: 401, description: 'Não autenticado'),
+        ]
+    )]
     public function index(): Response
     {
         $group = $this->groupRepository->findAll();
@@ -40,14 +33,20 @@ class GroupController extends Controller
             200
         );
     }
-    /*
-        GET /api/groups/{group}
-            | Retorna informações de um grupo específico
-            |
-            | Uso comum:
-            | - Visualizar detalhes de um grupo
-            | - Mostrar dados do grupo em tela
-    */
+
+    #[OA\Get(
+        path: '/api/groups/{id}',
+        summary: 'Retorna detalhes de um grupo específico',
+        security: [['sanctum' => []]],
+        tags: ['Groups'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Grupo encontrado'),
+            new OA\Response(response: 404, description: 'Grupo não encontrado'),
+        ]
+    )]
     public function show(int $id): Response
     {
         $group = $this->groupRepository->findById($id);

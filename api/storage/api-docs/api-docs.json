@@ -1,0 +1,2051 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "World Pool API",
+        "description": "API para gerenciamento de bolões da Copa do Mundo",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8080",
+            "description": "Servidor de desenvolvimento"
+        }
+    ],
+    "paths": {
+        "/api/groups": {
+            "get": {
+                "tags": [
+                    "Groups"
+                ],
+                "summary": "Lista todos os grupos da copa",
+                "operationId": "f286cbf34dc4be32a94459a335658168",
+                "responses": {
+                    "200": {
+                        "description": "Lista de grupos"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/groups/{id}": {
+            "get": {
+                "tags": [
+                    "Groups"
+                ],
+                "summary": "Retorna detalhes de um grupo específico",
+                "operationId": "38a1f4990d0dc69ead7f7377ad016117",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Grupo encontrado"
+                    },
+                    "404": {
+                        "description": "Grupo não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/guesses": {
+            "get": {
+                "tags": [
+                    "Guesses"
+                ],
+                "summary": "Lista os palpites do usuário autenticado no bolão",
+                "operationId": "2ce328cacdf85dda22c41d7c3bd2c70e",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Palpites do usuário"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Guesses"
+                ],
+                "summary": "Cria um novo palpite para uma partida",
+                "operationId": "b97fd0ba18631f928b07722009458490",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "match_id",
+                                    "home_score",
+                                    "away_score"
+                                ],
+                                "properties": {
+                                    "match_id": {
+                                        "type": "integer"
+                                    },
+                                    "home_score": {
+                                        "type": "integer"
+                                    },
+                                    "away_score": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Palpite criado"
+                    },
+                    "400": {
+                        "description": "Partida já iniciada ou dados inválidos"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/guesses/{matchId}": {
+            "get": {
+                "tags": [
+                    "Guesses"
+                ],
+                "summary": "Retorna o palpite do usuário autenticado para uma partida específica",
+                "operationId": "dc5fd18cea3ead46eccb4077c05f49eb",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "matchId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Palpite encontrado"
+                    },
+                    "404": {
+                        "description": "Palpite não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/guesses/{guessId}": {
+            "put": {
+                "tags": [
+                    "Guesses"
+                ],
+                "summary": "Atualiza um palpite existente",
+                "operationId": "5f0b54db13ae31b8e9a48716956d54f4",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "guessId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "home_score",
+                                    "away_score"
+                                ],
+                                "properties": {
+                                    "home_score": {
+                                        "type": "integer"
+                                    },
+                                    "away_score": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Palpite atualizado"
+                    },
+                    "400": {
+                        "description": "Partida já iniciada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Guesses"
+                ],
+                "summary": "Remove um palpite do usuário",
+                "operationId": "6213a1a2c97224e597d26bed2ca8967f",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "guessId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Palpite removido"
+                    },
+                    "400": {
+                        "description": "Partida já iniciada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/members/{memberId}/guesses": {
+            "get": {
+                "tags": [
+                    "Guesses"
+                ],
+                "summary": "Lista todos os palpites de um membro específico no bolão",
+                "operationId": "4a5b7edebc2eef7e011d624a0e5506f6",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "memberId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Palpites do membro"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/matches/{matchId}/guesses": {
+            "get": {
+                "tags": [
+                    "Guesses"
+                ],
+                "summary": "Lista todos os palpites feitos para uma partida no bolão",
+                "operationId": "147cd59653f5a502d0c882b6bbd7bbdd",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "matchId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Palpites da partida"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/internal/matches/{matchId}/guesses/score": {
+            "post": {
+                "tags": [
+                    "Guesses"
+                ],
+                "summary": "Calcula os pontos de todos os palpites de uma partida (interno)",
+                "operationId": "9af80c6acc102ab63724a11504511631",
+                "parameters": [
+                    {
+                        "name": "matchId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pontos calculados"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/internal/pools/{poolId}/leaderboard/recalculate": {
+            "post": {
+                "tags": [
+                    "Guesses"
+                ],
+                "summary": "Recalcula o ranking de um bolão (interno)",
+                "operationId": "af46fe2ab67e80eb37ef162bf7c7d02b",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ranking recalculado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/internal/matches/{matchId}/process-result": {
+            "post": {
+                "tags": [
+                    "Guesses"
+                ],
+                "summary": "Processa completamente o resultado de uma partida (interno)",
+                "operationId": "3d214d1b1cddc435015673f16d8aad21",
+                "parameters": [
+                    {
+                        "name": "matchId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resultado processado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/internal/guesses/{guessId}/score": {
+            "post": {
+                "tags": [
+                    "Guesses"
+                ],
+                "summary": "Calcula a pontuação de um palpite específico (interno)",
+                "operationId": "772b82abc0538bd6fda5fb44c307af19",
+                "parameters": [
+                    {
+                        "name": "guessId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pontuação calculada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/leaderboard": {
+            "get": {
+                "tags": [
+                    "Leaderboard"
+                ],
+                "summary": "Retorna o ranking completo do bolão",
+                "operationId": "49dfcbdcec56bf3bada4a815fbd80928",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ranking do bolão"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/leaderboard/top": {
+            "get": {
+                "tags": [
+                    "Leaderboard"
+                ],
+                "summary": "Retorna os primeiros colocados do ranking",
+                "operationId": "baf5fbd316279ea7b194ff120e54a7b9",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Top colocados"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/leaderboard/me": {
+            "get": {
+                "tags": [
+                    "Leaderboard"
+                ],
+                "summary": "Retorna a posição do usuário autenticado no ranking",
+                "operationId": "3c3d14911a1cb5ac8c86e35d9f62e23f",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Posição do usuário no ranking"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/leaderboard/{userId}": {
+            "get": {
+                "tags": [
+                    "Leaderboard"
+                ],
+                "summary": "Retorna as estatísticas de ranking de um participante específico",
+                "operationId": "14f742d015c6a5527c253581fa3c7bd8",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Estatísticas do participante"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Leaderboard"
+                ],
+                "summary": "Remove o usuário do ranking do bolão (interno)",
+                "operationId": "c35ccdecbd7fff08c5423199bf309d51",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuário removido do ranking"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/leaderboard/recalculate": {
+            "post": {
+                "tags": [
+                    "Leaderboard"
+                ],
+                "summary": "Recalcula o ranking após finalização de partidas",
+                "operationId": "96dbfb61abe4cb42aac490fdded8bff4",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ranking recalculado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/leaderboard/{userId}/sync": {
+            "post": {
+                "tags": [
+                    "Leaderboard"
+                ],
+                "summary": "Atualiza o ranking de um usuário específico no bolão (interno)",
+                "operationId": "86e7803e8458b5be65c82f5984a8c10f",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ranking do usuário sincronizado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/leaderboard/{userId}/create": {
+            "post": {
+                "tags": [
+                    "Leaderboard"
+                ],
+                "summary": "Cria entrada de ranking para um usuário ao entrar no bolão (interno)",
+                "operationId": "195f6996428b9231ef714f3de16f71b5",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Entrada criada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/leaderboard/rebuild": {
+            "post": {
+                "tags": [
+                    "Leaderboard"
+                ],
+                "summary": "Reconstrói completamente o leaderboard com base nos palpites existentes (interno)",
+                "operationId": "e4db2cb4adf4cd422c785f0f21e5ff8d",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Leaderboard reconstruído"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/matches": {
+            "get": {
+                "tags": [
+                    "Matches"
+                ],
+                "summary": "Lista todas as partidas",
+                "operationId": "57a216ed6c2e9c434e2007edd6790814",
+                "responses": {
+                    "200": {
+                        "description": "Lista de partidas"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/matches/{id}": {
+            "get": {
+                "tags": [
+                    "Matches"
+                ],
+                "summary": "Retorna detalhes de uma partida específica",
+                "operationId": "496a55045627bb07d84440c12ba7f2b6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Partida encontrada"
+                    },
+                    "404": {
+                        "description": "Partida não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Matches"
+                ],
+                "summary": "Atualiza dados completos de uma partida (admin)",
+                "operationId": "7ecff08fcd30fae09623847b030546a5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Partida atualizada"
+                    },
+                    "404": {
+                        "description": "Partida não encontrada"
+                    },
+                    "500": {
+                        "description": "Erro ao atualizar"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Matches"
+                ],
+                "summary": "Remove uma partida (admin)",
+                "operationId": "cf254ff94f36905de7dda2f8ad98c408",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Partida deletada"
+                    },
+                    "404": {
+                        "description": "Partida não encontrada"
+                    },
+                    "500": {
+                        "description": "Erro ao deletar"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/stages/matches": {
+            "get": {
+                "tags": [
+                    "Matches"
+                ],
+                "summary": "Lista partidas de uma fase específica",
+                "operationId": "6ea727477f3da687a871de080da1e5ca",
+                "parameters": [
+                    {
+                        "name": "stage",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Partidas da fase"
+                    },
+                    "404": {
+                        "description": "Nenhuma partida encontrada para o stage"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/group/{id}/matches": {
+            "get": {
+                "tags": [
+                    "Matches"
+                ],
+                "summary": "Lista partidas de um grupo específico",
+                "operationId": "0343c414593d2536306c1e9775685076",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Partidas do grupo"
+                    },
+                    "404": {
+                        "description": "Nenhuma partida encontrada para o grupo"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/matches/create": {
+            "post": {
+                "tags": [
+                    "Matches"
+                ],
+                "summary": "Cria uma nova partida (admin)",
+                "operationId": "1350fe5e61c8284ec45e486ac48b7ebf",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "code_home_team",
+                                    "code_away_team",
+                                    "stage",
+                                    "game_day"
+                                ],
+                                "properties": {
+                                    "game_day": {
+                                        "type": "integer"
+                                    },
+                                    "code_home_team": {
+                                        "type": "string"
+                                    },
+                                    "code_away_team": {
+                                        "type": "string"
+                                    },
+                                    "home_score": {
+                                        "type": "integer",
+                                        "default": 0
+                                    },
+                                    "away_score": {
+                                        "type": "integer",
+                                        "default": 0
+                                    },
+                                    "kickoff_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "nullable": true
+                                    },
+                                    "stage": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Partida criada"
+                    },
+                    "400": {
+                        "description": "Dados inválidos"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/matches/{id}/close": {
+            "post": {
+                "tags": [
+                    "Matches"
+                ],
+                "summary": "Fecha a partida após finalização, bloqueando novos palpites (admin)",
+                "operationId": "645fd8404ace221f2b4a7f5d0a90109c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Partida fechada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/matches/{id}/guesses": {
+            "get": {
+                "tags": [
+                    "Matches"
+                ],
+                "summary": "Retorna todos os palpites de uma partida",
+                "operationId": "01e137e900bad959cd0e251aaaa4fd92",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Palpites da partida"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools": {
+            "get": {
+                "tags": [
+                    "Pools"
+                ],
+                "summary": "Lista bolões públicos disponíveis",
+                "operationId": "6d603fbafccf1167884e50f2171818db",
+                "responses": {
+                    "200": {
+                        "description": "Lista de bolões públicos"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Pools"
+                ],
+                "summary": "Cria um novo bolão",
+                "operationId": "bae8971eb4d7853574015f53ca205fdb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "is_public"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Bolão da Galera"
+                                    },
+                                    "is_public": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Bolão criado"
+                    },
+                    "400": {
+                        "description": "Erro ao criar bolão"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/me/pools": {
+            "get": {
+                "tags": [
+                    "Pools"
+                ],
+                "summary": "Lista os bolões do usuário autenticado",
+                "operationId": "00ad16a4794131def490aaf3f55a4cec",
+                "responses": {
+                    "200": {
+                        "description": "Lista de bolões do usuário"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "444": {
+                        "description": "Usuário autenticado mas sem bolões"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{id}": {
+            "get": {
+                "tags": [
+                    "Pools"
+                ],
+                "summary": "Retorna detalhes de um bolão",
+                "operationId": "254567381f45237966e0143577ff8c73",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bolão encontrado"
+                    },
+                    "404": {
+                        "description": "Bolão não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Pools"
+                ],
+                "summary": "Atualiza dados do bolão (owner)",
+                "operationId": "1ba4de1190f02e8123173f72c939f439",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "is_public": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Bolão atualizado"
+                    },
+                    "400": {
+                        "description": "Erro ao atualizar"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Pools"
+                ],
+                "summary": "Remove um bolão (somente owner)",
+                "operationId": "9dcd3ec764578c3547720a410530d358",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bolão removido"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    },
+                    "404": {
+                        "description": "Bolão não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/regenerate-code": {
+            "post": {
+                "tags": [
+                    "Pools"
+                ],
+                "summary": "Regenera o código de acesso do bolão (admin/owner)",
+                "operationId": "2646b4261d53ef0de4e81fae1fa37f4e",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Código regenerado"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    },
+                    "404": {
+                        "description": "Bolão não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/join": {
+            "post": {
+                "tags": [
+                    "Pools"
+                ],
+                "summary": "Usuário entra em um bolão usando join_code",
+                "operationId": "a58babed7e2b46b6b466cc16b000b3ae",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "join_code"
+                                ],
+                                "properties": {
+                                    "join_code": {
+                                        "type": "string",
+                                        "example": "ABC123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Entrou no bolão com sucesso"
+                    },
+                    "400": {
+                        "description": "Código inválido ou bolão não encontrado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/members": {
+            "get": {
+                "tags": [
+                    "Pool Members"
+                ],
+                "summary": "Lista membros do bolão",
+                "operationId": "7e2bddf6dd475744c4b8125c654b26a5",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "ACTIVE, BANNED ou LEFT. Não-ACTIVE requer admin.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Membros listados"
+                    },
+                    "403": {
+                        "description": "Status não-ACTIVE requer admin"
+                    },
+                    "422": {
+                        "description": "Status inválido"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/members/me": {
+            "get": {
+                "tags": [
+                    "Pool Members"
+                ],
+                "summary": "Retorna a participação do usuário autenticado no bolão",
+                "operationId": "dc3942992eac7d7d534a85c42fa6d86d",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Participação encontrada"
+                    },
+                    "404": {
+                        "description": "Usuário não é membro do bolão"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/members/{memberId}": {
+            "get": {
+                "tags": [
+                    "Pool Members"
+                ],
+                "summary": "Retorna detalhes de um membro específico do bolão",
+                "operationId": "6148eabec79ef7e0ae765d07f591d794",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "memberId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Membro encontrado"
+                    },
+                    "404": {
+                        "description": "Membro não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/members/{memberId}/role": {
+            "patch": {
+                "tags": [
+                    "Pool Members"
+                ],
+                "summary": "Atualiza o papel de um membro no bolão (admin/owner)",
+                "operationId": "0791c1377b3ba3661369ada336749201",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "memberId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "role"
+                                ],
+                                "properties": {
+                                    "role": {
+                                        "type": "string",
+                                        "enum": [
+                                            "ADMIN",
+                                            "MEMBER"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Papel atualizado"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    },
+                    "404": {
+                        "description": "Membro não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/leave": {
+            "post": {
+                "tags": [
+                    "Pool Members"
+                ],
+                "summary": "Usuário autenticado sai do bolão",
+                "operationId": "e2a909a1b3924f443308eca12c00e278",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Saiu do bolão"
+                    },
+                    "400": {
+                        "description": "Erro ao sair do bolão"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/members/{memberId}/ban": {
+            "post": {
+                "tags": [
+                    "Pool Members"
+                ],
+                "summary": "Bane um membro do bolão (admin/owner)",
+                "operationId": "ee33389db2e5e895f065fff5202721b2",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "memberId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Membro banido"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/pools/{poolId}/members/{memberId}/unban": {
+            "post": {
+                "tags": [
+                    "Pool Members"
+                ],
+                "summary": "Remove o banimento de um membro (admin/owner)",
+                "operationId": "2b37b75c6f6310de4205139fe9fa6624",
+                "parameters": [
+                    {
+                        "name": "poolId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "memberId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Banimento removido"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/teams": {
+            "get": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Lista todas as equipes",
+                "operationId": "fc1c5dd9ef530faf6e8bba930cad296c",
+                "responses": {
+                    "200": {
+                        "description": "Lista de equipes"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/teams/{id}": {
+            "get": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Retorna detalhes de uma equipe específica",
+                "operationId": "ab05003decb5cbc16154382836f51e3e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Equipe encontrada"
+                    },
+                    "404": {
+                        "description": "Equipe não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/groups/{id}/teams": {
+            "get": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Lista todas as equipes de um grupo",
+                "operationId": "1db044a7dfd347ccea52866d7f47701f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Equipes do grupo"
+                    },
+                    "404": {
+                        "description": "Grupo ou equipes não encontradas"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Autentica usuário e retorna token de acesso",
+                "operationId": "fce6ce781da52014075322aefe0833cf",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "secret"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token gerado com sucesso"
+                    },
+                    "401": {
+                        "description": "Credenciais inválidas"
+                    }
+                }
+            }
+        },
+        "/api/me": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Retorna dados do usuário autenticado",
+                "operationId": "aef6fdddec1e8495d4830821b4afdf54",
+                "responses": {
+                    "200": {
+                        "description": "Dados do usuário"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/register": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Cria um novo usuário",
+                "operationId": "953cbd71099d3540e7e8ca0f408851d8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "João Silva"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "joao@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuário criado"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    },
+                    "500": {
+                        "description": "Erro inesperado"
+                    }
+                }
+            }
+        },
+        "/api/users/{id}": {
+            "delete": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Remove ou desativa um usuário (admin)",
+                "operationId": "fa56cffde745d3f152f95cbacd936c0b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuário removido"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    },
+                    "404": {
+                        "description": "Usuário não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Atualiza dados de um usuário (admin)",
+                "operationId": "872a537e8eb13c26c5542c7d73269a80",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuário atualizado"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    },
+                    "404": {
+                        "description": "Usuário não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{id}/role": {
+            "patch": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Atualiza o papel do usuário no sistema (admin)",
+                "operationId": "0d896a98aaeda17bed5b3fff3504d17c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "role"
+                                ],
+                                "properties": {
+                                    "role": {
+                                        "type": "string",
+                                        "enum": [
+                                            "USER",
+                                            "ADMIN"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Papel atualizado"
+                    },
+                    "403": {
+                        "description": "Acesso negado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Token obtido via POST /api/login",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Groups",
+            "description": "Groups"
+        },
+        {
+            "name": "Guesses",
+            "description": "Guesses"
+        },
+        {
+            "name": "Leaderboard",
+            "description": "Leaderboard"
+        },
+        {
+            "name": "Matches",
+            "description": "Matches"
+        },
+        {
+            "name": "Pools",
+            "description": "Pools"
+        },
+        {
+            "name": "Pool Members",
+            "description": "Pool Members"
+        },
+        {
+            "name": "Teams",
+            "description": "Teams"
+        },
+        {
+            "name": "Auth",
+            "description": "Auth"
+        },
+        {
+            "name": "Users",
+            "description": "Users"
+        }
+    ]
+}
