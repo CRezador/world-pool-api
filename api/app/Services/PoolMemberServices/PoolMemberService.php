@@ -19,9 +19,20 @@ class PoolMemberService
         return $this->poolMemberRepository->addMember($poolId, $role, $userId);
     }
 
-    public function listMembers(int $poolId): Collection
+    public function listMembers(int $poolId, ?PoolMemberStatus $status = null): Collection
     {
-        return $this->poolMemberRepository->getMembersByPoolId($poolId);
+        return $this->poolMemberRepository->getMembersByPoolId($poolId, $status);
+    }
+
+    public function getAuthMember(int $poolId, int $userId): PoolMember
+    {
+        $member = $this->poolMemberRepository->getMemberByUserId($poolId, $userId);
+
+        if (!$member) {
+            throw new \Exception('Membro não encontrado no bolão', 404);
+        }
+
+        return $member;
     }
 
     public function getMember(int $poolId, int $memberId): PoolMember
@@ -60,9 +71,9 @@ class PoolMemberService
         return $this->poolMemberRepository->getRole($poolId, $userId);
     }
 
-    public function updateRole(int $poolId, int $userId, PoolUserRole $role): void
+    public function updateRole(int $poolId, int $memberId, PoolUserRole $role): void
     {
-        $member = $this->poolMemberRepository->getMemberByUserId($poolId, $userId);
+        $member = $this->poolMemberRepository->getMemberById($poolId, $memberId);
 
         if (!$member) {
             throw new \Exception('Membro não encontrado no bolão', 404);
@@ -76,7 +87,7 @@ class PoolMemberService
             throw new \Exception('O membro já possui o papel informado', 422);
         }
 
-        $this->poolMemberRepository->updateRole($poolId, $userId, $role->value);
+        $this->poolMemberRepository->updateRoleByMemberId($memberId, $role->value);
     }
 
     public function leavePool(int $poolId, int $userId): void

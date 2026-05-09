@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Pool;
 use App\Services\PoolMemberServices\PoolMemberService;
 use Closure;
 use Illuminate\Http\Request;
@@ -15,6 +16,10 @@ class PoolMemberAdminMiddleware
     {
         $poolId = (int) $request->route('poolId');
         $userId = $request->user()->id;
+
+        if (!Pool::find($poolId)) {
+            return response()->json(['message' => 'Bolão não encontrado'], 404);
+        }
 
         if (!$this->poolMemberService->isAdmin($poolId, $userId) && !$this->poolMemberService->isOwner($poolId, $userId)) {
             return response()->json([

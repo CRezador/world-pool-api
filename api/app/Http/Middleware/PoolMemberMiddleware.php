@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Pool;
 use App\Services\PoolMemberServices\PoolMemberService;
 use Closure;
 use Illuminate\Http\Request;
@@ -13,10 +14,14 @@ class PoolMemberMiddleware
 
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || !$this->poolMemberService->isMember($request->route('poolId'), $request->user()->id)) {
-            return response()->json([
-                'message' => 'Acesso negado',
-            ], 403);
+        $poolId = (int) $request->route('poolId');
+
+        if (!Pool::find($poolId)) {
+            return response()->json(['message' => 'Bolão não encontrado'], 404);
+        }
+
+        if (!$request->user() || !$this->poolMemberService->isMember($poolId, $request->user()->id)) {
+            return response()->json(['message' => 'Acesso negado'], 403);
         }
 
         return $next($request);

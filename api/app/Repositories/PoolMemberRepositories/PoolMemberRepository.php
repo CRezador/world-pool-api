@@ -65,11 +65,11 @@ class PoolMemberRepository
             ->first();
     }
 
-    public function getMembersByPoolId(int $poolId): Collection
+    public function getMembersByPoolId(int $poolId, ?PoolMemberStatus $status = null): Collection
     {
         return PoolMember::query()
             ->where('pool_id', $poolId)
-            ->where('status', PoolMemberStatus::ACTIVE->value)
+            ->where('status', ($status ?? PoolMemberStatus::ACTIVE)->value)
             ->with('user:id,name')
             ->get();
     }
@@ -80,7 +80,13 @@ class PoolMemberRepository
             ->where('pool_id', $poolId)
             ->where('user_id', $userId)
             ->update(['role' => $role]);
+    }
 
+    public function updateRoleByMemberId(int $memberId, string $role): void
+    {
+        PoolMember::query()
+            ->where('id', $memberId)
+            ->update(['role' => $role]);
     }
 
     public function getMemberById(int $poolId, int $memberId): ?PoolMember

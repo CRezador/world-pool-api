@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Enums\PoolMemberStatus;
 use App\Http\Enums\PoolUserRole;
 use App\Http\Requests\PoolMember\PoolMemberUpdateRequest;
 use App\Http\Transformers\PoolMemberTransformers\PoolMemberTransformer;
@@ -24,12 +25,42 @@ class PoolMemberController extends Controller
             | - Exibir ranking
             | - Ver quem está no bolão
     */
-    public function index(int $poolId): Response
+    public function index(Request $request, int $poolId): Response
     {
-        $members = $this->poolMemberService->listMembers($poolId);
+        $statusParam = $request->query('status');
+        $status = null;
+
+        if ($statusParam) {
+            $status = PoolMemberStatus::tryFrom(strtoupper($statusParam));
+            if (!$status) {
+                return response()->json(['message' => 'Status inválido. Use: ACTIVE, BANNED ou LEFT'], 422);
+            }
+            if ($status !== PoolMemberStatus::ACTIVE) {
+                if (!$this->poolMemberService->isAdmin($poolId, $request->user()->id)
+                    && !$this->poolMemberService->isOwner($poolId, $request->user()->id)) {
+                    return response()->json(['message' => 'Acesso negado'], 403);
+                }
+            }
+        }
+
+        $members = $this->poolMemberService->listMembers($poolId, $status);
 
         return response()->json(
             $this->poolMemberTransformer->collection($members, 'Membros listados com sucesso'),
+            200
+        );
+    }
+
+    public function me(Request $request, int $poolId): Response
+    {
+        try {
+            $member = $this->poolMemberService->getAuthMember($poolId, $request->user()->id);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
+        }
+
+        return response()->json(
+            $this->poolMemberTransformer->item($member, 'Sua participação no bolão'),
             200
         );
     }
@@ -69,12 +100,12 @@ class PoolMemberController extends Controller
         | - Retornar um erro 403 se o usuário não tiver permissão para alterar o papel
         | - Retornar um erro 404 se o bolão ou o membro não for encontrado
     */
-    public function updateRole(PoolMemberUpdateRequest $request, int $poolId): Response
+    public function updateRole(PoolMemberUpdateRequest $request, int $poolId, int $memberId): Response
     {
         $data = $request->validated();
 
         try {
-            $this->poolMemberService->updateRole($poolId, $data['user_id'], PoolUserRole::from($data['role']));
+            $this->poolMemberService->updateRole($poolId, $memberId, PoolUserRole::from($data['role']));
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
