@@ -34,7 +34,7 @@ class MatchController extends Controller
     {
         $matches = $this->matchRepository->findAll();
 
-        return response()->json($this->matchTransformer->collection($matches), 200);
+        return response()->json($this->matchTransformer->collection($matches, 'Lista de partidas'), 200);
     }
 
     #[OA\Get(
@@ -149,16 +149,16 @@ class MatchController extends Controller
     )]
     public function store(MatchRequest $request): Response
     {
-        $validated = $request->validated();
+        $data = $request->validated();
         $match = [
-            'game_day' => $request->game_day,
-            'code_home_team' => $request->code_home_team,
-            'code_away_team' => $request->code_away_team,
-            'home_score' => $request->home_score ?? 0,
-            'away_score' => $request->away_score ?? 0,
-            'kickoff_at' => $request->kickoff_at,
-            'stage' => $request->stage,
-            'status' => $request->status ?? MatchStatus::SCHEDULED,
+            'game_day' => $data->game_day,
+            'code_home_team' => $data->code_home_team,
+            'code_away_team' => $data->code_away_team,
+            'home_score' => $data->home_score ?? 0,
+            'away_score' => $data->away_score ?? 0,
+            'kickoff_at' => $data->kickoff_at,
+            'stage' => $data->stage,
+            'status' => $data->status ?? MatchStatus::SCHEDULED,
         ];
 
         try {

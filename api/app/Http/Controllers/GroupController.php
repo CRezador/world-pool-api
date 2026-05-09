@@ -29,7 +29,7 @@ class GroupController extends Controller
         $group = $this->groupRepository->findAll();
 
         return response()->json(
-            $this->groupTransformer->collection($group),
+            $this->groupTransformer->collection($group, 'Lista de grupos'),
             200
         );
     }

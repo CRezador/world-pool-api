@@ -28,7 +28,7 @@ class TeamController extends Controller
     {
         $teams = $this->teamRepository->findAll();
 
-        return response()->json($this->teamTransformer->collection($teams), 200);
+        return response()->json($this->teamTransformer->collection($teams, 'Lista de equipes'), 200);
     }
 
     #[OA\Get(
