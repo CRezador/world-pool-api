@@ -8,6 +8,7 @@ use App\Http\Requests\PoolMember\PoolMemberUpdateRequest;
 use App\Http\Transformers\PoolMemberTransformers\PoolMemberTransformer;
 use App\Services\PoolMemberServices\PoolMemberService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
 class PoolMemberController extends Controller
@@ -16,15 +17,22 @@ class PoolMemberController extends Controller
         private PoolMemberService $poolMemberService,
         private PoolMemberTransformer $poolMemberTransformer,
     ) {}
-    /*
-        GET /api/pools/{pool}/members
-            | Lista todos os membros de um bolão
-            |
-            | Uso comum:
-            | - Mostrar participantes
-            | - Exibir ranking
-            | - Ver quem está no bolão
-    */
+
+    #[OA\Get(
+        path: '/api/pools/{poolId}/members',
+        summary: 'Lista membros do bolão',
+        security: [['sanctum' => []]],
+        tags: ['Pool Members'],
+        parameters: [
+            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'status', in: 'query', required: false, description: 'ACTIVE, BANNED ou LEFT. Não-ACTIVE requer admin.', schema: new OA\Schema(type: 'string')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Membros listados'),
+            new OA\Response(response: 403, description: 'Status não-ACTIVE requer admin'),
+            new OA\Response(response: 422, description: 'Status inválido'),
+        ]
+    )]
     public function index(Request $request, int $poolId): Response
     {
         $statusParam = $request->query('status');
@@ -51,6 +59,19 @@ class PoolMemberController extends Controller
         );
     }
 
+    #[OA\Get(
+        path: '/api/pools/{poolId}/members/me',
+        summary: 'Retorna a participação do usuário autenticado no bolão',
+        security: [['sanctum' => []]],
+        tags: ['Pool Members'],
+        parameters: [
+            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Participação encontrada'),
+            new OA\Response(response: 404, description: 'Usuário não é membro do bolão'),
+        ]
+    )]
     public function me(Request $request, int $poolId): Response
     {
         try {
@@ -64,14 +85,21 @@ class PoolMemberController extends Controller
             200
         );
     }
-    /*
-        GET /api/pools/{pool}/members/{member}
-            | Retorna detalhes de um membro específico do bolão
-            |
-            | Uso comum:
-            | - Ver dados de participação
-            | - Ver papel do usuário (admin/member)
-    */
+
+    #[OA\Get(
+        path: '/api/pools/{poolId}/members/{memberId}',
+        summary: 'Retorna detalhes de um membro específico do bolão',
+        security: [['sanctum' => []]],
+        tags: ['Pool Members'],
+        parameters: [
+            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'memberId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Membro encontrado'),
+            new OA\Response(response: 404, description: 'Membro não encontrado'),
+        ]
+    )]
     public function show(int $poolId, int $memberId): Response
     {
         try {
@@ -85,21 +113,31 @@ class PoolMemberController extends Controller
             200
         );
     }
-    /*
-     PATCH /api/pools/{pool}/members/role
-        | Atualiza o papel de um membro no bolão (admin/owner)
-        |
-        | Body:
-        | - role (admin/member)
-        |
-        | Uso comum:
-        | - Gerenciar permissões
-        | - Promover/demover membros
-        | - Controlar acesso a funcionalidades do bolão
-        | - Não é possível alterar o papel do próprio usuário
-        | - Retornar um erro 403 se o usuário não tiver permissão para alterar o papel
-        | - Retornar um erro 404 se o bolão ou o membro não for encontrado
-    */
+
+    #[OA\Patch(
+        path: '/api/pools/{poolId}/members/{memberId}/role',
+        summary: 'Atualiza o papel de um membro no bolão (admin/owner)',
+        security: [['sanctum' => []]],
+        tags: ['Pool Members'],
+        parameters: [
+            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'memberId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['role'],
+                properties: [
+                    new OA\Property(property: 'role', type: 'string', enum: ['ADMIN', 'MEMBER']),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Papel atualizado'),
+            new OA\Response(response: 403, description: 'Acesso negado'),
+            new OA\Response(response: 404, description: 'Membro não encontrado'),
+        ]
+    )]
     public function updateRole(PoolMemberUpdateRequest $request, int $poolId, int $memberId): Response
     {
         $data = $request->validated();
@@ -116,13 +154,20 @@ class PoolMemberController extends Controller
             'message' => 'Papel do membro atualizado com sucesso',
         ], 200);
     }
-    /*
-        POST /api/pools/{pool}/leave
-            | Usuário autenticado sai do bolão
-            |
-            | Uso comum:
-            | - Usuário decide sair do bolão
-    */
+
+    #[OA\Post(
+        path: '/api/pools/{poolId}/leave',
+        summary: 'Usuário autenticado sai do bolão',
+        security: [['sanctum' => []]],
+        tags: ['Pool Members'],
+        parameters: [
+            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Saiu do bolão'),
+            new OA\Response(response: 400, description: 'Erro ao sair do bolão'),
+        ]
+    )]
     public function leave(Request $request, int $poolId): Response
     {
         try {
@@ -133,13 +178,21 @@ class PoolMemberController extends Controller
 
         return response()->json(['message' => 'Você saiu do bolão com sucesso'], 200);
     }
-    /*
-        POST /api/pools/{pool}/members/{member}/ban
-            | Bane um membro do bolão
-            |
-            | Uso comum:
-            | - Administração do bolão
-    */
+
+    #[OA\Post(
+        path: '/api/pools/{poolId}/members/{memberId}/ban',
+        summary: 'Bane um membro do bolão (admin/owner)',
+        security: [['sanctum' => []]],
+        tags: ['Pool Members'],
+        parameters: [
+            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'memberId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Membro banido'),
+            new OA\Response(response: 403, description: 'Acesso negado'),
+        ]
+    )]
     public function ban(Request $request, int $poolId, int $memberId): Response
     {
         try {
@@ -150,13 +203,21 @@ class PoolMemberController extends Controller
 
         return response()->json(['message' => 'Membro banido com sucesso'], 200);
     }
-    /*
-        POST /api/pools/{pool}/members/{member}/unban
-            | Remove banimento de um membro
-            |
-            | Uso comum:
-            | - Reabilitar participante
-    */
+
+    #[OA\Post(
+        path: '/api/pools/{poolId}/members/{memberId}/unban',
+        summary: 'Remove o banimento de um membro (admin/owner)',
+        security: [['sanctum' => []]],
+        tags: ['Pool Members'],
+        parameters: [
+            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'memberId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Banimento removido'),
+            new OA\Response(response: 403, description: 'Acesso negado'),
+        ]
+    )]
     public function unban(Request $request, int $poolId, int $memberId): Response
     {
         try {

@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Match\MatchRequest;
 use App\Http\Requests\Match\MatchUpdateRequest;
 use App\Http\Transformers\MatchTransformers\MatchTransformer;
-use Symfony\Component\HttpFoundation\Response;
 use App\Http\Enums\MatchStatus;
 use App\Http\Requests\Match\MatchStageRequest;
 use App\Repositories\MatchRepositories\MatchRepository;
 use App\Services\MatchServices\MatchService;
+use OpenApi\Attributes as OA;
+use Symfony\Component\HttpFoundation\Response;
 
 class MatchController extends Controller
 {
@@ -18,29 +19,37 @@ class MatchController extends Controller
         private MatchService $matchService,
         private MatchTransformer $matchTransformer
     ) {}
-    /*
-    GET /api/matches                     // Lista todas as partidas
-        | Critério:
-        | - Retornar os dados de cada partida, incluindo os nomes dos times, o grupo, a fase do campeonato, o horário de início da partida (kickoff_at) e o placar atual.
-        | Uso comum:
-        | - Exibir uma lista de todas as partidas em um formato legível
-        | - Permitir que os usuários vejam rapidamente os detalhes de cada partida
-    */
+
+    #[OA\Get(
+        path: '/api/matches',
+        summary: 'Lista todas as partidas',
+        security: [['sanctum' => []]],
+        tags: ['Matches'],
+        responses: [
+            new OA\Response(response: 200, description: 'Lista de partidas'),
+            new OA\Response(response: 401, description: 'Não autenticado'),
+        ]
+    )]
     public function index(): Response
     {
         $matches = $this->matchRepository->findAll();
 
         return response()->json($this->matchTransformer->collection($matches), 200);
     }
-    /*
-    GET /api/matches/{match-id}          // Mostra os detalhes de uma partida específica
-                | Critério:
-                | - Se a partida não for encontrada, retornar um erro 404.
-                | - Retornar os dados da partida, incluindo os nomes dos times, o grupo, a fase do campeonato, o horário de início da partida (kickoff_at) e o placar atual.
-                | Uso comum:
-                | - Permitir que os usuários vejam os detalhes de uma partida específica
-                | - Retornar um erro 404 se a partida não for encontrada
-    */
+
+    #[OA\Get(
+        path: '/api/matches/{id}',
+        summary: 'Retorna detalhes de uma partida específica',
+        security: [['sanctum' => []]],
+        tags: ['Matches'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Partida encontrada'),
+            new OA\Response(response: 404, description: 'Partida não encontrada'),
+        ]
+    )]
     public function show(int $id): Response
     {
         $match = $this->matchRepository->findById($id);
@@ -56,14 +65,20 @@ class MatchController extends Controller
             200
         );
     }
-    /*
-    GET /api/stages/matches
-            | Retorna todas as partidas de uma fase específica
-            |
-            | Uso comum:
-            | - Listar partidas por fase da competição
-            | - Mostrar jogos de oitavas, quartas, semifinal ou final
-    */
+
+    #[OA\Get(
+        path: '/api/stages/matches',
+        summary: 'Lista partidas de uma fase específica',
+        security: [['sanctum' => []]],
+        tags: ['Matches'],
+        parameters: [
+            new OA\Parameter(name: 'stage', in: 'query', required: true, schema: new OA\Schema(type: 'string')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Partidas da fase'),
+            new OA\Response(response: 404, description: 'Nenhuma partida encontrada para o stage'),
+        ]
+    )]
     public function matchesByStage(MatchStageRequest $request): Response
     {
         $validated = $request->validated();
@@ -78,13 +93,20 @@ class MatchController extends Controller
 
         return response()->json([$this->matchTransformer->transformMatchByStage($matches)], 200);
     }
-    /*
-    GET /api/group/{group-id}/matches
-            | Retorna todas as partidas de um grupo específico
-            |
-            | Uso comum:
-            | - Listar partidas por um grupo da competição
-    */
+
+    #[OA\Get(
+        path: '/api/group/{id}/matches',
+        summary: 'Lista partidas de um grupo específico',
+        security: [['sanctum' => []]],
+        tags: ['Matches'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Partidas do grupo'),
+            new OA\Response(response: 404, description: 'Nenhuma partida encontrada para o grupo'),
+        ]
+    )]
     public function matchByGroup(int $id): Response
     {
         $matches = $this->matchRepository->findByGroup($id);
@@ -97,21 +119,34 @@ class MatchController extends Controller
 
         return response()->json($this->matchTransformer->transformMatchByGroup($matches), 200);
     }
-    /*
-    POST /api/matches                     // Cria uma nova partida
-            | Critério:
-            | - Somente usuários com o papel de ADMIN podem criar partidas.
-            | - O código do time da casa e do time visitante não podem ser iguais.
-            | - Precisa informar a fase do campeonato com base no Enum MatchStage.
-            | - Na fase de grupos, os times devem pertencer ao mesmo grupo.
-            | - Verificar se partida já existe, ou seja, se já existe uma partida com os mesmos times e na mesma fase do campeonato.
-            | - Pontuação inicial de 0 para ambos os times.
-            | - O horário de início da partida (kickoff_at) é opcional, mas se fornecido, deve ser convertido para o formato de data e hora do banco de dados (Y-m-d H:i:s).
-            | Uso comum:
-            | - Permitir que administradores criem novas partidas
-            | - Garantir que as regras de criação de partidas sejam seguidas
-            | - Retornar um erro 403 se o usuário não tiver permissão para criar partidas
-    */
+
+    #[OA\Post(
+        path: '/api/matches/create',
+        summary: 'Cria uma nova partida (admin)',
+        security: [['sanctum' => []]],
+        tags: ['Matches'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['code_home_team', 'code_away_team', 'stage', 'game_day'],
+                properties: [
+                    new OA\Property(property: 'game_day', type: 'integer'),
+                    new OA\Property(property: 'code_home_team', type: 'string'),
+                    new OA\Property(property: 'code_away_team', type: 'string'),
+                    new OA\Property(property: 'home_score', type: 'integer', default: 0),
+                    new OA\Property(property: 'away_score', type: 'integer', default: 0),
+                    new OA\Property(property: 'kickoff_at', type: 'string', format: 'date-time', nullable: true),
+                    new OA\Property(property: 'stage', type: 'string'),
+                    new OA\Property(property: 'status', type: 'string'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Partida criada'),
+            new OA\Response(response: 400, description: 'Dados inválidos'),
+            new OA\Response(response: 403, description: 'Acesso negado'),
+        ]
+    )]
     public function store(MatchRequest $request): Response
     {
         $validated = $request->validated();
@@ -140,15 +175,21 @@ class MatchController extends Controller
             201
         );
     }
-    /*
-    PUT /api/matches/{match}
-            | Atualiza dados completos da partida
-            |
-            | Uso comum:
-            | - Alterar data da partida
-            | - Ajustar times ou fase
-            | - Uso administrativo
-    */
+
+    #[OA\Put(
+        path: '/api/matches/{id}',
+        summary: 'Atualiza dados completos de uma partida (admin)',
+        security: [['sanctum' => []]],
+        tags: ['Matches'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Partida atualizada'),
+            new OA\Response(response: 404, description: 'Partida não encontrada'),
+            new OA\Response(response: 500, description: 'Erro ao atualizar'),
+        ]
+    )]
     public function update(MatchUpdateRequest $request, int $id): Response
     {
         $request->validated();
@@ -175,28 +216,38 @@ class MatchController extends Controller
             200
         );
     }
-    /*
-    POST /api/matches/{match}/close
-            | Fecha a partida após finalização
-            |
-            | Uso comum:
-            | - Bloquear novos palpites
-            | - Disparar cálculo de pontos dos palpites
-            | - Endpoint interno/admin
-    */
+
+    #[OA\Post(
+        path: '/api/matches/{id}/close',
+        summary: 'Fecha a partida após finalização, bloqueando novos palpites (admin)',
+        security: [['sanctum' => []]],
+        tags: ['Matches'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Partida fechada'),
+        ]
+    )]
     public function closeMatch(int $id)
     {
         //@todo checar se realmente preciso dessa function
     }
-    /*
-    DELETE /api/matches/{id}             // Deleta uma partida
-            | Critério:
-            | - Somente usuários com o papel de ADMIN podem deletar partidas.
-            | - Se a partida não for encontrada, retornar um erro 404.
-            | Uso comum:
-            | - Permitir que administradores deletem uma partida
-            | - Retornar um erro 404 se a partida não for encontrada
-    */
+
+    #[OA\Delete(
+        path: '/api/matches/{id}',
+        summary: 'Remove uma partida (admin)',
+        security: [['sanctum' => []]],
+        tags: ['Matches'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Partida deletada'),
+            new OA\Response(response: 404, description: 'Partida não encontrada'),
+            new OA\Response(response: 500, description: 'Erro ao deletar'),
+        ]
+    )]
     public function destroy(int $id): Response
     {
         $match = $this->matchRepository->findById($id);
@@ -219,14 +270,19 @@ class MatchController extends Controller
             'message' => 'Partida deletada com sucesso',
         ], 200);
     }
-    /*
-    GET /api/matches/{match}/guesses
-            | Retorna todos os palpites relacionados a uma partida
-            |
-            | Uso comum:
-            | - Processamento interno
-            | - Análise de palpites após finalização
-    */
+
+    #[OA\Get(
+        path: '/api/matches/{id}/guesses',
+        summary: 'Retorna todos os palpites de uma partida',
+        security: [['sanctum' => []]],
+        tags: ['Matches'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Palpites da partida'),
+        ]
+    )]
     public function guesses(int $id)
     {
         //@todo implementar função para retornar os palpites relacionados a uma partida

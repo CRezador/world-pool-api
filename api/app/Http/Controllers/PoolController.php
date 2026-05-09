@@ -9,6 +9,7 @@ use App\Http\Transformers\PoolMemberTransformers\PoolMemberTransformer;
 use App\Http\Transformers\PoolTransformers\PoolTransformer;
 use App\Services\PoolServices\PoolService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
 class PoolController extends Controller
@@ -18,35 +19,42 @@ class PoolController extends Controller
         private PoolTransformer $poolTransformer,
         private PoolMemberTransformer $poolMemberTransformer
     ) {}
-    /*
-        GET    /api/pools
-            | Lista os bolões disponíveis
-            | Uso comum:
-            | - Descobrir bolões públicos
-            | - Listagem geral de bolões
-    */
+
+    #[OA\Get(
+        path: '/api/pools',
+        summary: 'Lista bolões públicos disponíveis',
+        security: [['sanctum' => []]],
+        tags: ['Pools'],
+        responses: [
+            new OA\Response(response: 200, description: 'Lista de bolões públicos'),
+            new OA\Response(response: 401, description: 'Não autenticado'),
+        ]
+    )]
     public function index(): Response
     {
         return response()->json([
             $this->poolTransformer->collection($this->poolService->showPublicPools(), 'Lista de bolões públicos'),
         ], 200);
     }
-    /*
-        GET    /api/me/pools             // Lista os bolões do usuário autenticado
-            | Critério:
-            | - O usuário deve estar autenticado
-            | Uso comum:
-            | - Exibir uma lista de bolões dos quais o usuário é membro
-            | - Permitir que os usuários vejam facilmente seus bolões ativos
-                | - Retornar um erro 401 se o usuário não estiver autenticado
-                | - Retornar um erro 444 se o usuário não for membro de nenhum bolão
-    */
+
+    #[OA\Get(
+        path: '/api/me/pools',
+        summary: 'Lista os bolões do usuário autenticado',
+        security: [['sanctum' => []]],
+        tags: ['Pools'],
+        responses: [
+            new OA\Response(response: 200, description: 'Lista de bolões do usuário'),
+            new OA\Response(response: 401, description: 'Não autenticado'),
+            new OA\Response(response: 444, description: 'Usuário autenticado mas sem bolões'),
+        ]
+    )]
     public function myPools(Request $request): Response
     {
         $user = $request->user();
 
         $pools = $this->poolService->getPoolsByUserId($user->id);
 
+        // 444 é código customizado: autenticado e sem bolões (não é erro de cliente nem de servidor)
         if (!$pools) {
             return response()->json([
                 'message' => 'Você não é membro de nenhum bolão.',
@@ -57,16 +65,28 @@ class PoolController extends Controller
             $this->poolTransformer->collection($pools, 'Lista de bolões do usuário'),
         ], 200);
     }
-    /*
-        POST   /api/pools                // Cria um novo bolão
-            | Critério:
-            | - O usuário deve estar autenticado
-            | Uso comum:
-            | - Permitir que os usuários criem seus próprios bolões
-            | - Automaticamente adicionar o usuário como membro e Owner do bolão
-            | - Garantir que o bolão seja criado com o usuário como administrador
-            | - Retornar um erro 401 se o usuário não estiver autenticado
-    */
+
+    #[OA\Post(
+        path: '/api/pools',
+        summary: 'Cria um novo bolão',
+        security: [['sanctum' => []]],
+        tags: ['Pools'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['name', 'is_public'],
+                properties: [
+                    new OA\Property(property: 'name', type: 'string', example: 'Bolão da Galera'),
+                    new OA\Property(property: 'is_public', type: 'boolean', example: true),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Bolão criado'),
+            new OA\Response(response: 400, description: 'Erro ao criar bolão'),
+            new OA\Response(response: 401, description: 'Não autenticado'),
+        ]
+    )]
     public function store(PoolRequest $request): Response
     {
         $validated = $request->validated();
@@ -85,16 +105,20 @@ class PoolController extends Controller
             $this->poolTransformer->item($pool, 'Bolão criado'),
         ], 201);
     }
-    /*
-        GET    /api/pools/{pool}         // Retorna detalhes de um bolão específico
-            | Critério:
-            | - O usuário deve ser membro do bolão ou o bolão deve ser público
-            | Uso comum:
-            | - Exibir informações detalhadas do bolão, como participantes, jogos, etc.
-            | - Garantir que apenas membros ou bolões públicos sejam acessíveis
-            | - Retornar um erro 404 se o bolão não for encontrado
-            | - Retornar um erro 403 se o usuário não tiver permissão para acessar o bolão
-    */
+
+    #[OA\Get(
+        path: '/api/pools/{id}',
+        summary: 'Retorna detalhes de um bolão',
+        security: [['sanctum' => []]],
+        tags: ['Pools'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Bolão encontrado'),
+            new OA\Response(response: 404, description: 'Bolão não encontrado'),
+        ]
+    )]
     public function show(int $id): Response
     {
         $pool = $this->poolService->showPool($id);
@@ -107,35 +131,44 @@ class PoolController extends Controller
             $this->poolTransformer->item($pool, 'Bolão Encontrado'),
         ], 200);
     }
-    /*
-        DELETE /api/pools/{pool}         // Remove um bolão (owner)
-            | Critério:
-            | - O usuário deve ser o owner do bolão
-            | Uso comum:
-            | - Permitir que os proprietários de bolões excluam seus bolões
-            | - Garantir que apenas o proprietário possa realizar essa ação
-            | - Retornar um erro 403 se o usuário não for o proprietário do bolão
-            | - Retornar um erro 404 se o bolão não for encontrado
-    */
+
+    #[OA\Delete(
+        path: '/api/pools/{id}',
+        summary: 'Remove um bolão (somente owner)',
+        security: [['sanctum' => []]],
+        tags: ['Pools'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Bolão removido'),
+            new OA\Response(response: 403, description: 'Acesso negado'),
+            new OA\Response(response: 404, description: 'Bolão não encontrado'),
+        ]
+    )]
     public function destroy(int $id, Request $request): Response
     {
-
         $pool = $this->poolService->destroyPool($id, $request->user()->id);
 
         return response()->json([
             'Pool' => $this->poolTransformer->item($pool, 'Bolão removido'),
         ], 200);
     }
-    /*
-        POST /api/pools/{pool}/join-code/regenerate   // Gera um novo join_code para o bolão
-            | Critério:
-            | - O usuário deve ser o owner do bolão
-            | Uso comum:
-            | - Permitir que os proprietários de bolões regenerem o código de acesso para controlar quem pode ingressar
-            | - Garantir que apenas o proprietário possa realizar essa ação
-            | - Retornar um erro 403 se o usuário não for o proprietário do bolão
-            | - Retornar um erro 404 se o bolão não for encontrado
-    */
+
+    #[OA\Post(
+        path: '/api/pools/{poolId}/regenerate-code',
+        summary: 'Regenera o código de acesso do bolão (admin/owner)',
+        security: [['sanctum' => []]],
+        tags: ['Pools'],
+        parameters: [
+            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Código regenerado'),
+            new OA\Response(response: 403, description: 'Acesso negado'),
+            new OA\Response(response: 404, description: 'Bolão não encontrado'),
+        ]
+    )]
     public function regenerateJoinCode(int $id, Request $request): Response
     {
         $pool = $this->poolService->showPool($id);
@@ -162,16 +195,29 @@ class PoolController extends Controller
             $this->poolTransformer->item($pool, 'Código de acesso regenerado'),
         ], 200);
     }
-    /*
-        PUT    /api/pools/{pool}              // Atualiza dados do bolão (nome, visibilidade, etc.)
-            | Critério:
-            | - O usuário deve ser o owner ou admin do bolão
-            | Uso comum:
-            | - Permitir que os proprietários de bolões atualizem as informações do bolão
-            | - Garantir que apenas o proprietário possa realizar essa ação
-            | - Retornar um erro 403 se o usuário não for o proprietário do bolão
-            | - Retornar um erro 404 se o bolão não for encontrado
-    */
+
+    #[OA\Put(
+        path: '/api/pools/{id}',
+        summary: 'Atualiza dados do bolão (owner)',
+        security: [['sanctum' => []]],
+        tags: ['Pools'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'name', type: 'string'),
+                    new OA\Property(property: 'is_public', type: 'boolean'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Bolão atualizado'),
+            new OA\Response(response: 400, description: 'Erro ao atualizar'),
+            new OA\Response(response: 403, description: 'Acesso negado'),
+        ]
+    )]
     public function update(PoolUpdateRequest $request, int $id): Response
     {
         try {
@@ -186,20 +232,27 @@ class PoolController extends Controller
             $this->poolTransformer->item($pool, 'Bolão atualizado'),
         ], 200);
     }
-    /*
-    POST /api/pools/{pool}/members/join
-        | Usuário entra em um bolão usando join_code
-        |
-        | Body:
-        | - join_code
-        |
-        | Uso comum:
-        | - Fluxo de convite
-        | - Entrar em bolão compartilhado
-        | - Validar código de acesso
-        | - Retornar um erro 404 se o bolão não for encontrado
-        | - Retornar um erro 400 se o código de acesso for inválido
-    */
+
+    #[OA\Post(
+        path: '/api/pools/join',
+        summary: 'Usuário entra em um bolão usando join_code',
+        security: [['sanctum' => []]],
+        tags: ['Pools'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['join_code'],
+                properties: [
+                    new OA\Property(property: 'join_code', type: 'string', example: 'ABC123'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Entrou no bolão com sucesso'),
+            new OA\Response(response: 400, description: 'Código inválido ou bolão não encontrado'),
+            new OA\Response(response: 401, description: 'Não autenticado'),
+        ]
+    )]
     public function join(PoolJoinRequest $request): Response
     {
         $validated = $request->validated();

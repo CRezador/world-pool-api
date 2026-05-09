@@ -3,127 +3,192 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class GuessController extends Controller
 {
-    /*
-|--------------------------------------------------------------------------
-| Guesses Endpoints
-|--------------------------------------------------------------------------
-|
-| Representa os palpites que um usuário faz para uma partida específica
-| dentro de um bolão.
-|
-*/
-
-    /*
-        GET /api/pools/{pool}/guesses
-            | Retorna todos os palpites do usuário autenticado no bolão
-            |
-            | Uso comum:
-            | - Tela "Meus palpites"
-            | - Listar palpites já realizados
-    */
+    #[OA\Get(
+        path: '/api/pools/{poolId}/guesses',
+        summary: 'Lista os palpites do usuário autenticado no bolão',
+        security: [['sanctum' => []]],
+        tags: ['Guesses'],
+        parameters: [
+            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Palpites do usuário'),
+            new OA\Response(response: 401, description: 'Não autenticado'),
+        ]
+    )]
     public function index(int $poolId, Request $request) {}
-    /*
-        GET /api/pools/{pool}/guesses/{match}
-            | Retorna o palpite do usuário autenticado para uma partida específica
-            |
-            | Uso comum:
-            | - Preencher tela de edição de palpite
-            | - Ver palpite já registrado
-    */
+
+    #[OA\Get(
+        path: '/api/pools/{poolId}/guesses/{matchId}',
+        summary: 'Retorna o palpite do usuário autenticado para uma partida específica',
+        security: [['sanctum' => []]],
+        tags: ['Guesses'],
+        parameters: [
+            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'matchId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Palpite encontrado'),
+            new OA\Response(response: 404, description: 'Palpite não encontrado'),
+        ]
+    )]
     public function show(int $poolId, int $matchId, Request $request) {}
-    /*
-        POST /api/pools/{pool}/guesses
-            | Cria um novo palpite para uma partida
-            |
-            | Body params:
-            | - match_id
-            | - home_score
-            | - away_score
-            |
-            | Uso comum:
-            | - Registrar palpite antes do início da partida
-    */
+
+    #[OA\Post(
+        path: '/api/pools/{poolId}/guesses',
+        summary: 'Cria um novo palpite para uma partida',
+        security: [['sanctum' => []]],
+        tags: ['Guesses'],
+        parameters: [
+            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['match_id', 'home_score', 'away_score'],
+                properties: [
+                    new OA\Property(property: 'match_id', type: 'integer'),
+                    new OA\Property(property: 'home_score', type: 'integer'),
+                    new OA\Property(property: 'away_score', type: 'integer'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Palpite criado'),
+            new OA\Response(response: 400, description: 'Partida já iniciada ou dados inválidos'),
+        ]
+    )]
     public function store(Request $request, int $poolId) {}
-    /*
-        PUT /api/pools/{pool}/guesses/{guess}
-            | Atualiza um palpite existente
-            |
-            | Body params:
-            | - home_score
-            | - away_score
-            |
-            | Uso comum:
-            | - Alterar palpite antes do kickoff
-    */
+
+    #[OA\Put(
+        path: '/api/pools/{poolId}/guesses/{guessId}',
+        summary: 'Atualiza um palpite existente',
+        security: [['sanctum' => []]],
+        tags: ['Guesses'],
+        parameters: [
+            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'guessId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['home_score', 'away_score'],
+                properties: [
+                    new OA\Property(property: 'home_score', type: 'integer'),
+                    new OA\Property(property: 'away_score', type: 'integer'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Palpite atualizado'),
+            new OA\Response(response: 400, description: 'Partida já iniciada'),
+        ]
+    )]
     public function update(Request $request, int $poolId, int $guessId) {}
-    /*
-        DELETE /api/pools/{pool}/guesses/{guess}
-            | Remove um palpite do usuário
-            |
-            | Uso comum:
-            | - Corrigir erro de palpite
-            | - Remover palpite antes do início da partida
-    */
+
+    #[OA\Delete(
+        path: '/api/pools/{poolId}/guesses/{guessId}',
+        summary: 'Remove um palpite do usuário',
+        security: [['sanctum' => []]],
+        tags: ['Guesses'],
+        parameters: [
+            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'guessId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Palpite removido'),
+            new OA\Response(response: 400, description: 'Partida já iniciada'),
+        ]
+    )]
     public function destroy(int $poolId, int $guessId) {}
-    /*
-        GET /api/pools/{pool}/members/{member}/guesses
-            | Retorna todos os palpites de um membro específico do bolão
-            |
-            | Uso comum:
-            | - Ver palpites de outros participantes
-            | - Comparação entre usuários
-    */
+
+    #[OA\Get(
+        path: '/api/pools/{poolId}/members/{memberId}/guesses',
+        summary: 'Lista todos os palpites de um membro específico no bolão',
+        security: [['sanctum' => []]],
+        tags: ['Guesses'],
+        parameters: [
+            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'memberId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Palpites do membro'),
+        ]
+    )]
     public function memberGuesses(int $poolId, int $memberId) {}
-    /*
-        GET /api/pools/{pool}/matches/{match}/guesses
-            | Retorna todos os palpites feitos para uma partida
-            |
-            | Uso comum:
-            | - Ver estatísticas de palpites
-            | - Comparar palpites da rodada
-    */
+
+    #[OA\Get(
+        path: '/api/pools/{poolId}/matches/{matchId}/guesses',
+        summary: 'Lista todos os palpites feitos para uma partida no bolão',
+        security: [['sanctum' => []]],
+        tags: ['Guesses'],
+        parameters: [
+            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'matchId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Palpites da partida'),
+        ]
+    )]
     public function matchGuesses(int $poolId, int $matchId) {}
-    /*
-        POST /api/internal/matches/{match}/guesses/score
-            | Calcula os pontos de todos os palpites de uma partida
-            |
-            | Uso comum:
-            | - Executado após o resultado da partida ser definido
-            | - Atualiza o campo points da tabela guesses
-    */
+
+    #[OA\Post(
+        path: '/api/internal/matches/{matchId}/guesses/score',
+        summary: 'Calcula os pontos de todos os palpites de uma partida (interno)',
+        security: [['sanctum' => []]],
+        tags: ['Guesses'],
+        parameters: [
+            new OA\Parameter(name: 'matchId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Pontos calculados'),
+        ]
+    )]
     public function scoreGuessesForMatch(int $matchId) {}
-    /*
-        POST /api/internal/pools/{pool}/leaderboard/recalculate
-            | Recalcula todo o ranking de um bolão
-            |
-            | Uso comum:
-            | - Após atualizar pontos dos palpites
-            | - Reprocessar ranking caso necessário
-    */
+
+    #[OA\Post(
+        path: '/api/internal/pools/{poolId}/leaderboard/recalculate',
+        summary: 'Recalcula o ranking de um bolão (interno)',
+        security: [['sanctum' => []]],
+        tags: ['Guesses'],
+        parameters: [
+            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Ranking recalculado'),
+        ]
+    )]
     public function recalculateLeaderboard(int $poolId) {}
-    /*
-        POST /api/internal/matches/{match}/process-result
-            | Processa completamente o resultado da partida
-            |
-            | Ações executadas:
-            | - Valida resultado da partida
-            | - Calcula pontos dos palpites
-            | - Atualiza leaderboard dos bolões afetados
-            |
-            | Uso comum:
-            | - Fluxo automático após atualização do resultado
-    */
+
+    #[OA\Post(
+        path: '/api/internal/matches/{matchId}/process-result',
+        summary: 'Processa completamente o resultado de uma partida (interno)',
+        security: [['sanctum' => []]],
+        tags: ['Guesses'],
+        parameters: [
+            new OA\Parameter(name: 'matchId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Resultado processado'),
+        ]
+    )]
     public function processMatchResult(int $matchId) {}
-    /*
-        POST /api/internal/guesses/{guess}/score
-            | Calcula manualmente a pontuação de um palpite específico
-            |
-            | Uso comum:
-            | - Correções administrativas
-            | - Reprocessamento pontual
-    */
+
+    #[OA\Post(
+        path: '/api/internal/guesses/{guessId}/score',
+        summary: 'Calcula a pontuação de um palpite específico (interno)',
+        security: [['sanctum' => []]],
+        tags: ['Guesses'],
+        parameters: [
+            new OA\Parameter(name: 'guessId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Pontuação calculada'),
+        ]
+    )]
     public function scoreGuess(int $guessId) {}
 }

@@ -6,6 +6,7 @@ use App\Http\Requests\Authentication\CreateUserRequest;
 use App\Http\Transformers\UserTransformers\UserTransformer;
 use App\Services\UserServices\UserService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -16,6 +17,16 @@ class UserController extends Controller
         private UserTransformer $userTransformer
     ) {}
 
+    #[OA\Get(
+        path: '/api/me',
+        summary: 'Retorna dados do usuário autenticado',
+        security: [['sanctum' => []]],
+        tags: ['Users'],
+        responses: [
+            new OA\Response(response: 200, description: 'Dados do usuário'),
+            new OA\Response(response: 401, description: 'Não autenticado'),
+        ]
+    )]
     public function me(Request $request): Response
     {
         return response()->json(
@@ -23,14 +34,28 @@ class UserController extends Controller
             200
         );
     }
-    /*
-        POST /api/register
-            | Cria um novo usuário no sistema
-            |
-            | Uso comum:
-            | - Registro de novos usuários
-            | - Endpoint público
-    */
+
+    #[OA\Post(
+        path: '/api/register',
+        summary: 'Cria um novo usuário',
+        tags: ['Users'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['name', 'email', 'password'],
+                properties: [
+                    new OA\Property(property: 'name', type: 'string', example: 'João Silva'),
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'joao@example.com'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Usuário criado'),
+            new OA\Response(response: 422, description: 'Dados inválidos'),
+            new OA\Response(response: 500, description: 'Erro inesperado'),
+        ]
+    )]
     public function store(CreateUserRequest $request): Response
     {
         $validated = $request->validated();
@@ -48,35 +73,60 @@ class UserController extends Controller
             201
         );
     }
-    /*
-        PATCH /api/users/{user}
-            | Atualiza os dados de um usuário específico
-            |
-            | Uso comum:
-            | - ADMIN editar dados de usuários
-    */
+
+    #[OA\Patch(
+        path: '/api/users/{id}',
+        summary: 'Atualiza dados de um usuário (admin)',
+        security: [['sanctum' => []]],
+        tags: ['Users'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Usuário atualizado'),
+            new OA\Response(response: 403, description: 'Acesso negado'),
+            new OA\Response(response: 404, description: 'Usuário não encontrado'),
+        ]
+    )]
     public function update(Request $request, int $id) {}
-    /*
-        DELETE /api/users/{user}
-            | Remove ou desativa um usuário do sistema
-            |
-            | Uso comum:
-            | - Administração da plataforma
-            |
-            | Acesso:
-            | - ADMIN
-    */
+
+    #[OA\Delete(
+        path: '/api/users/{id}',
+        summary: 'Remove ou desativa um usuário (admin)',
+        security: [['sanctum' => []]],
+        tags: ['Users'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Usuário removido'),
+            new OA\Response(response: 403, description: 'Acesso negado'),
+            new OA\Response(response: 404, description: 'Usuário não encontrado'),
+        ]
+    )]
     public function destroy(int $id) {}
-    /*
-        PATCH /api/users/{user}/role
-            | Atualiza o papel do usuário no sistema
-            |
-            | Uso comum:
-            | - Promover usuário para ADMIN
-            | - Rebaixar ADMIN para USER
-            |
-            | Acesso:
-            | - ADMIN
-    */
+
+    #[OA\Patch(
+        path: '/api/users/{id}/role',
+        summary: 'Atualiza o papel do usuário no sistema (admin)',
+        security: [['sanctum' => []]],
+        tags: ['Users'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['role'],
+                properties: [
+                    new OA\Property(property: 'role', type: 'string', enum: ['USER', 'ADMIN']),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Papel atualizado'),
+            new OA\Response(response: 403, description: 'Acesso negado'),
+        ]
+    )]
     public function updateRole(Request $request, int $id) {}
 }
