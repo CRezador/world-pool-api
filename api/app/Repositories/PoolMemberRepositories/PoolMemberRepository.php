@@ -14,6 +14,7 @@ class PoolMemberRepository
         return PoolMembers::query()
             ->where('pool_id', $poolId)
             ->where('user_id', $userId)
+            ->where('status', PoolMemberStatus::ACTIVE->value)
             ->exists();
     }
 
@@ -59,7 +60,8 @@ class PoolMemberRepository
     {
         return PoolMembers::query()
             ->where('pool_id', $poolId)
-            ->with('user:id,name') // Carrega os dados do usuário relacionado, selecionando apenas id e name
+            ->where('status', PoolMemberStatus::ACTIVE->value)
+            ->with('user:id,name')
             ->get();
     }
 

@@ -13,10 +13,14 @@ class PoolMembers extends Model
     use HasFactory;
 
     protected $table = 'pool_members';
+    public $timestamps = false;
+
     protected $fillable = [
         'pool_id',
         'user_id',
         'role',
+        'status',
+        'joined_at',
     ];
     protected $casts = [
         'joined_at' => 'datetime',
