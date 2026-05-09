@@ -24,6 +24,7 @@ class PoolMemberRepository
             ->where('pool_id', $poolId)
             ->where('user_id', $userId)
             ->where('role', PoolUserRole::ADMIN->value)
+            ->where('status', PoolMemberStatus::ACTIVE->value)
             ->exists();
     }
 
@@ -45,15 +46,23 @@ class PoolMemberRepository
             ->exists();
     }
 
-    public function addMember(int $poolId, string $role, int $userId): PoolMembers
+    public function addMember(int $poolId, PoolUserRole $role, int $userId): PoolMembers
     {
         return PoolMembers::create([
             'pool_id' => $poolId,
             'user_id' => $userId,
-            'role' => $role,
+            'role' => $role->value,
             'status' => PoolMemberStatus::ACTIVE->value,
             'joined_at' => now(),
         ]);
+    }
+
+    public function getMemberByUserId(int $poolId, int $userId): ?PoolMembers
+    {
+        return PoolMembers::query()
+            ->where('pool_id', $poolId)
+            ->where('user_id', $userId)
+            ->first();
     }
 
     public function getMembersByPoolId(int $poolId): Collection

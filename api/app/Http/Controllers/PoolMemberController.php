@@ -77,7 +77,7 @@ class PoolMemberController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
-            ], 400);
+            ], $e->getCode() ?: 400);
         }
 
         return response()->json([
@@ -96,7 +96,7 @@ class PoolMemberController extends Controller
         try {
             $this->poolMemberService->leavePool($poolId, $request->user()->id);
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 400);
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
         }
 
         return response()->json(['message' => 'Você saiu do bolão com sucesso'], 200);
@@ -113,7 +113,7 @@ class PoolMemberController extends Controller
         try {
             $this->poolMemberService->banMember($poolId, $memberId, $request->user()->id);
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 400);
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
         }
 
         return response()->json(['message' => 'Membro banido com sucesso'], 200);
@@ -130,7 +130,7 @@ class PoolMemberController extends Controller
         try {
             $this->poolMemberService->unbanMember($poolId, $memberId, $request->user()->id);
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 400);
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
         }
 
         return response()->json(['message' => 'Membro desbanido com sucesso'], 200);

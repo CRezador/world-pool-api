@@ -14,7 +14,7 @@ class PoolMemberService
         private PoolMemberRepository $poolMemberRepository,
     ) {}
 
-    public function addMember(int $poolId, string $role, int $userId): PoolMembers
+    public function addMember(int $poolId, PoolUserRole $role, int $userId): PoolMembers
     {
         return $this->poolMemberRepository->addMember($poolId, $role, $userId);
     }
@@ -55,25 +55,25 @@ class PoolMemberService
         return $this->poolMemberRepository->isAdmin($poolId, $userId);
     }
 
-    public function getRole(int $poolId, int $userId): PoolUserRole
+    public function getRole(int $poolId, int $userId): ?PoolUserRole
     {
         return $this->poolMemberRepository->getRole($poolId, $userId);
     }
 
     public function updateRole(int $poolId, int $userId, PoolUserRole $role): void
     {
+        $member = $this->poolMemberRepository->getMemberByUserId($poolId, $userId);
 
-        if ($this->isOwner($poolId, $userId)) {
-            throw new \Exception('Não é possível alterar o papel do proprietário do bolão');
+        if (!$member) {
+            throw new \Exception('Membro não encontrado no bolão', 404);
         }
 
-        if (!$this->isMember($poolId, $userId)) {
-            throw new \Exception('Membro não encontrado no bolão');
+        if ($member->role === PoolUserRole::OWNER) {
+            throw new \Exception('Não é possível alterar o papel do proprietário do bolão', 403);
         }
 
-        $memberRole = $this->getRole($poolId, $userId);
-        if ($memberRole->value === $role->value) {
-            throw new \Exception('O membro já possui o papel informado');
+        if ($member->role === $role) {
+            throw new \Exception('O membro já possui o papel informado', 422);
         }
 
         $this->poolMemberRepository->updateRole($poolId, $userId, $role->value);
@@ -82,11 +82,11 @@ class PoolMemberService
     public function leavePool(int $poolId, int $userId): void
     {
         if ($this->isOwner($poolId, $userId)) {
-            throw new \Exception('O proprietário não pode sair do bolão');
+            throw new \Exception('O proprietário não pode sair do bolão', 403);
         }
 
         if (!$this->isMember($poolId, $userId)) {
-            throw new \Exception('Você não é membro deste bolão');
+            throw new \Exception('Você não é membro deste bolão', 403);
         }
 
         $this->poolMemberRepository->leavePool($poolId, $userId);

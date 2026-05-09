@@ -53,7 +53,7 @@ class PoolService
                 'owner_id' => $user->id,
                 'is_public' => $is_public,
             ]);
-            $this->poolMemberService->addMember($pool->id, PoolUserRole::OWNER->value, $user->id);
+            $this->poolMemberService->addMember($pool->id, PoolUserRole::OWNER, $user->id);
         } catch (\Exception $e) {
             throw new \Exception('Erro ao criar a Bolão: ' . $e->getMessage());
         }
@@ -143,7 +143,7 @@ class PoolService
             throw new \Exception('Você já é membro deste bolão.');
         }
 
-        $member = $this->poolMemberService->addMember($pool->id, PoolUserRole::MEMBER->value, $userId);
+        $member = $this->poolMemberService->addMember($pool->id, PoolUserRole::MEMBER, $userId);
 
         return [
             'Pool' => $pool,
