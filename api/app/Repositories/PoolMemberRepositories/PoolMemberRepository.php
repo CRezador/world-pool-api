@@ -9,6 +9,15 @@ use Illuminate\Database\Eloquent\Collection;
 
 class PoolMemberRepository
 {
+    public function isBanned(int $poolId, int $userId): bool
+    {
+        return PoolMember::query()
+            ->where('pool_id', $poolId)
+            ->where('user_id', $userId)
+            ->where('status', PoolMemberStatus::BANNED->value)
+            ->exists();
+    }
+
     public function isMember(int $poolId, int $userId): bool
     {
         return PoolMember::query()

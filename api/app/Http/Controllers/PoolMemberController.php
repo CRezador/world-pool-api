@@ -105,7 +105,7 @@ class PoolMemberController extends Controller
         $data = $request->validated();
 
         try {
-            $this->poolMemberService->updateRole($poolId, $memberId, PoolUserRole::from($data['role']));
+            $this->poolMemberService->updateRole($poolId, $memberId, PoolUserRole::from($data['role']), $request->user()->id);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),

@@ -46,6 +46,11 @@ class PoolMemberService
         return $member;
     }
 
+    public function isBanned(int $poolId, int $userId): bool
+    {
+        return $this->poolMemberRepository->isBanned($poolId, $userId);
+    }
+
     public function isMember(int $poolId, int $userId): bool
     {
         return $this->poolMemberRepository->isMember($poolId, $userId);
@@ -71,12 +76,16 @@ class PoolMemberService
         return $this->poolMemberRepository->getRole($poolId, $userId);
     }
 
-    public function updateRole(int $poolId, int $memberId, PoolUserRole $role): void
+    public function updateRole(int $poolId, int $memberId, PoolUserRole $role, int $requesterId): void
     {
         $member = $this->poolMemberRepository->getMemberById($poolId, $memberId);
 
         if (!$member) {
             throw new \Exception('Membro não encontrado no bolão', 404);
+        }
+
+        if ($member->user_id === $requesterId) {
+            throw new \Exception('Você não pode alterar o seu próprio papel', 403);
         }
 
         if ($member->role === PoolUserRole::OWNER) {

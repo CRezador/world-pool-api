@@ -139,6 +139,10 @@ class PoolService
             throw new \Exception('Bolão não encontrado.');
         }
 
+        if ($this->poolMemberService->isBanned($pool->id, $userId)) {
+            throw new \Exception('Você está banido deste bolão.');
+        }
+
         if ($this->poolMemberService->isMember($pool->id, $userId)) {
             throw new \Exception('Você já é membro deste bolão.');
         }
