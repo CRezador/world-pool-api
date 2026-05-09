@@ -19,6 +19,4 @@ use OpenApi\Attributes as OA;
     url: 'http://localhost:8080',
     description: 'Servidor de desenvolvimento'
 )]
-abstract class Controller
-{
-}
+abstract class Controller {}
