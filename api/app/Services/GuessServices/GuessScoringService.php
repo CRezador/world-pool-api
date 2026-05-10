@@ -7,6 +7,7 @@ use App\Models\Guess;
 use App\Models\Matches;
 use App\Repositories\GuessRepositories\GuessRepository;
 use App\Repositories\MatchRepositories\MatchRepository;
+use App\Services\LeaderboardServices\LeaderboardWriteService;
 use Illuminate\Support\Facades\DB;
 
 class GuessScoringService
@@ -14,6 +15,7 @@ class GuessScoringService
     public function __construct(
         private GuessRepository $guessRepository,
         private MatchRepository $matchRepository,
+        private LeaderboardWriteService $leaderboardWriteService,
     ) {}
 
     private function scoreGuess(Guess $guess, Matches $match): int
@@ -51,6 +53,12 @@ class GuessScoringService
                 $points = $this->scoreGuess($guess, $match);
                 $this->guessRepository->updateById($guess->id, ['points' => $points]);
             }
+
+            $guesses->groupBy(fn($guess) => $guess->pool_id . '_' . $guess->user_id)
+                ->each(function ($group) {
+                    $guess = $group->first();
+                    $this->leaderboardWriteService->syncUser($guess->pool_id, $guess->user_id);
+                });
         });
     }
 }

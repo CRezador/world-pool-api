@@ -6,17 +6,22 @@ use App\Http\Enums\PoolMemberStatus;
 use App\Http\Enums\PoolUserRole;
 use App\Models\PoolMember;
 use App\Repositories\PoolMemberRepositories\PoolMemberRepository;
+use App\Services\LeaderboardServices\LeaderboardWriteService;
 use Illuminate\Database\Eloquent\Collection;
 
 class PoolMemberService
 {
     public function __construct(
         private PoolMemberRepository $poolMemberRepository,
+        private LeaderboardWriteService $leaderboardWriteService,
     ) {}
 
     public function addMember(int $poolId, PoolUserRole $role, int $userId): PoolMember
     {
-        return $this->poolMemberRepository->addMember($poolId, $role, $userId);
+        $member = $this->poolMemberRepository->addMember($poolId, $role, $userId);
+        $this->leaderboardWriteService->createEntry($poolId, $userId);
+
+        return $member;
     }
 
     public function listMembers(int $poolId, ?PoolMemberStatus $status = null): Collection
@@ -110,6 +115,7 @@ class PoolMemberService
         }
 
         $this->poolMemberRepository->leavePool($poolId, $userId);
+        $this->leaderboardWriteService->removeEntry($poolId, $userId);
     }
 
     public function getRoleByMemberId(int $poolId, int $memberId): ?PoolUserRole
@@ -134,6 +140,7 @@ class PoolMemberService
         }
 
         $this->poolMemberRepository->banMember($poolId, $memberId);
+        $this->leaderboardWriteService->archiveEntry($poolId, $member->user_id);
     }
 
     public function unbanMember(int $poolId, int $memberId, int $userId): void
@@ -153,5 +160,6 @@ class PoolMemberService
         }
 
         $this->poolMemberRepository->unbanMember($poolId, $memberId);
+        $this->leaderboardWriteService->restoreEntry($poolId, $member->user_id);
     }
 }
