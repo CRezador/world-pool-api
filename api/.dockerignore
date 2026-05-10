@@ -6,5 +6,3 @@ storage/framework/cache/*
 storage/framework/sessions/*
 storage/framework/views/*
 .env
-Dockerfile
-docker-compose.yml
