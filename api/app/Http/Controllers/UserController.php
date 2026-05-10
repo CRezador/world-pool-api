@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Enums\UserRole;
 use App\Http\Requests\Authentication\CreateUserRequest;
+use App\Http\Requests\Authentication\UpdateUserRequest;
+use App\Http\Requests\Authentication\UpdateUserRoleRequest;
 use App\Http\Transformers\UserTransformers\UserTransformer;
 use App\Services\UserServices\UserService;
 use Illuminate\Http\Request;
@@ -88,23 +91,21 @@ class UserController extends Controller
             new OA\Response(response: 404, description: 'Usuário não encontrado'),
         ]
     )]
-    public function update(Request $request, int $id) {}
+    public function update(UpdateUserRequest $request, int $id): Response
+    {
+        $user = $this->userService->findById($id);
 
-    #[OA\Delete(
-        path: '/api/users/{id}',
-        summary: 'Remove ou desativa um usuário (admin)',
-        security: [['sanctum' => []]],
-        tags: ['Users'],
-        parameters: [
-            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-        ],
-        responses: [
-            new OA\Response(response: 200, description: 'Usuário removido'),
-            new OA\Response(response: 403, description: 'Acesso negado'),
-            new OA\Response(response: 404, description: 'Usuário não encontrado'),
-        ]
-    )]
-    public function destroy(int $id) {}
+        if (!$user) {
+            return response()->json(['message' => 'Usuário não encontrado.'], 404);
+        }
+
+        $user = $this->userService->update($user, $request->validated());
+
+        return response()->json(
+            $this->userTransformer->item($user, 'Usuário atualizado'),
+            200
+        );
+    }
 
     #[OA\Patch(
         path: '/api/users/{id}/role',
@@ -128,5 +129,20 @@ class UserController extends Controller
             new OA\Response(response: 403, description: 'Acesso negado'),
         ]
     )]
-    public function updateRole(Request $request, int $id) {}
+    public function updateRole(UpdateUserRoleRequest $request, int $id): Response
+    {
+        $user = $this->userService->findById($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'Usuário não encontrado.'], 404);
+        }
+
+        $role = UserRole::from($request->validated()['role']);
+        $user = $this->userService->updateRole($user, $role);
+
+        return response()->json(
+            $this->userTransformer->item($user, 'Papel atualizado'),
+            200
+        );
+    }
 }

@@ -75,6 +75,10 @@ Route::middleware('auth:sanctum')->group(
         //Rotas admin
         Route::middleware('admin')->group(
             function () {
+                //Rotas de usuário
+                Route::patch('/users/{id}', [UserController::class, 'update']);
+                Route::patch('/users/{id}/role', [UserController::class, 'updateRole']);
+
                 //Rotas de partidas
                 Route::post('/matches/create', [MatchController::class, 'store']);
                 Route::put('/matches/{id}', [MatchController::class, 'update']);

@@ -2,6 +2,7 @@
 
 namespace App\Services\UserServices;
 
+use App\Http\Enums\UserRole;
 use App\Models\User;
 use App\Repositories\UserRepositories\UserRepository;
 use Illuminate\Support\Facades\Hash;
@@ -33,6 +34,11 @@ class UserService
         return $this->userRepository->findByEmail($email);
     }
 
+    public function findById(int $id): ?User
+    {
+        return $this->userRepository->findById($id);
+    }
+
     public function createUser(array $data): User
     {
         return $this->userRepository->create([
@@ -42,5 +48,15 @@ class UserService
             'remember_token' => Str::random(10),
             'password' => Hash::make($data['password']),
         ]);
+    }
+
+    public function update(User $user, array $data): User
+    {
+        return $this->userRepository->update($user, $data);
+    }
+
+    public function updateRole(User $user, UserRole $role): User
+    {
+        return $this->userRepository->updateRole($user, $role);
     }
 }
