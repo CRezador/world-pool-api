@@ -27,7 +27,7 @@ class MatchService
     }
     private function kickoffFormat(?string $kickoff_at): ?string
     {
-        return $kickoff_at === null ? null : Carbon::createFromFormat('d/m/Y', $kickoff_at)->format('Y-m-d H:i:s');
+        return $kickoff_at === null ? null : Carbon::createFromFormat('d/m/Y H:i', $kickoff_at)->format('Y-m-d H:i:s');
     }
 
     public function createMatch(array $match): Matches
@@ -48,7 +48,7 @@ class MatchService
         }
 
         //Verificar se partida já existe, ou seja, se já existe uma partida com os mesmos times e na mesma fase do campeonato.
-        if ($this->matchRepository->matchAlreadyExits($homeTeam->id, $awayTeam->id, $match['stage'])) {
+        if ($this->matchRepository->matchAlreadyExists($homeTeam->id, $awayTeam->id, $match['stage'])) {
             throw new \Exception(
                 'Essa partida já existe.',
             );

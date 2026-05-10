@@ -30,7 +30,7 @@ class MatchRequest extends FormRequest
             'code_away_team' => ['required', 'string', 'max:3'],
             'home_score' => ['sometimes', 'nullable', 'integer', 'gte:0',  'min:0'],
             'away_score' => ['sometimes', 'nullable', 'integer', 'gte:0', 'min:0'],
-            'kickoff_at' => ['sometimes', 'nullable', 'date_format:d/m/Y'],
+            'kickoff_at' => ['sometimes', 'nullable', 'date_format:d/m/Y H:i'],
             'stage' => [Rule::enum(MatchStage::class), 'required'],
             'status' => ['sometimes', 'nullable', Rule::enum(MatchStatus::class)],
         ];
@@ -50,7 +50,7 @@ class MatchRequest extends FormRequest
             'away_score.integer' => 'O placar do time visitante deve ser um número inteiro.',
             'away_score.gte' => 'O placar do time visitante deve ser um número inteiro não negativo.',
             'away_score.min' => 'O placar do time visitante deve ser um número inteiro não negativo.',
-            'kickoff_at.date_format' => 'A data de início da partida deve estar no formato d/m/Y.',
+            'kickoff_at.date_format' => 'A data de início da partida deve estar no formato d/m/Y H:i.',
             'stage.required' => 'A fase da partida é obrigatória.',
             'stage.enum' => 'A fase da partida deve ser um dos seguintes valores: GROUP_STAGE, ROUND_OF_16, QUARTER_FINALS, SEMI_FINALS, FINAL.',
             'status.enum' => 'A Status da partida deve ser um dos seguintes valores: SCHEDULED, IN_PROGRESS, FINISHED.',
