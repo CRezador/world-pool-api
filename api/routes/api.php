@@ -7,6 +7,7 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\PoolController;
 use App\Http\Controllers\PoolMemberController;
+use App\Http\Controllers\GuessController;
 use Illuminate\Support\Facades\Route;
 
 //Users Routes
@@ -51,6 +52,16 @@ Route::middleware('auth:sanctum')->group(
         Route::post('/pools/{poolId}/regenerate-code', [PoolController::class, 'regenerateJoinCode'])->middleware('PoolMemberAdmin');
         Route::post('/pools/{poolId}/members/{memberId}/ban', [PoolMemberController::class, 'ban'])->middleware('PoolMemberAdmin');
         Route::post('/pools/{poolId}/members/{memberId}/unban', [PoolMemberController::class, 'unban'])->middleware('PoolMemberAdmin');
+
+        //Rotas de Palpites
+        Route::middleware('PoolMember')->group(function () {
+            Route::get('/pools/{poolId}/guesses', [GuessController::class, 'index']);
+            Route::post('/pools/{poolId}/guesses', [GuessController::class, 'store']);
+            Route::put('/pools/{poolId}/guesses/{guessId}', [GuessController::class, 'update']);
+            Route::delete('/pools/{poolId}/guesses/{guessId}', [GuessController::class, 'destroy']);
+            Route::get('/pools/{poolId}/matches/{matchId}/guesses', [GuessController::class, 'matchGuesses']);
+            Route::get('/pools/{poolId}/members/{memberId}/guesses', [GuessController::class, 'memberGuesses']);
+        });
 
         //Rotas admin
         Route::middleware('admin')->group(
