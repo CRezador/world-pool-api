@@ -34,7 +34,7 @@ class LeaderboardRepository
             ->whereNull('archived_at')
             ->get();
     }
-    
+
     public function getRankPosition(int $poolId, int $userId): int
     {
         $entry = $this->getByUser($poolId, $userId);

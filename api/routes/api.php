@@ -6,6 +6,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\GuessController;
+use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\PoolController;
 use App\Http\Controllers\PoolMemberController;
 use Illuminate\Support\Facades\Route;
@@ -63,6 +64,14 @@ Route::middleware('auth:sanctum')->group(
             Route::get('/pools/{poolId}/members/{memberId}/guesses', [GuessController::class, 'memberGuesses']);
         });
 
+        //Rotas de Leaderboard
+        Route::middleware('PoolMember')->group(function () {
+            Route::get('/pools/{poolId}/leaderboard', [LeaderboardController::class, 'index']);
+            Route::get('/pools/{poolId}/leaderboard/top', [LeaderboardController::class, 'top']);
+            Route::get('/pools/{poolId}/leaderboard/me', [LeaderboardController::class, 'myPosition']);
+            Route::get('/pools/{poolId}/leaderboard/{userId}', [LeaderboardController::class, 'show']);
+        });
+
         //Rotas admin
         Route::middleware('admin')->group(
             function () {
@@ -73,6 +82,9 @@ Route::middleware('auth:sanctum')->group(
 
                 //Rotas internas de palpites
                 Route::post('/internal/matches/{matchId}/guesses/score', [GuessController::class, 'scoreGuessesForMatch']);
+
+                //Rotas internas de leaderboard
+                Route::post('/pools/{poolId}/leaderboard/recalculate', [LeaderboardController::class, 'recalculate']);
             }
         );
     }

@@ -28,10 +28,6 @@ class LeaderboardReadService
 
     public function top(int $poolId, int $limit = 3): Collection
     {
-        if ($limit < 1 || $limit > 10) {
-            throw new \InvalidArgumentException('O limite deve ser entre 1 e 10', 422);
-        }
-
         $entries = $this->leaderboardRepository->getTop($poolId, $limit);
 
         $entries->each(function ($entry, $index) {
