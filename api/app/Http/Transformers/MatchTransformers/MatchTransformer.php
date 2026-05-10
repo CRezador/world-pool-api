@@ -3,10 +3,11 @@
 namespace App\Http\Transformers\MatchTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
+use App\Models\Matches;
 
 class MatchTransformer extends BaseTransformer
 {
-    public function transform($match): array
+    public function transform(Matches $match): array
     {
         return [
             'id' => $match->id,
@@ -29,7 +30,7 @@ class MatchTransformer extends BaseTransformer
         return [
             'message' => 'Partidas encontradas para o grupo',
             'Group' => $matches->first()->group->name,
-            'Matches' => $this->collection($matches),
+            'Matches' => $this->collection($matches, 'Partidas do grupo'),
         ];
     }
 
@@ -38,7 +39,7 @@ class MatchTransformer extends BaseTransformer
         return [
             'message' => 'Partidas encontradas para o grupo',
             'Group' => $matches->first()->stage,
-            'Matches' => $this->collection($matches),
+            'Matches' => $this->collection($matches, 'Partidas da fase'),
         ];
     }
 }

@@ -3,10 +3,11 @@
 namespace App\Http\Transformers\PoolMemberTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
+use App\Models\PoolMember;
 
 class PoolMemberTransformer extends BaseTransformer
 {
-    public function transform($poolMember): array
+    public function transform(PoolMember $poolMember): array
     {
         return [
             'id' => $poolMember->id,

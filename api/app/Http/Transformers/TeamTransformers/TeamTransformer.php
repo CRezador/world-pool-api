@@ -3,10 +3,11 @@
 namespace App\Http\Transformers\TeamTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
+use App\Models\Team;
 
 class TeamTransformer extends BaseTransformer
 {
-    public function transform($team): array
+    public function transform(Team $team): array
     {
         return [
             'name' => $team->name,
@@ -20,7 +21,7 @@ class TeamTransformer extends BaseTransformer
         return [
             'message' => 'Times encontrados',
             'Group' => $team->first()->group->name,
-            'team' => $this->collection($team),
+            'team' => $this->collection($team, 'Times do grupo'),
         ];
     }
 }

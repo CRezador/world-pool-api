@@ -3,10 +3,11 @@
 namespace App\Http\Transformers\UserTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
+use App\Models\User;
 
 class UserTransformer extends BaseTransformer
 {
-    public function transform($user): array
+    public function transform(User $user): array
     {
         return [
             'id' => $user->id,

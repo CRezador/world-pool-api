@@ -3,10 +3,11 @@
 namespace App\Http\Transformers\PoolTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
+use App\Models\Pool;
 
 class PoolTransformer extends BaseTransformer
 {
-    public function transform($pool): array
+    public function transform(Pool $pool): array
     {
         return [
             'name' => $pool->name,
