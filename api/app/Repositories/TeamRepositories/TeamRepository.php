@@ -9,17 +9,17 @@ class TeamRepository
 {
     public function findAll(): Collection
     {
-        return Team::query()->get();
+        return Team::with('group')->get();
     }
 
     public function findById(int $id): ?Team
     {
-        return Team::query()->find($id);
+        return Team::with('group')->find($id);
     }
 
     public function teamsByGroup(int $id): Collection
     {
-        return Team::select()->where('group_id', $id)->get();
+        return Team::with('group')->where('group_id', $id)->get();
     }
 
     public function findByCode(string $code): ?Team
