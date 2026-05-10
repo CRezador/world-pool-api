@@ -3,16 +3,23 @@
 namespace App\Http\Transformers\LeaderboardTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
+use App\Models\Leaderboard;
 
 class LeaderboardTransformer extends BaseTransformer
 {
-    public function transform($leaderboard): array
+    public function transform(Leaderboard $leaderboard): array
     {
         return [
-            'points' => $leaderboard->points,
-            'exact_hits' => $leaderboard->exact_hits,
-            'result_hits' => $leaderboard->result_hits,
+            'rank'          => $leaderboard->rank,
+            'user'          => [
+                'id'   => $leaderboard->user->id,
+                'name' => $leaderboard->user->name,
+            ],
+            'points'        => $leaderboard->points,
+            'exact_hits'    => $leaderboard->exact_hits,
+            'result_hits'   => $leaderboard->result_hits,
             'guesses_count' => $leaderboard->guesses_count,
+            'updated_at'    => $leaderboard->updated_at?->toDateTimeString(),
         ];
     }
 }

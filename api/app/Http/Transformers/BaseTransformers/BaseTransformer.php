@@ -20,5 +20,19 @@ abstract class BaseTransformer
         ];
     }
 
+    public function paginated($paginator, $message): array
+    {
+        return [
+            'message' => $message,
+            'data' => $paginator->getCollection()->map(fn($item) => $this->transform($item))->values()->toArray(),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'per_page'     => $paginator->perPage(),
+                'total'        => $paginator->total(),
+                'last_page'    => $paginator->lastPage(),
+            ],
+        ];
+    }
+
     abstract public function transform($item): array;
 }

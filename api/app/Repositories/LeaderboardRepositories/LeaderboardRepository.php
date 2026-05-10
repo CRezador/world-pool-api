@@ -35,25 +35,6 @@ class LeaderboardRepository
             ->get();
     }
     
-    public function getStatsByUser(int $poolId, int $userId): ?array
-    {
-        $entry = Leaderboard::where('pool_id', $poolId)
-            ->where('user_id', $userId)
-            ->whereNull('archived_at')
-            ->first();
-
-        if (!$entry) {
-            return null;
-        }
-
-        return [
-            'points' => $entry->points,
-            'exact_hits' => $entry->exact_hits,
-            'result_hits' => $entry->result_hits,
-            'guesses_count' => $entry->guesses_count,
-        ];
-    }
-
     public function getRankPosition(int $poolId, int $userId): int
     {
         $entry = $this->getByUser($poolId, $userId);

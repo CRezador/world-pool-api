@@ -32,11 +32,9 @@ class LeaderboardWriteService
         $this->leaderboardRepository->restoreEntry($poolId, $userId);
     }
 
-    //agrega todos os guesses pontuados do usuário no bolão (points, exact_hits, result_hits, guesses_count) e atualiza a entrada via updateStats; chamado pelo GuessScoringService
     public function syncUser(int $poolId, int $userId): void
     {
-        $stats = $this->leaderboardRepository->getStatsByUser($poolId, $userId);
-
+        $stats = $this->guessRepository->aggregateStatsByUserAndPool($poolId, $userId);
         $this->leaderboardRepository->updateStats($poolId, $userId, $stats);
     }
 
@@ -45,8 +43,7 @@ class LeaderboardWriteService
         $entries = $this->leaderboardRepository->getAllByPool($poolId);
 
         foreach ($entries as $entry) {
-            $stats = $this->leaderboardRepository->getStatsByUser($poolId, $entry->user_id);
-            $this->leaderboardRepository->updateStats($poolId, $entry->user_id, $stats);
+            $this->syncUser($poolId, $entry->user_id);
         }
     } 
 }
