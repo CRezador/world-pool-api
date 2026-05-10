@@ -3,11 +3,9 @@
 namespace App\Http\Transformers\GuessTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
-use App\Models\Guess;
-
 class GuessTransformer extends BaseTransformer
 {
-    public function transform(Guess $guess): array
+    public function transform(mixed $guess): array
     {
         return [
             'id' => $guess->id,

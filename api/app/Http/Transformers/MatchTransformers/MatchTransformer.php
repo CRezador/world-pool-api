@@ -2,12 +2,11 @@
 
 namespace App\Http\Transformers\MatchTransformers;
 
+use App\Http\Enums\MatchStage;
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
-use App\Models\Matches;
-
 class MatchTransformer extends BaseTransformer
 {
-    public function transform(Matches $match): array
+    public function transform(mixed $match): array
     {
         return [
             'id' => $match->id,

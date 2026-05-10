@@ -3,16 +3,15 @@
 namespace App\Http\Transformers\PoolTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
-use App\Models\Pool;
-
 class PoolTransformer extends BaseTransformer
 {
-    public function transform(Pool $pool): array
+    public function transform(mixed $pool): array
     {
         return [
+            'id' => $pool->id,
             'name' => $pool->name,
             'join_code' => $pool->join_code,
-            'is_public' => $pool->is_public === 1 ? true : false,
+            'is_public' => (bool) $pool->is_public,
             'owner' => $pool->owner->name,
         ];
     }

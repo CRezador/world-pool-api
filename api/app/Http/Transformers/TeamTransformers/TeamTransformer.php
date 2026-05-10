@@ -3,13 +3,12 @@
 namespace App\Http\Transformers\TeamTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
-use App\Models\Team;
-
 class TeamTransformer extends BaseTransformer
 {
-    public function transform(Team $team): array
+    public function transform(mixed $team): array
     {
         return [
+            'id' => $team->id,
             'name' => $team->name,
             'group' => $team->group->name,
             'code' => $team->code,

@@ -3,13 +3,12 @@
 namespace App\Http\Transformers\GroupTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
-use App\Models\Group;
-
 class GroupTransformer extends BaseTransformer
 {
-    public function transform(Group $group): array
+    public function transform(mixed $group): array
     {
         return [
+            'id' => $group->id,
             'name' => $group->name,
             'teams' => $group->teams->map(fn($team) => [
                 'name' => $team->name,

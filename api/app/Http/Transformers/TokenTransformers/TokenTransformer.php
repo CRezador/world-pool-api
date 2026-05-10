@@ -6,7 +6,7 @@ use App\Http\Transformers\BaseTransformers\BaseTransformer;
 
 class TokenTransformer extends BaseTransformer
 {
-    public function transform(string $token): array
+    public function transform(mixed $token): array
     {
         return [
             'access_token' => $token,
