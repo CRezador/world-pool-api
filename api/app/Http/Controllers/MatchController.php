@@ -151,14 +151,14 @@ class MatchController extends Controller
     {
         $data = $request->validated();
         $match = [
-            'game_day' => $data->game_day,
-            'code_home_team' => $data->code_home_team,
-            'code_away_team' => $data->code_away_team,
-            'home_score' => $data->home_score ?? 0,
-            'away_score' => $data->away_score ?? 0,
-            'kickoff_at' => $data->kickoff_at,
-            'stage' => $data->stage,
-            'status' => $data->status ?? MatchStatus::SCHEDULED,
+            'game_day' => $data['game_day'],
+            'code_home_team' => $data['code_home_team'],
+            'code_away_team' => $data['code_away_team'],
+            'home_score' => $data['home_score'] ?? 0,
+            'away_score' => $data['away_score'] ?? 0,
+            'kickoff_at' => $data['kickoff_at'] ?? null,
+            'stage' => $data['stage'],
+            'status' => $data['status'] ?? MatchStatus::SCHEDULED,
         ];
 
         try {
@@ -217,23 +217,6 @@ class MatchController extends Controller
         );
     }
 
-    #[OA\Post(
-        path: '/api/matches/{id}/close',
-        summary: 'Fecha a partida após finalização, bloqueando novos palpites (admin)',
-        security: [['sanctum' => []]],
-        tags: ['Matches'],
-        parameters: [
-            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-        ],
-        responses: [
-            new OA\Response(response: 200, description: 'Partida fechada'),
-        ]
-    )]
-    public function closeMatch(int $id)
-    {
-        //@todo checar se realmente preciso dessa function
-    }
-
     #[OA\Delete(
         path: '/api/matches/{id}',
         summary: 'Remove uma partida (admin)',
@@ -271,20 +254,4 @@ class MatchController extends Controller
         ], 200);
     }
 
-    #[OA\Get(
-        path: '/api/matches/{id}/guesses',
-        summary: 'Retorna todos os palpites de uma partida',
-        security: [['sanctum' => []]],
-        tags: ['Matches'],
-        parameters: [
-            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-        ],
-        responses: [
-            new OA\Response(response: 200, description: 'Palpites da partida'),
-        ]
-    )]
-    public function guesses(int $id)
-    {
-        //@todo implementar função para retornar os palpites relacionados a uma partida
-    }
 }

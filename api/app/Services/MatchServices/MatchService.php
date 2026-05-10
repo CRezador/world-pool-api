@@ -8,7 +8,9 @@ use App\Http\Requests\Match\MatchUpdateRequest;
 use App\Models\Matches;
 use App\Repositories\MatchRepositories\MatchRepository;
 use App\Repositories\TeamRepositories\TeamRepository;
+use App\Services\GuessServices\GuessScoringService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class MatchService
 {
@@ -17,7 +19,8 @@ class MatchService
 
     public function __construct(
         MatchRepository $matchRepository,
-        TeamRepository $teamRepository
+        TeamRepository $teamRepository,
+        private GuessScoringService $guessScoringService,
     ) {
         $this->matchRepository = $matchRepository;
         $this->teamRepository = $teamRepository;
@@ -63,7 +66,7 @@ class MatchService
                 'home_score' => 0,
                 'away_score' => 0,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             throw new \Exception('Erro ao criar a partida');
         }
 
@@ -94,6 +97,18 @@ class MatchService
             $data['kickoff_at'] = $this->kickoffFormat($request->kickoff_at);
         }
 
-        return $this->matchRepository->update($match, $data);
+        $finishingMatch = $request->has('status')
+            && $request->status === MatchStatus::FINISHED->value
+            && $match->status !== MatchStatus::FINISHED;
+
+        return DB::transaction(function () use ($match, $data, $finishingMatch) {
+            $updated = $this->matchRepository->update($match, $data);
+
+            if ($finishingMatch) {
+                $this->guessScoringService->scoreGuessesForMatch($match->id);
+            }
+
+            return $updated;
+        });
     }
 }
