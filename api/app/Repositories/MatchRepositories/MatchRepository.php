@@ -79,7 +79,7 @@ class MatchRepository
     {
         $match->update($data);
 
-        return $match->refresh();
+        return $match->fresh(['homeTeam', 'awayTeam', 'group']);
     }
 
     public function delete(Matches $match): bool
