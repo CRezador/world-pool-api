@@ -70,6 +70,9 @@ Route::middleware('auth:sanctum')->group(
                 Route::post('/matches/create', [MatchController::class, 'store']);
                 Route::put('/matches/{id}', [MatchController::class, 'update']);
                 Route::delete('/matches/{id}', [MatchController::class, 'destroy']);
+
+                //Rotas internas de palpites
+                Route::post('/internal/matches/{matchId}/guesses/score', [GuessController::class, 'scoreGuessesForMatch']);
             }
         );
     }

@@ -5,11 +5,13 @@ namespace App\Services\GuessServices;
 use App\Models\Guess;
 use App\Models\Matches;
 use App\Repositories\GuessRepositories\GuessRepository;
+use App\Repositories\MatchRepositories\MatchRepository;
 
 class GuessScoringService
 {
     public function __construct(
-        private GuessRepository $guessRepository
+        private GuessRepository $guessRepository,
+        private MatchRepository $matchRepository,
     ) {}
 
     public function scoreGuess(Guess $guess, Matches $match): int
@@ -29,9 +31,14 @@ class GuessScoringService
         return 0;
     }
 
-    public function scoreGuessesForMatch(Matches $match): void
+    public function scoreGuessesForMatch(int $matchId): void
     {
-        $guesses = $this->guessRepository->getByMatch($match->id);
+        $match = $this->matchRepository->findById($matchId);
+        if (!$match) {
+            throw new \Exception('Partida não encontrada.', 404);
+        }
+
+        $guesses = $this->guessRepository->getByMatch($matchId);
 
         foreach ($guesses as $guess) {
             $points = $this->scoreGuess($guess, $match);

@@ -29,24 +29,33 @@ class GuessWriteService
         }
     }
 
+    private function assertPool(Guess $guess, int $poolId): void
+    {
+        if ($guess->pool_id !== $poolId) {
+            throw new \Exception('Palpite não pertence a este bolão.', 403);
+        }
+    }
+
     public function createGuess(array $data): Guess
     {
         $this->matchRepository->assertScheduled($data['match_id']);
         return $this->guessRepository->create($data);
     }
 
-    public function updateGuess(int $id, int $userId, array $data): Guess
+    public function updateGuess(int $id, int $userId, int $poolId, array $data): Guess
     {
         $guess = $this->findGuessOrFail($id);
         $this->assertOwnership($guess, $userId);
+        $this->assertPool($guess, $poolId);
         $this->matchRepository->assertScheduled($guess->match_id);
         return $this->guessRepository->updateById($id, $data);
     }
 
-    public function deleteGuess(int $guessId, int $userId): bool
+    public function deleteGuess(int $guessId, int $userId, int $poolId): bool
     {
         $guess = $this->findGuessOrFail($guessId);
         $this->assertOwnership($guess, $userId);
+        $this->assertPool($guess, $poolId);
         $this->matchRepository->assertScheduled($guess->match_id);
         return $this->guessRepository->deleteById($guessId);
     }
