@@ -45,7 +45,6 @@ class UserService
             'name' => $data['name'],
             'email' => $data['email'],
             'email_verified_at' => now(),
-            'remember_token' => Str::random(10),
             'password' => Hash::make($data['password']),
         ]);
     }

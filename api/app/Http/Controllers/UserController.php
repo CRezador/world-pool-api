@@ -65,9 +65,9 @@ class UserController extends Controller
 
         try {
             $user = $this->userService->createUser($validated);
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             return response()->json([
-                'message' => 'Erro inesperado ao criar usuário.' . $e->getMessage(),
+                'message' => 'Erro inesperado ao criar usuário.',
             ], 500);
         }
 
