@@ -6,17 +6,25 @@ use App\Http\Enums\PoolMemberStatus;
 use App\Http\Enums\PoolUserRole;
 use App\Models\PoolMember;
 use App\Repositories\PoolMemberRepositories\PoolMemberRepository;
+use App\Services\LeaderboardServices\LeaderboardWriteService;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class PoolMemberService
 {
     public function __construct(
         private PoolMemberRepository $poolMemberRepository,
+        private LeaderboardWriteService $leaderboardWriteService,
     ) {}
 
     public function addMember(int $poolId, PoolUserRole $role, int $userId): PoolMember
     {
-        return $this->poolMemberRepository->addMember($poolId, $role, $userId);
+        return DB::transaction(function () use ($poolId, $role, $userId) {
+            $member = $this->poolMemberRepository->addMember($poolId, $role, $userId);
+            $this->leaderboardWriteService->createEntry($poolId, $userId);
+
+            return $member;
+        });
     }
 
     public function listMembers(int $poolId, ?PoolMemberStatus $status = null): Collection
@@ -109,7 +117,10 @@ class PoolMemberService
             throw new \Exception('Você não é membro deste bolão', 403);
         }
 
-        $this->poolMemberRepository->leavePool($poolId, $userId);
+        DB::transaction(function () use ($poolId, $userId) {
+            $this->poolMemberRepository->leavePool($poolId, $userId);
+            $this->leaderboardWriteService->removeEntry($poolId, $userId);
+        });
     }
 
     public function getRoleByMemberId(int $poolId, int $memberId): ?PoolUserRole
@@ -133,7 +144,10 @@ class PoolMemberService
             throw new \Exception('Você não pode banir um administrador do bolão', 403);
         }
 
-        $this->poolMemberRepository->banMember($poolId, $memberId);
+        DB::transaction(function () use ($poolId, $memberId, $member) {
+            $this->poolMemberRepository->banMember($poolId, $memberId);
+            $this->leaderboardWriteService->archiveEntry($poolId, $member->user_id);
+        });
     }
 
     public function unbanMember(int $poolId, int $memberId, int $userId): void
@@ -152,6 +166,9 @@ class PoolMemberService
             throw new \Exception('Você não pode desbanir um administrador do bolão', 403);
         }
 
-        $this->poolMemberRepository->unbanMember($poolId, $memberId);
+        DB::transaction(function () use ($poolId, $memberId, $member) {
+            $this->poolMemberRepository->unbanMember($poolId, $memberId);
+            $this->leaderboardWriteService->restoreEntry($poolId, $member->user_id);
+        });
     }
 }

@@ -12,13 +12,17 @@ class Leaderboard extends Model
 
     protected $table = 'leaderboard';
     protected $fillable = [
+        'pool_id',
+        'user_id',
         'points',
         'exact_hits',
         'result_hits',
         'guesses_count',
     ];
     protected $casts = [
+        'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'archived_at' => 'datetime',
     ];
     protected $connection = 'mysql';
 
