@@ -6,7 +6,6 @@ use App\Http\Enums\UserRole;
 use App\Models\User;
 use App\Repositories\UserRepositories\UserRepository;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class UserService
 {
@@ -18,11 +17,7 @@ class UserService
     {
         $user = $this->userRepository->findByEmail($email);
 
-        if (!$user) {
-            throw new \Exception('Usuário não encontrado.', 404);
-        }
-
-        if (!Hash::check($password, $user->password)) {
+        if (!$user || !Hash::check($password, $user->password)) {
             throw new \Exception('Credenciais inválidas.', 401);
         }
 

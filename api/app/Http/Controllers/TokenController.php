@@ -41,7 +41,7 @@ class TokenController extends Controller
         try {
             $user = $this->userService->login($credentials['email'], $credentials['password']);
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 500);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
