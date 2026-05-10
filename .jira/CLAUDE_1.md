@@ -40,6 +40,8 @@ Acesso: via **MCP Atlassian Rovo** (já conectado). Usar tools `Atlassian Rovo:*
 
 Em caso de dúvida entre **História** e **Tarefa**: se o entregável é visível ao usuário final, é **História**; se é técnico/interno, é **Tarefa**.
 
+> ⚠️ **Atenção ao criar Subtasks via API:** o `issueTypeName` deve ser `"Subtask"` (inglês), mesmo que a UI do Jira exiba "Subtarefa". Usar "Subtarefa" retorna erro `"Especifique algum tipo de item válido"`. O mesmo vale para outros tipos: sempre usar o `untranslatedName` — `"Task"` não, usar `"Tarefa"`; `"Story"` não, usar `"História"` — conforme mapeado na tabela acima. Em caso de dúvida, consultar `getJiraProjectIssueTypesMetadata` e usar o campo `name` (não `untranslatedName`).
+
 ---
 
 ## 🔄 Workflow / Status
