@@ -92,7 +92,7 @@ class MatchRepository
         return true;
     }
 
-    public function getStatusById(int $id): MatchStatus|null
+    public function getStatusById(int $id): ?MatchStatus
     {
         $match = $this->findById($id);
         return $match ? $match->status : null;

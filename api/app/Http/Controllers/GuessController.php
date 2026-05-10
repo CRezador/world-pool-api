@@ -68,10 +68,11 @@ class GuessController extends Controller
             new OA\Response(response: 400, description: 'Partida já iniciada ou dados inválidos'),
         ]
     )]
-    public function store(StoreGuessRequest $request, int $poolId) {
+    public function store(StoreGuessRequest $request, int $poolId)
+    {
         $data = $request->validated();
 
-        try{
+        try {
             $this->guessWriteService->createGuess([
                 'user_id' => $request->user()->id,
                 'pool_id' => $poolId,
@@ -165,7 +166,8 @@ class GuessController extends Controller
             new OA\Response(response: 200, description: 'Palpites do membro'),
         ]
     )]
-    public function memberGuesses(int $poolId, int $memberId) {
+    public function memberGuesses(int $poolId, int $memberId)
+    {
         $guesses = $this->guessReadService->getMemberGuesses($memberId, $poolId);
 
         return response()->json(

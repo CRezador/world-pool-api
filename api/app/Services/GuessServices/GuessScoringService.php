@@ -21,9 +21,9 @@ class GuessScoringService
         }
 
         if (
-            ($match->home_score > $match->away_score && $guess->home_score > $guess->away_score) ||
-            ($match->home_score < $match->away_score && $guess->home_score < $guess->away_score) ||
-            ($match->home_score === $match->away_score && $guess->home_score === $guess->away_score)
+            ($match->home_score > $match->away_score && $guess->home_score > $guess->away_score)
+            || ($match->home_score < $match->away_score && $guess->home_score < $guess->away_score)
+            || ($match->home_score === $match->away_score && $guess->home_score === $guess->away_score)
         ) {
             return 1;
         }
