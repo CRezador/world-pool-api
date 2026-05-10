@@ -5,9 +5,9 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\MatchController;
+use App\Http\Controllers\GuessController;
 use App\Http\Controllers\PoolController;
 use App\Http\Controllers\PoolMemberController;
-use App\Http\Controllers\GuessController;
 use Illuminate\Support\Facades\Route;
 
 //Users Routes

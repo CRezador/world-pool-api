@@ -68,12 +68,12 @@ class GuessController extends Controller
             new OA\Response(response: 400, description: 'Partida já iniciada ou dados inválidos'),
         ]
     )]
-    public function store(StoreGuessRequest $request, int $poolId)
+    public function store(StoreGuessRequest $request, int $poolId): Response
     {
         $data = $request->validated();
 
         try {
-            $this->guessWriteService->createGuess([
+            $guess = $this->guessWriteService->createGuess([
                 'user_id' => $request->user()->id,
                 'pool_id' => $poolId,
                 'match_id' => $data['match_id'],
@@ -81,10 +81,13 @@ class GuessController extends Controller
                 'away_score' => $data['away_score'],
             ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 500);
         }
 
-        return response()->json(['message' => 'Palpite criado com sucesso'], 201);
+        return response()->json(
+            $this->guessTransformer->item($guess, 'Palpite criado com sucesso'),
+            201
+        );
     }
 
     #[OA\Put(
@@ -143,7 +146,6 @@ class GuessController extends Controller
     )]
     public function destroy(Request $request, int $poolId, int $guessId): Response
     {
-
         try {
             $this->guessWriteService->deleteGuess($guessId, $request->user()->id, $poolId);
         } catch (\Exception $e) {
@@ -166,9 +168,13 @@ class GuessController extends Controller
             new OA\Response(response: 200, description: 'Palpites do membro'),
         ]
     )]
-    public function memberGuesses(int $poolId, int $memberId)
+    public function memberGuesses(int $poolId, int $memberId): Response
     {
-        $guesses = $this->guessReadService->getMemberGuesses($memberId, $poolId);
+        try {
+            $guesses = $this->guessReadService->getMemberGuesses($memberId, $poolId);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 404);
+        }
 
         return response()->json(
             $this->guessTransformer->collection($guesses, 'Palpites do membro listados com sucesso'),
@@ -194,7 +200,7 @@ class GuessController extends Controller
         try {
             $guesses = $this->guessReadService->getMatchGuesses($matchId, $poolId);
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 404);
         }
 
         return response()->json(

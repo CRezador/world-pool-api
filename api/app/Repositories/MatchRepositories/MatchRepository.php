@@ -104,4 +104,11 @@ class MatchRepository
             throw new \Exception('Não é possível realizar esta ação em uma partida que não está agendada.', 400);
         }
     }
+
+    public function assertFinished(int $matchId): void
+    {
+        if ($this->getStatusById($matchId) !== MatchStatus::FINISHED) {
+            throw new \Exception('A partida ainda não foi finalizada.', 400);
+        }
+    }
 }

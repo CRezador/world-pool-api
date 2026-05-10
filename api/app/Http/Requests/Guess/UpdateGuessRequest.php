@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Guess;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateGuessRequest extends FormRequest

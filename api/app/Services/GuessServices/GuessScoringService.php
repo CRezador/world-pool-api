@@ -2,10 +2,12 @@
 
 namespace App\Services\GuessServices;
 
+use App\Http\Enums\MatchStatus;
 use App\Models\Guess;
 use App\Models\Matches;
 use App\Repositories\GuessRepositories\GuessRepository;
 use App\Repositories\MatchRepositories\MatchRepository;
+use Illuminate\Support\Facades\DB;
 
 class GuessScoringService
 {
@@ -14,7 +16,7 @@ class GuessScoringService
         private MatchRepository $matchRepository,
     ) {}
 
-    public function scoreGuess(Guess $guess, Matches $match): int
+    private function scoreGuess(Guess $guess, Matches $match): int
     {
         if ($match->home_score === $guess->home_score && $match->away_score === $guess->away_score) {
             return 3;
@@ -38,11 +40,17 @@ class GuessScoringService
             throw new \Exception('Partida não encontrada.', 404);
         }
 
+        if ($match->status !== MatchStatus::FINISHED) {
+            throw new \Exception('A partida ainda não foi finalizada.', 400);
+        }
+
         $guesses = $this->guessRepository->getByMatch($matchId);
 
-        foreach ($guesses as $guess) {
-            $points = $this->scoreGuess($guess, $match);
-            $this->guessRepository->updateById($guess->id, ['points' => $points]);
-        }
+        DB::transaction(function () use ($guesses, $match) {
+            foreach ($guesses as $guess) {
+                $points = $this->scoreGuess($guess, $match);
+                $this->guessRepository->updateById($guess->id, ['points' => $points]);
+            }
+        });
     }
 }

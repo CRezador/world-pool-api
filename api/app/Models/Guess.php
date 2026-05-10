@@ -12,11 +12,17 @@ class Guess extends Model
 
     protected $table = 'guesses';
     protected $fillable = [
+        'user_id',
+        'pool_id',
+        'match_id',
         'home_score',
         'away_score',
         'points',
     ];
     protected $casts = [
+        'home_score' => 'integer',
+        'away_score' => 'integer',
+        'points' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
