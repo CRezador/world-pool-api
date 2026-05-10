@@ -45,25 +45,16 @@ class PoolController extends Controller
         responses: [
             new OA\Response(response: 200, description: 'Lista de bolões do usuário'),
             new OA\Response(response: 401, description: 'Não autenticado'),
-            new OA\Response(response: 444, description: 'Usuário autenticado mas sem bolões'),
         ]
     )]
     public function myPools(Request $request): Response
     {
-        $user = $request->user();
+        $pools = $this->poolService->getPoolsByUserId($request->user()->id);
 
-        $pools = $this->poolService->getPoolsByUserId($user->id);
-
-        // 444 é código customizado: autenticado e sem bolões (não é erro de cliente nem de servidor)
-        if (!$pools) {
-            return response()->json([
-                'message' => 'Você não é membro de nenhum bolão.',
-            ], 444);
-        }
-
-        return response()->json([
+        return response()->json(
             $this->poolTransformer->collection($pools, 'Lista de bolões do usuário'),
-        ], 200);
+            200
+        );
     }
 
     #[OA\Post(
