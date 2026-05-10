@@ -2,6 +2,8 @@
 
 namespace App\Http\Transformers\BaseTransformers;
 
+use Illuminate\Pagination\LengthAwarePaginator;
+
 abstract class BaseTransformer
 {
     public function item($data, $message): array
@@ -20,7 +22,7 @@ abstract class BaseTransformer
         ];
     }
 
-    public function paginated($paginator, $message): array
+    public function paginated(LengthAwarePaginator $paginator, string $message): array
     {
         return [
             'message' => $message,

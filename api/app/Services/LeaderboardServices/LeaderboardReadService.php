@@ -45,7 +45,7 @@ class LeaderboardReadService
             return null;
         }
 
-        $entry->rank = $this->leaderboardRepository->getRankPosition($poolId, $userId);
+        $entry->rank = $this->leaderboardRepository->getRankPosition($entry);
 
         return $entry;
     }
@@ -53,7 +53,7 @@ class LeaderboardReadService
     public function show(int $poolId, int $userId): Leaderboard
     {
         $entry = $this->findEntryOrFail($poolId, $userId);
-        $entry->rank = $this->leaderboardRepository->getRankPosition($poolId, $userId);
+        $entry->rank = $this->leaderboardRepository->getRankPosition($entry);
 
         return $entry;
     }

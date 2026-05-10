@@ -2,6 +2,7 @@
 
 namespace App\Repositories\GuessRepositories;
 
+use App\Http\Enums\GuessPoints;
 use App\Http\Enums\MatchStatus;
 use App\Models\Guess;
 use Illuminate\Database\Eloquent\Collection;
@@ -74,10 +75,10 @@ class GuessRepository
             ->where('matches.status', MatchStatus::FINISHED->value)
             ->selectRaw('
                 COALESCE(SUM(guesses.points), 0) as points,
-                COUNT(CASE WHEN guesses.points = 3 THEN 1 END) as exact_hits,
-                COUNT(CASE WHEN guesses.points = 1 THEN 1 END) as result_hits,
+                COUNT(CASE WHEN guesses.points = ? THEN 1 END) as exact_hits,
+                COUNT(CASE WHEN guesses.points = ? THEN 1 END) as result_hits,
                 COUNT(guesses.id) as guesses_count
-            ')
+            ', [GuessPoints::EXACT->value, GuessPoints::RESULT->value])
             ->first();
 
         return [

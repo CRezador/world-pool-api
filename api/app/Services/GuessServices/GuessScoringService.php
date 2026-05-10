@@ -2,6 +2,7 @@
 
 namespace App\Services\GuessServices;
 
+use App\Http\Enums\GuessPoints;
 use App\Http\Enums\MatchStatus;
 use App\Models\Guess;
 use App\Models\Matches;
@@ -21,7 +22,7 @@ class GuessScoringService
     private function scoreGuess(Guess $guess, Matches $match): int
     {
         if ($match->home_score === $guess->home_score && $match->away_score === $guess->away_score) {
-            return 3;
+            return GuessPoints::EXACT->value;
         }
 
         if (
@@ -29,10 +30,10 @@ class GuessScoringService
             || ($match->home_score < $match->away_score && $guess->home_score < $guess->away_score)
             || ($match->home_score === $match->away_score && $guess->home_score === $guess->away_score)
         ) {
-            return 1;
+            return GuessPoints::RESULT->value;
         }
 
-        return 0;
+        return GuessPoints::MISS->value;
     }
 
     public function scoreGuessesForMatch(int $matchId): void

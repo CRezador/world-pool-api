@@ -4,6 +4,7 @@ namespace App\Services\LeaderboardServices;
 
 use App\Repositories\GuessRepositories\GuessRepository;
 use App\Repositories\LeaderboardRepositories\LeaderboardRepository;
+use Illuminate\Support\Facades\DB;
 
 class LeaderboardWriteService
 {
@@ -42,8 +43,10 @@ class LeaderboardWriteService
     {
         $entries = $this->leaderboardRepository->getAllByPool($poolId);
 
-        foreach ($entries as $entry) {
-            $this->syncUser($poolId, $entry->user_id);
-        }
+        DB::transaction(function () use ($poolId, $entries) {
+            foreach ($entries as $entry) {
+                $this->syncUser($poolId, $entry->user_id);
+            }
+        });
     }
 }

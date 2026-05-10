@@ -35,15 +35,9 @@ class LeaderboardRepository
             ->get();
     }
 
-    public function getRankPosition(int $poolId, int $userId): int
+    public function getRankPosition(Leaderboard $entry): int
     {
-        $entry = $this->getByUser($poolId, $userId);
-
-        if (!$entry) {
-            return 0;
-        }
-
-        $above = Leaderboard::where('pool_id', $poolId)
+        $above = Leaderboard::where('pool_id', $entry->pool_id)
             ->whereNull('archived_at')
             ->where(function (Builder $q) use ($entry) {
                 $q->where('points', '>', $entry->points)
@@ -115,6 +109,9 @@ class LeaderboardRepository
             ->orderBy('points', 'desc')
             ->orderBy('exact_hits', 'desc')
             ->orderBy('result_hits', 'desc')
-            ->orderBy('guesses_count', 'desc');
+            ->orderBy('guesses_count', 'desc')
+            // Tiebreaker estável: garante ordem determinística em empates perfeitos,
+            // mantendo consistência entre o ranking paginado e getRankPosition().
+            ->orderBy('user_id', 'asc');
     }
 }
