@@ -26,6 +26,8 @@ class Matches extends Model
     ];
     protected $casts = [
         'kickoff_at' => 'datetime',
+        'home_score' => 'integer',
+        'away_score' => 'integer',
         'stage' => MatchStage::class,
         'status' => MatchStatus::class,
     ];

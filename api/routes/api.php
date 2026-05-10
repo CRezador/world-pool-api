@@ -5,6 +5,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\MatchController;
+use App\Http\Controllers\GuessController;
 use App\Http\Controllers\PoolController;
 use App\Http\Controllers\PoolMemberController;
 use Illuminate\Support\Facades\Route;
@@ -52,6 +53,16 @@ Route::middleware('auth:sanctum')->group(
         Route::post('/pools/{poolId}/members/{memberId}/ban', [PoolMemberController::class, 'ban'])->middleware('PoolMemberAdmin');
         Route::post('/pools/{poolId}/members/{memberId}/unban', [PoolMemberController::class, 'unban'])->middleware('PoolMemberAdmin');
 
+        //Rotas de Palpites
+        Route::middleware('PoolMember')->group(function () {
+            Route::get('/pools/{poolId}/guesses', [GuessController::class, 'index']);
+            Route::post('/pools/{poolId}/guesses', [GuessController::class, 'store']);
+            Route::put('/pools/{poolId}/guesses/{guessId}', [GuessController::class, 'update']);
+            Route::delete('/pools/{poolId}/guesses/{guessId}', [GuessController::class, 'destroy']);
+            Route::get('/pools/{poolId}/matches/{matchId}/guesses', [GuessController::class, 'matchGuesses']);
+            Route::get('/pools/{poolId}/members/{memberId}/guesses', [GuessController::class, 'memberGuesses']);
+        });
+
         //Rotas admin
         Route::middleware('admin')->group(
             function () {
@@ -59,6 +70,9 @@ Route::middleware('auth:sanctum')->group(
                 Route::post('/matches/create', [MatchController::class, 'store']);
                 Route::put('/matches/{id}', [MatchController::class, 'update']);
                 Route::delete('/matches/{id}', [MatchController::class, 'destroy']);
+
+                //Rotas internas de palpites
+                Route::post('/internal/matches/{matchId}/guesses/score', [GuessController::class, 'scoreGuessesForMatch']);
             }
         );
     }
