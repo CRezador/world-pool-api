@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 //Users Routes
 Route::post('/login', [TokenController::class, 'store']);
 Route::post('/register', [UserController::class, 'store']);
+Route::middleware('auth:sanctum')->delete('/logout', [TokenController::class, 'destroy']);
 
 //Authenticate Routes
 Route::middleware('auth:sanctum')->group(
