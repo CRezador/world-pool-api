@@ -56,11 +56,19 @@ class GuessRepository
             ->get();
     }
 
+    public function getByMatch(int $matchId): Collection
+    {
+        return Guess::where('match_id', $matchId)->get();
+    }
+
     public function getByMemberAndPool(int $memberId, int $poolId): Collection
     {
         return Guess::where('user_id', $memberId)
             ->whereHas('match.groups.pools', function ($query) use ($poolId) {
                 $query->where('id', $poolId);
+            })
+            ->whereHas('match', function ($query) {
+                $query->where('status', 'SCHEDULED');
             })
             ->get();
     }
