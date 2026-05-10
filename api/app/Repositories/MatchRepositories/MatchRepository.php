@@ -2,6 +2,7 @@
 
 namespace App\Repositories\MatchRepositories;
 
+use App\Http\Enums\MatchStatus;
 use App\Models\Matches;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -89,5 +90,18 @@ class MatchRepository
         }
 
         return true;
+    }
+
+    public function getStatusById(int $id): MatchStatus|null
+    {
+        $match = $this->findById($id);
+        return $match ? $match->status : null;
+    }
+
+    public function assertScheduled(int $matchId): void
+    {
+        if ($this->getStatusById($matchId) !== MatchStatus::SCHEDULED) {
+            throw new \Exception('Não é possível realizar esta ação em uma partida que não está agendada.', 400);
+        }
     }
 }
