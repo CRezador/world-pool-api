@@ -13,11 +13,12 @@ class LeaderboardReadService
         private LeaderboardRepository $leaderboardRepository,
     ) {}
 
-    public function ranking(int $poolId): LengthAwarePaginator
+    // delega ao repository com perPage=20
+    public function ranking(int $poolId, int $perPage = 20): LengthAwarePaginator
     {
-        return $this->leaderboardRepository->getPaginated($poolId, 20);
+        return $this->leaderboardRepository->getPaginated($poolId, $perPage);
     }
-
+    
     public function top(int $poolId, int $limit = 3): Collection
     {
         if($limit < 3) {
@@ -31,13 +32,40 @@ class LeaderboardReadService
         return $this->leaderboardRepository->getTop($poolId, $limit);
     }
 
-    public function getByUser(int $poolId, int $userId): ?Leaderboard
+    // retorna entry + rank position do usuário autenticado
+    public function myPosition(int $poolId, int $userId): array
     {
-        return $this->leaderboardRepository->getByUser($poolId, $userId);
+        $entry = $this->leaderboardRepository->getByUser($poolId, $userId);
+
+        if (!$entry) {
+            return [
+                'entry' => null,
+                'rank_position' => 0,
+            ];
+        }
+
+        $rankPosition = $this->leaderboardRepository->getRankPosition($poolId, $userId);
+
+        return [
+            'entry' => $entry,
+            'rank_position' => $rankPosition,
+        ];
     }
 
-    public function getRankPosition(int $poolId, int $userId): int
+    // retorna entry + rank position de um membro específico; lança 404 se não encontrado
+    public function show(int $poolId, int $userId): array
     {
-        return $this->leaderboardRepository->getRankPosition($poolId, $userId);
+        $entry = $this->leaderboardRepository->getByUser($poolId, $userId);
+
+        if (!$entry) {
+            throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Entry não encontrado');
+        }
+
+        $rankPosition = $this->leaderboardRepository->getRankPosition($poolId, $userId);
+
+        return [
+            'entry' => $entry,
+            'rank_position' => $rankPosition,
+        ];
     }
 }
