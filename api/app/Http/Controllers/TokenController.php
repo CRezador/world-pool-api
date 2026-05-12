@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Authentication\LoginRequest;
 use App\Http\Transformers\TokenTransformers\TokenTransformer;
-use App\Services\TokenServices\TokenService;
-use App\Services\UserServices\UserService;
+use App\Services\TokenServices\TokenWriteService;
+use App\Services\UserServices\UserWriteService;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,8 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 class TokenController extends Controller
 {
     public function __construct(
-        private UserService $userService,
-        private TokenService $tokenService,
+        private UserWriteService $userWriteService,
+        private TokenWriteService $tokenWriteService,
         private TokenTransformer $tokenTransformer
     ) {}
 
@@ -42,12 +42,12 @@ class TokenController extends Controller
         $credentials = $request->validated();
 
         try {
-            $user = $this->userService->login($credentials['email'], $credentials['password']);
+            $user = $this->userWriteService->login($credentials['email'], $credentials['password']);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 500);
         }
 
-        $token = $this->tokenService->createToken($user);
+        $token = $this->tokenWriteService->createToken($user);
 
         return response()->json(
             $this->tokenTransformer->item($token, 'Login realizado com sucesso'),
@@ -67,7 +67,7 @@ class TokenController extends Controller
     )]
     public function destroy(Request $request): Response
     {
-        $this->tokenService->revokeCurrentToken($request->user());
+        $this->tokenWriteService->revokeCurrentToken($request->user());
 
         return response()->json(['message' => 'Logout realizado com sucesso'], 200);
     }

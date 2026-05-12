@@ -7,11 +7,9 @@ use App\Models\User;
 use App\Repositories\UserRepositories\UserRepository;
 use Illuminate\Support\Facades\Hash;
 
-class UserService
+class UserWriteService
 {
-    public function __construct(
-        private UserRepository $userRepository
-    ) {}
+    public function __construct(private UserRepository $userRepository) {}
 
     public function login(string $email, string $password): User
     {
@@ -22,16 +20,6 @@ class UserService
         }
 
         return $user;
-    }
-
-    public function findByEmail(string $email): ?User
-    {
-        return $this->userRepository->findByEmail($email);
-    }
-
-    public function findById(int $id): ?User
-    {
-        return $this->userRepository->findById($id);
     }
 
     public function createUser(array $data): User

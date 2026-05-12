@@ -8,7 +8,7 @@ use App\Http\Transformers\MatchTransformers\MatchTransformer;
 use App\Http\Enums\MatchStatus;
 use App\Http\Requests\Match\MatchStageRequest;
 use App\Repositories\MatchRepositories\MatchRepository;
-use App\Services\MatchServices\MatchService;
+use App\Services\MatchServices\MatchWriteService;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,7 +16,7 @@ class MatchController extends Controller
 {
     public function __construct(
         private MatchRepository $matchRepository,
-        private MatchService $matchService,
+        private MatchWriteService $matchWriteService,
         private MatchTransformer $matchTransformer
     ) {}
 
@@ -162,7 +162,7 @@ class MatchController extends Controller
         ];
 
         try {
-            $matchCreated = $this->matchService->createMatch($match);
+            $matchCreated = $this->matchWriteService->createMatch($match);
         } catch (\Exception $e) {
 
             return response()->json([
@@ -204,7 +204,7 @@ class MatchController extends Controller
         }
 
         try {
-            $data = $this->matchService->updateMatch($request, $match);
+            $data = $this->matchWriteService->updateMatch($request, $match);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Erro ao atualizar a partida: ' . $e->getMessage(),

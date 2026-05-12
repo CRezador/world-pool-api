@@ -5,11 +5,9 @@ namespace App\Services\TokenServices;
 use App\Models\User;
 use App\Repositories\TokenRepositories\TokenRepository;
 
-class TokenService
+class TokenWriteService
 {
-    public function __construct(
-        private TokenRepository $tokenRepository
-    ) {}
+    public function __construct(private TokenRepository $tokenRepository) {}
 
     public function createToken(User $user): string
     {

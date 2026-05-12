@@ -7,7 +7,8 @@ use App\Http\Requests\Authentication\CreateUserRequest;
 use App\Http\Requests\Authentication\UpdateUserRequest;
 use App\Http\Requests\Authentication\UpdateUserRoleRequest;
 use App\Http\Transformers\UserTransformers\UserTransformer;
-use App\Services\UserServices\UserService;
+use App\Services\UserServices\UserReadService;
+use App\Services\UserServices\UserWriteService;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +17,8 @@ use Throwable;
 class UserController extends Controller
 {
     public function __construct(
-        private UserService $userService,
+        private UserReadService $userReadService,
+        private UserWriteService $userWriteService,
         private UserTransformer $userTransformer
     ) {}
 
@@ -64,7 +66,7 @@ class UserController extends Controller
         $validated = $request->validated();
 
         try {
-            $user = $this->userService->createUser($validated);
+            $user = $this->userWriteService->createUser($validated);
         } catch (Throwable) {
             return response()->json([
                 'message' => 'Erro inesperado ao criar usuário.',
@@ -93,13 +95,13 @@ class UserController extends Controller
     )]
     public function update(UpdateUserRequest $request, int $id): Response
     {
-        $user = $this->userService->findById($id);
+        $user = $this->userReadService->findById($id);
 
         if (!$user) {
             return response()->json(['message' => 'Usuário não encontrado.'], 404);
         }
 
-        $user = $this->userService->update($user, $request->validated());
+        $user = $this->userWriteService->update($user, $request->validated());
 
         return response()->json(
             $this->userTransformer->item($user, 'Usuário atualizado'),
@@ -131,14 +133,14 @@ class UserController extends Controller
     )]
     public function updateRole(UpdateUserRoleRequest $request, int $id): Response
     {
-        $user = $this->userService->findById($id);
+        $user = $this->userReadService->findById($id);
 
         if (!$user) {
             return response()->json(['message' => 'Usuário não encontrado.'], 404);
         }
 
         $role = UserRole::from($request->validated()['role']);
-        $user = $this->userService->updateRole($user, $role);
+        $user = $this->userWriteService->updateRole($user, $role);
 
         return response()->json(
             $this->userTransformer->item($user, 'Papel atualizado'),

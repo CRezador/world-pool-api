@@ -7,7 +7,8 @@ use App\Http\Requests\Pool\PoolRequest;
 use App\Http\Requests\Pool\PoolUpdateRequest;
 use App\Http\Transformers\PoolMemberTransformers\PoolMemberTransformer;
 use App\Http\Transformers\PoolTransformers\PoolTransformer;
-use App\Services\PoolServices\PoolService;
+use App\Services\PoolServices\PoolReadService;
+use App\Services\PoolServices\PoolWriteService;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,7 +16,8 @@ use Symfony\Component\HttpFoundation\Response;
 class PoolController extends Controller
 {
     public function __construct(
-        private PoolService $poolService,
+        private PoolReadService $poolReadService,
+        private PoolWriteService $poolWriteService,
         private PoolTransformer $poolTransformer,
         private PoolMemberTransformer $poolMemberTransformer
     ) {}
@@ -32,9 +34,10 @@ class PoolController extends Controller
     )]
     public function index(): Response
     {
-        return response()->json([
-            $this->poolTransformer->collection($this->poolService->showPublicPools(), 'Lista de bolões públicos'),
-        ], 200);
+        return response()->json(
+            $this->poolTransformer->collection($this->poolReadService->showPublicPools(), 'Lista de bolões públicos'),
+            200
+        );
     }
 
     #[OA\Get(
@@ -49,7 +52,7 @@ class PoolController extends Controller
     )]
     public function myPools(Request $request): Response
     {
-        $pools = $this->poolService->getPoolsByUserId($request->user()->id);
+        $pools = $this->poolReadService->getPoolsByUserId($request->user()->id);
 
         return response()->json(
             $this->poolTransformer->collection($pools, 'Lista de bolões do usuário'),
@@ -85,16 +88,17 @@ class PoolController extends Controller
         try {
             $is_public = $validated['is_public'];
             $name = $validated['name'];
-            $pool = $this->poolService->createPool($is_public, $request->user(), $name);
+            $pool = $this->poolWriteService->createPool($is_public, $request->user(), $name);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
             ], 400);
         }
 
-        return response()->json([
+        return response()->json(
             $this->poolTransformer->item($pool, 'Bolão criado'),
-        ], 201);
+            201
+        );
     }
 
     #[OA\Get(
@@ -112,15 +116,16 @@ class PoolController extends Controller
     )]
     public function show(int $id): Response
     {
-        $pool = $this->poolService->showPool($id);
+        $pool = $this->poolReadService->showPool($id);
 
         if (!$pool) {
             return response()->json(['message' => 'Bolão não encontrado'], 404);
         }
 
-        return response()->json([
+        return response()->json(
             $this->poolTransformer->item($pool, 'Bolão Encontrado'),
-        ], 200);
+            200
+        );
     }
 
     #[OA\Delete(
@@ -139,11 +144,12 @@ class PoolController extends Controller
     )]
     public function destroy(int $id, Request $request): Response
     {
-        $pool = $this->poolService->destroyPool($id, $request->user()->id);
+        $pool = $this->poolWriteService->destroyPool($id, $request->user()->id);
 
-        return response()->json([
-            'Pool' => $this->poolTransformer->item($pool, 'Bolão removido'),
-        ], 200);
+        return response()->json(
+            $this->poolTransformer->item($pool, 'Bolão removido'),
+            200
+        );
     }
 
     #[OA\Post(
@@ -160,9 +166,9 @@ class PoolController extends Controller
             new OA\Response(response: 404, description: 'Bolão não encontrado'),
         ]
     )]
-    public function regenerateJoinCode(int $id, Request $request): Response
+    public function regenerateJoinCode(int $poolId, Request $request): Response
     {
-        $pool = $this->poolService->showPool($id);
+        $pool = $this->poolReadService->showPool($poolId);
 
         if (!$pool) {
             return response()->json(['message' => 'Bolão não encontrado.'], 404);
@@ -175,16 +181,17 @@ class PoolController extends Controller
         }
 
         try {
-            $pool = $this->poolService->regenerateJoinCode($id);
+            $pool = $this->poolWriteService->regenerateJoinCode($poolId);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
             ], 400);
         }
 
-        return response()->json([
+        return response()->json(
             $this->poolTransformer->item($pool, 'Código de acesso regenerado'),
-        ], 200);
+            200
+        );
     }
 
     #[OA\Put(
@@ -212,16 +219,17 @@ class PoolController extends Controller
     public function update(PoolUpdateRequest $request, int $id): Response
     {
         try {
-            $pool = $this->poolService->updatePool($id, $request->validated());
+            $pool = $this->poolWriteService->updatePool($id, $request->validated());
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
             ], 400);
         }
 
-        return response()->json([
+        return response()->json(
             $this->poolTransformer->item($pool, 'Bolão atualizado'),
-        ], 200);
+            200
+        );
     }
 
     #[OA\Post(
@@ -249,7 +257,7 @@ class PoolController extends Controller
         $validated = $request->validated();
 
         try {
-            $joinPool = $this->poolService->joinPool($validated['join_code'], $request->user()->id);
+            $joinPool = $this->poolWriteService->joinPool($validated['join_code'], $request->user()->id);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
@@ -257,8 +265,8 @@ class PoolController extends Controller
         }
 
         return response()->json([
-            'Bolão' => $this->poolTransformer->item($joinPool['Pool'], 'Entrou no bolão'),
-            'Membro' => $this->poolMemberTransformer->item($joinPool['Member'], 'Membro adicionado'),
+            'pool' => $this->poolTransformer->item($joinPool['Pool'], 'Entrou no bolão'),
+            'member' => $this->poolMemberTransformer->item($joinPool['Member'], 'Membro adicionado'),
         ], 200);
     }
 }

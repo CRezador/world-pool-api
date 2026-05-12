@@ -71,6 +71,7 @@ class PoolMemberRepository
         return PoolMember::query()
             ->where('pool_id', $poolId)
             ->where('user_id', $userId)
+            ->with('user:id,name')
             ->first();
     }
 

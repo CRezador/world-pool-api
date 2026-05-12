@@ -6,7 +6,8 @@ use App\Http\Enums\PoolMemberStatus;
 use App\Http\Enums\PoolUserRole;
 use App\Http\Requests\PoolMember\PoolMemberUpdateRequest;
 use App\Http\Transformers\PoolMemberTransformers\PoolMemberTransformer;
-use App\Services\PoolMemberServices\PoolMemberService;
+use App\Services\PoolMemberServices\PoolMemberReadService;
+use App\Services\PoolMemberServices\PoolMemberWriteService;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,7 +15,8 @@ use Symfony\Component\HttpFoundation\Response;
 class PoolMemberController extends Controller
 {
     public function __construct(
-        private PoolMemberService $poolMemberService,
+        private PoolMemberReadService $poolMemberReadService,
+        private PoolMemberWriteService $poolMemberWriteService,
         private PoolMemberTransformer $poolMemberTransformer,
     ) {}
 
@@ -44,14 +46,14 @@ class PoolMemberController extends Controller
                 return response()->json(['message' => 'Status inválido. Use: ACTIVE, BANNED ou LEFT'], 422);
             }
             if ($status !== PoolMemberStatus::ACTIVE) {
-                if (!$this->poolMemberService->isAdmin($poolId, $request->user()->id)
-                    && !$this->poolMemberService->isOwner($poolId, $request->user()->id)) {
+                if (!$this->poolMemberReadService->isAdmin($poolId, $request->user()->id)
+                    && !$this->poolMemberReadService->isOwner($poolId, $request->user()->id)) {
                     return response()->json(['message' => 'Acesso negado'], 403);
                 }
             }
         }
 
-        $members = $this->poolMemberService->listMembers($poolId, $status);
+        $members = $this->poolMemberReadService->listMembers($poolId, $status);
 
         return response()->json(
             $this->poolMemberTransformer->collection($members, 'Membros listados com sucesso'),
@@ -75,7 +77,7 @@ class PoolMemberController extends Controller
     public function me(Request $request, int $poolId): Response
     {
         try {
-            $member = $this->poolMemberService->getAuthMember($poolId, $request->user()->id);
+            $member = $this->poolMemberReadService->getAuthMember($poolId, $request->user()->id);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
         }
@@ -103,9 +105,9 @@ class PoolMemberController extends Controller
     public function show(int $poolId, int $memberId): Response
     {
         try {
-            $member = $this->poolMemberService->getMember($poolId, $memberId);
+            $member = $this->poolMemberReadService->getMember($poolId, $memberId);
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 404);
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 404);
         }
 
         return response()->json(
@@ -143,7 +145,7 @@ class PoolMemberController extends Controller
         $data = $request->validated();
 
         try {
-            $this->poolMemberService->updateRole($poolId, $memberId, PoolUserRole::from($data['role']), $request->user()->id);
+            $this->poolMemberWriteService->updateRole($poolId, $memberId, PoolUserRole::from($data['role']), $request->user()->id);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
@@ -171,7 +173,7 @@ class PoolMemberController extends Controller
     public function leave(Request $request, int $poolId): Response
     {
         try {
-            $this->poolMemberService->leavePool($poolId, $request->user()->id);
+            $this->poolMemberWriteService->leavePool($poolId, $request->user()->id);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
         }
@@ -196,7 +198,7 @@ class PoolMemberController extends Controller
     public function ban(Request $request, int $poolId, int $memberId): Response
     {
         try {
-            $this->poolMemberService->banMember($poolId, $memberId, $request->user()->id);
+            $this->poolMemberWriteService->banMember($poolId, $memberId, $request->user()->id);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
         }
@@ -221,7 +223,7 @@ class PoolMemberController extends Controller
     public function unban(Request $request, int $poolId, int $memberId): Response
     {
         try {
-            $this->poolMemberService->unbanMember($poolId, $memberId, $request->user()->id);
+            $this->poolMemberWriteService->unbanMember($poolId, $memberId, $request->user()->id);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
         }

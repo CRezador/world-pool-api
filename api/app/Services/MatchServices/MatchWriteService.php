@@ -12,19 +12,14 @@ use App\Services\GuessServices\GuessScoringService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
-class MatchService
+class MatchWriteService
 {
-    private MatchRepository $matchRepository;
-    private TeamRepository $teamRepository;
-
     public function __construct(
-        MatchRepository $matchRepository,
-        TeamRepository $teamRepository,
+        private MatchRepository $matchRepository,
+        private TeamRepository $teamRepository,
         private GuessScoringService $guessScoringService,
-    ) {
-        $this->matchRepository = $matchRepository;
-        $this->teamRepository = $teamRepository;
-    }
+    ) {}
+
     private function kickoffFormat(?string $kickoff_at): ?string
     {
         return $kickoff_at === null ? null : Carbon::createFromFormat('d/m/Y H:i', $kickoff_at)->format('Y-m-d H:i:s');
@@ -32,26 +27,20 @@ class MatchService
 
     public function createMatch(array $match): Matches
     {
-
-
         if ($match['code_home_team'] === $match['code_away_team']) {
-            throw new \Exception('O código do time da casa e do time visitante não podem ser iguais.', );
+            throw new \Exception('O código do time da casa e do time visitante não podem ser iguais.');
         }
 
-        //Precisa informar a fase do campeonato com base no Enum MatchStage.
-        $homeTeam = $this->teamRepository->findByCode((strtoupper($match['code_home_team'])));
-        $awayTeam = $this->teamRepository->findByCode((strtoupper($match['code_away_team'])));
+        $homeTeam = $this->teamRepository->findByCode(strtoupper($match['code_home_team']));
+        $awayTeam = $this->teamRepository->findByCode(strtoupper($match['code_away_team']));
 
         $stageToUpper = strtoupper($match['stage']);
         if ($stageToUpper === MatchStage::GROUP_STAGE->value && $homeTeam->group_id !== $awayTeam->group_id) {
             throw new \Exception('Na fase de grupos, os times devem pertencer ao mesmo grupo.');
         }
 
-        //Verificar se partida já existe, ou seja, se já existe uma partida com os mesmos times e na mesma fase do campeonato.
         if ($this->matchRepository->matchAlreadyExists($homeTeam->id, $awayTeam->id, $match['stage'])) {
-            throw new \Exception(
-                'Essa partida já existe.',
-            );
+            throw new \Exception('Essa partida já existe.');
         }
 
         try {
@@ -80,19 +69,15 @@ class MatchService
         if ($request->has('home_score')) {
             $data['home_score'] = $request->home_score;
         }
-
         if ($request->has('away_score')) {
             $data['away_score'] = $request->away_score;
         }
-
         if ($request->has('status')) {
             $data['status'] = $request->status;
         }
-
         if ($request->has('stage')) {
             $data['stage'] = $request->stage;
         }
-
         if ($request->has('kickoff_at')) {
             $data['kickoff_at'] = $this->kickoffFormat($request->kickoff_at);
         }

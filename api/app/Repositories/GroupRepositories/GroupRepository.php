@@ -9,11 +9,11 @@ class GroupRepository
 {
     public function findAll(): Collection
     {
-        return Group::query()->get();
+        return Group::with('teams')->get();
     }
 
     public function findById(int $id): ?Group
     {
-        return Group::query()->find($id);
+        return Group::with('teams')->find($id);
     }
 }
