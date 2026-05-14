@@ -3,6 +3,7 @@
 namespace App\Http\Transformers\GuessTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
+
 class GuessTransformer extends BaseTransformer
 {
     public function transform(mixed $guess): array

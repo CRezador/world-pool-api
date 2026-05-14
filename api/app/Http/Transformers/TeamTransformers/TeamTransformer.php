@@ -3,6 +3,7 @@
 namespace App\Http\Transformers\TeamTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
+
 class TeamTransformer extends BaseTransformer
 {
     public function transform(mixed $team): array

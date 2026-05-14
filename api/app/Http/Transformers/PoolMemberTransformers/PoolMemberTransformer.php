@@ -3,6 +3,7 @@
 namespace App\Http\Transformers\PoolMemberTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
+
 class PoolMemberTransformer extends BaseTransformer
 {
     public function transform(mixed $poolMember): array

@@ -3,6 +3,7 @@
 namespace App\Http\Transformers\LeaderboardTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
+
 class LeaderboardTransformer extends BaseTransformer
 {
     public function transform(mixed $leaderboard): array

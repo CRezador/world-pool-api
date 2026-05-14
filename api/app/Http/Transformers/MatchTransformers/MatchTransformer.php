@@ -4,6 +4,7 @@ namespace App\Http\Transformers\MatchTransformers;
 
 use App\Http\Enums\MatchStage;
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
+
 class MatchTransformer extends BaseTransformer
 {
     public function transform(mixed $match): array

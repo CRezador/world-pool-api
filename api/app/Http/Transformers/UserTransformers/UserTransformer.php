@@ -3,6 +3,7 @@
 namespace App\Http\Transformers\UserTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
+
 class UserTransformer extends BaseTransformer
 {
     public function transform(mixed $user): array
