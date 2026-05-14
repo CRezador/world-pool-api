@@ -1,5 +1,0 @@
-<template>
-  <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-    <slot />
-  </div>
-</template>
