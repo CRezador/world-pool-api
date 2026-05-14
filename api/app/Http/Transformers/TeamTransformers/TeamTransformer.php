@@ -6,9 +6,10 @@ use App\Http\Transformers\BaseTransformers\BaseTransformer;
 
 class TeamTransformer extends BaseTransformer
 {
-    public function transform($team): array
+    public function transform(mixed $team): array
     {
         return [
+            'id' => $team->id,
             'name' => $team->name,
             'group' => $team->group->name,
             'code' => $team->code,
@@ -20,7 +21,7 @@ class TeamTransformer extends BaseTransformer
         return [
             'message' => 'Times encontrados',
             'Group' => $team->first()->group->name,
-            'team' => $this->collection($team),
+            'team' => $this->collection($team, 'Times do grupo'),
         ];
     }
 }

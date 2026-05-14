@@ -3,10 +3,11 @@
 namespace App\Http\Transformers\BaseTransformers;
 
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 abstract class BaseTransformer
 {
-    public function item($data, $message): array
+    public function item(mixed $data, string $message): array
     {
         return [
             'message' => $message,
@@ -14,7 +15,7 @@ abstract class BaseTransformer
         ];
     }
 
-    public function collection($items, $message): array
+    public function collection(Collection $items, string $message): array
     {
         return [
             'message' => $message,
@@ -36,5 +37,5 @@ abstract class BaseTransformer
         ];
     }
 
-    abstract public function transform($item): array;
+    abstract public function transform(mixed $item): array;
 }

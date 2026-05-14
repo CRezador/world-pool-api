@@ -6,7 +6,6 @@ use App\Http\Requests\Guess\StoreGuessRequest;
 use App\Http\Requests\Guess\UpdateGuessRequest;
 use App\Http\Transformers\GuessTransformers\GuessTransformer;
 use App\Services\GuessServices\GuessReadService;
-use App\Services\GuessServices\GuessScoringService;
 use App\Services\GuessServices\GuessWriteService;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -17,7 +16,6 @@ class GuessController extends Controller
     public function __construct(
         private GuessWriteService $guessWriteService,
         private GuessReadService $guessReadService,
-        private GuessScoringService $guessScoringService,
         private GuessTransformer $guessTransformer,
     ) {}
 
@@ -209,27 +207,4 @@ class GuessController extends Controller
         );
     }
 
-    #[OA\Post(
-        path: '/api/internal/matches/{matchId}/guesses/score',
-        summary: 'Calcula os pontos de todos os palpites de uma partida (interno)',
-        security: [['sanctum' => []]],
-        tags: ['Guesses'],
-        parameters: [
-            new OA\Parameter(name: 'matchId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-        ],
-        responses: [
-            new OA\Response(response: 200, description: 'Pontos calculados'),
-            new OA\Response(response: 404, description: 'Partida não encontrada'),
-        ]
-    )]
-    public function scoreGuessesForMatch(int $matchId): Response
-    {
-        try {
-            $this->guessScoringService->scoreGuessesForMatch($matchId);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
-        }
-
-        return response()->json(['message' => 'Pontuação calculada com sucesso'], 200);
-    }
 }

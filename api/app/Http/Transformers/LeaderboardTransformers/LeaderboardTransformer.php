@@ -3,11 +3,10 @@
 namespace App\Http\Transformers\LeaderboardTransformers;
 
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
-use App\Models\Leaderboard;
 
 class LeaderboardTransformer extends BaseTransformer
 {
-    public function transform(Leaderboard $leaderboard): array
+    public function transform(mixed $leaderboard): array
     {
         return [
             'rank'          => $leaderboard->rank,

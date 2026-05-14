@@ -6,11 +6,13 @@ use App\Http\Transformers\BaseTransformers\BaseTransformer;
 
 class GroupTransformer extends BaseTransformer
 {
-    public function transform($group): array
+    public function transform(mixed $group): array
     {
         return [
+            'id' => $group->id,
             'name' => $group->name,
             'teams' => $group->teams->map(fn($team) => [
+                'id' => $team->id,
                 'name' => $team->name,
                 'code' => $team->code,
             ]),

@@ -6,7 +6,7 @@ use App\Http\Transformers\BaseTransformers\BaseTransformer;
 
 class GuessTransformer extends BaseTransformer
 {
-    public function transform($guess): array
+    public function transform(mixed $guess): array
     {
         return [
             'id' => $guess->id,

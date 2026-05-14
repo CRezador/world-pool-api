@@ -2,10 +2,11 @@
 
 namespace App\Http\Requests\Match;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use App\Http\Enums\MatchStage;
 use App\Http\Enums\MatchStatus;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class MatchUpdateRequest extends FormRequest
 {
@@ -35,6 +36,7 @@ class MatchUpdateRequest extends FormRequest
                 'away_score',
                 'kickoff_at',
                 'status',
+                'stage',
             ];
 
             $hasField = collect($this->only($fields))
@@ -59,8 +61,9 @@ class MatchUpdateRequest extends FormRequest
         return [
             'home_score' => ['sometimes', 'nullable', 'integer', 'min:0'],
             'away_score' => ['sometimes', 'nullable', 'integer', 'min:0'],
-            'kickoff_at' => ['sometimes', 'nullable', 'date_format:d/m/Y'],
-            'status' => ['sometimes', 'nullable', Rule::enum(MatchStatus::class)],
+            'kickoff_at' => ['sometimes', 'nullable', 'date_format:d/m/Y H:i'],
+            'status'     => ['sometimes', 'nullable', Rule::enum(MatchStatus::class)],
+            'stage'      => ['sometimes', 'nullable', Rule::enum(MatchStage::class)],
         ];
     }
 
@@ -71,8 +74,9 @@ class MatchUpdateRequest extends FormRequest
             'home_score.min' => 'O placar do time da casa deve ser um número inteiro não negativo.',
             'away_score.integer' => 'O placar do time visitante deve ser um número inteiro.',
             'away_score.min' => 'O placar do time visitante deve ser um número inteiro não negativo.',
-            'kickoff_at.date_format' => 'A data de início da partida deve estar no formato d/m/Y.',
+            'kickoff_at.date_format' => 'A data de início da partida deve estar no formato d/m/Y H:i.',
             'status.enum' => 'A Status da partida deve ser um dos seguintes valores: SCHEDULED, IN_PROGRESS, FINISHED.',
+            'stage.enum' => 'A fase da partida deve ser um dos seguintes valores: GROUP_STAGE, ROUND_OF_16, QUARTER_FINALS, SEMI_FINALS, THIRD_PLACE, FINAL.',
         ];
     }
 }

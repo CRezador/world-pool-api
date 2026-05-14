@@ -8,7 +8,7 @@ use App\Http\Transformers\MatchTransformers\MatchTransformer;
 use App\Http\Enums\MatchStatus;
 use App\Http\Requests\Match\MatchStageRequest;
 use App\Repositories\MatchRepositories\MatchRepository;
-use App\Services\MatchServices\MatchService;
+use App\Services\MatchServices\MatchWriteService;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,7 +16,7 @@ class MatchController extends Controller
 {
     public function __construct(
         private MatchRepository $matchRepository,
-        private MatchService $matchService,
+        private MatchWriteService $matchWriteService,
         private MatchTransformer $matchTransformer
     ) {}
 
@@ -151,18 +151,18 @@ class MatchController extends Controller
     {
         $data = $request->validated();
         $match = [
-            'game_day' => $data->game_day,
-            'code_home_team' => $data->code_home_team,
-            'code_away_team' => $data->code_away_team,
-            'home_score' => $data->home_score ?? 0,
-            'away_score' => $data->away_score ?? 0,
-            'kickoff_at' => $data->kickoff_at,
-            'stage' => $data->stage,
-            'status' => $data->status ?? MatchStatus::SCHEDULED,
+            'game_day' => $data['game_day'],
+            'code_home_team' => $data['code_home_team'],
+            'code_away_team' => $data['code_away_team'],
+            'home_score' => $data['home_score'] ?? 0,
+            'away_score' => $data['away_score'] ?? 0,
+            'kickoff_at' => $data['kickoff_at'] ?? null,
+            'stage' => $data['stage'],
+            'status' => $data['status'] ?? MatchStatus::SCHEDULED,
         ];
 
         try {
-            $matchCreated = $this->matchService->createMatch($match);
+            $matchCreated = $this->matchWriteService->createMatch($match);
         } catch (\Exception $e) {
 
             return response()->json([
@@ -204,7 +204,7 @@ class MatchController extends Controller
         }
 
         try {
-            $data = $this->matchService->updateMatch($request, $match);
+            $data = $this->matchWriteService->updateMatch($request, $match);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Erro ao atualizar a partida: ' . $e->getMessage(),
@@ -215,23 +215,6 @@ class MatchController extends Controller
             $this->matchTransformer->item($data, 'Partida atualizada com sucesso'),
             200
         );
-    }
-
-    #[OA\Post(
-        path: '/api/matches/{id}/close',
-        summary: 'Fecha a partida após finalização, bloqueando novos palpites (admin)',
-        security: [['sanctum' => []]],
-        tags: ['Matches'],
-        parameters: [
-            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-        ],
-        responses: [
-            new OA\Response(response: 200, description: 'Partida fechada'),
-        ]
-    )]
-    public function closeMatch(int $id)
-    {
-        //@todo checar se realmente preciso dessa function
     }
 
     #[OA\Delete(
@@ -271,20 +254,4 @@ class MatchController extends Controller
         ], 200);
     }
 
-    #[OA\Get(
-        path: '/api/matches/{id}/guesses',
-        summary: 'Retorna todos os palpites de uma partida',
-        security: [['sanctum' => []]],
-        tags: ['Matches'],
-        parameters: [
-            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-        ],
-        responses: [
-            new OA\Response(response: 200, description: 'Palpites da partida'),
-        ]
-    )]
-    public function guesses(int $id)
-    {
-        //@todo implementar função para retornar os palpites relacionados a uma partida
-    }
 }

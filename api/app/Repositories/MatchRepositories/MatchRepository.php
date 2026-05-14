@@ -10,12 +10,12 @@ class MatchRepository
 {
     public function findAll(): Collection
     {
-        return Matches::query()->get();
+        return Matches::with(['homeTeam', 'awayTeam', 'group'])->get();
     }
 
     public function findById(int $id): ?Matches
     {
-        return Matches::query()->find($id);
+        return Matches::with(['homeTeam', 'awayTeam', 'group'])->find($id);
     }
 
     public function findByStage(string $stage): Collection
@@ -56,6 +56,7 @@ class MatchRepository
               'matches.home_score',
               'matches.away_score',
           ])
+          ->with(['homeTeam', 'awayTeam'])
           ->where('group_id', $groupId)
           ->orderBy('kickoff_at')
           ->get();
@@ -66,7 +67,7 @@ class MatchRepository
         return Matches::create($data);
     }
 
-    public function matchAlreadyExits(int $homeId, int $awayId, string $stage): bool
+    public function matchAlreadyExists(int $homeId, int $awayId, string $stage): bool
     {
         return Matches::query()->where('home_team_id', $homeId)
           ->where('away_team_id', $awayId)
@@ -78,15 +79,15 @@ class MatchRepository
     {
         $match->update($data);
 
-        return $match->refresh();
+        return $match->fresh(['homeTeam', 'awayTeam', 'group']);
     }
 
     public function delete(Matches $match): bool
     {
         try {
             $match->delete();
-        } catch (\Exception $e) {
-            return throw new \Exception('Erro ao deletar a partida');
+        } catch (\Exception) {
+            throw new \Exception('Erro ao deletar a partida');
         }
 
         return true;

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 //Users Routes
 Route::post('/login', [TokenController::class, 'store']);
 Route::post('/register', [UserController::class, 'store']);
+Route::middleware('auth:sanctum')->delete('/logout', [TokenController::class, 'destroy']);
 
 //Authenticate Routes
 Route::middleware('auth:sanctum')->group(
@@ -75,13 +76,14 @@ Route::middleware('auth:sanctum')->group(
         //Rotas admin
         Route::middleware('admin')->group(
             function () {
+                //Rotas de usuário
+                Route::patch('/users/{id}', [UserController::class, 'update']);
+                Route::patch('/users/{id}/role', [UserController::class, 'updateRole']);
+
                 //Rotas de partidas
                 Route::post('/matches/create', [MatchController::class, 'store']);
                 Route::put('/matches/{id}', [MatchController::class, 'update']);
                 Route::delete('/matches/{id}', [MatchController::class, 'destroy']);
-
-                //Rotas internas de palpites
-                Route::post('/internal/matches/{matchId}/guesses/score', [GuessController::class, 'scoreGuessesForMatch']);
 
                 //Rotas internas de leaderboard
                 Route::post('/pools/{poolId}/leaderboard/recalculate', [LeaderboardController::class, 'recalculate']);

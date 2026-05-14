@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Transformers\GroupTransformers\GroupTransformer;
-use App\Repositories\GroupRepositories\GroupRepository;
+use App\Services\GroupServices\GroupReadService;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -11,7 +11,7 @@ class GroupController extends Controller
 {
     public function __construct(
         private GroupTransformer $groupTransformer,
-        private GroupRepository $groupRepository
+        private GroupReadService $groupReadService
     ) {}
 
     #[OA\Get(
@@ -26,10 +26,8 @@ class GroupController extends Controller
     )]
     public function index(): Response
     {
-        $group = $this->groupRepository->findAll();
-
         return response()->json(
-            $this->groupTransformer->collection($group, 'Lista de grupos'),
+            $this->groupTransformer->collection($this->groupReadService->listGroups(), 'Lista de grupos'),
             200
         );
     }
@@ -49,12 +47,10 @@ class GroupController extends Controller
     )]
     public function show(int $id): Response
     {
-        $group = $this->groupRepository->findById($id);
+        $group = $this->groupReadService->getGroup($id);
 
         if (!$group) {
-            return response()->json([
-                'message' => 'Grupo não encontrado',
-            ], 404);
+            return response()->json(['message' => 'Grupo não encontrado'], 404);
         }
 
         return response()->json(

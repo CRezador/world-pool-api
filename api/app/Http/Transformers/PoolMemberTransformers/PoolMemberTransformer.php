@@ -6,7 +6,7 @@ use App\Http\Transformers\BaseTransformers\BaseTransformer;
 
 class PoolMemberTransformer extends BaseTransformer
 {
-    public function transform($poolMember): array
+    public function transform(mixed $poolMember): array
     {
         return [
             'id' => $poolMember->id,

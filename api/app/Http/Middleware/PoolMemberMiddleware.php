@@ -3,14 +3,14 @@
 namespace App\Http\Middleware;
 
 use App\Models\Pool;
-use App\Services\PoolMemberServices\PoolMemberService;
+use App\Services\PoolMemberServices\PoolMemberReadService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class PoolMemberMiddleware
 {
-    public function __construct(private PoolMemberService $poolMemberService) {}
+    public function __construct(private PoolMemberReadService $poolMemberReadService) {}
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -20,7 +20,7 @@ class PoolMemberMiddleware
             return response()->json(['message' => 'Bolão não encontrado'], 404);
         }
 
-        if (!$request->user() || !$this->poolMemberService->isMember($poolId, $request->user()->id)) {
+        if (!$request->user() || !$this->poolMemberReadService->isMember($poolId, $request->user()->id)) {
             return response()->json(['message' => 'Acesso negado'], 403);
         }
 

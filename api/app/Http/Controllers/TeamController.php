@@ -54,9 +54,10 @@ class TeamController extends Controller
             ], 404);
         }
 
-        return response()->json([
+        return response()->json(
             $this->teamTransformer->item($team, 'Equipe encontrada'),
-        ], 200);
+            200
+        );
     }
 
     #[OA\Get(
@@ -76,12 +77,13 @@ class TeamController extends Controller
     {
         $groupTeams = $this->teamRepository->teamsByGroup($id);
 
-        if (!$groupTeams) {
-            return response()->json(['message' => 'Time não encontrado'], 404);
+        if ($groupTeams->isEmpty()) {
+            return response()->json(['message' => 'Nenhum time encontrado para este grupo'], 404);
         }
 
-        return response()->json([
+        return response()->json(
             $this->teamTransformer->transformTeamsByGroup($groupTeams),
-        ], 200);
+            200
+        );
     }
 }

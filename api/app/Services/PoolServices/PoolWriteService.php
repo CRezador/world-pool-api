@@ -6,16 +6,16 @@ use App\Http\Enums\PoolUserRole;
 use App\Models\Pool;
 use App\Models\User;
 use App\Repositories\PoolRepositories\PoolRepository;
-use App\Services\PoolMemberServices\PoolMemberService;
-use Illuminate\Database\Eloquent\Collection;
+use App\Services\PoolMemberServices\PoolMemberReadService;
+use App\Services\PoolMemberServices\PoolMemberWriteService;
 use Illuminate\Support\Str;
 
-class PoolService
+class PoolWriteService
 {
     public function __construct(
         private PoolRepository $poolRepository,
-        private PoolMemberService $poolMemberService,
-        private PoolMemberRepository $poolMemberRepository
+        private PoolMemberReadService $poolMemberReadService,
+        private PoolMemberWriteService $poolMemberWriteService,
     ) {}
 
     private function generateCode(): string
@@ -32,16 +32,6 @@ class PoolService
         return $code;
     }
 
-    public function showPublicPools(): Collection
-    {
-        return $this->poolRepository->getPublicPools();
-    }
-
-    public function showPool(int $id): ?Pool
-    {
-        return $this->poolRepository->getPool($id);
-    }
-
     public function createPool(bool $is_public, User $user, string $name): Pool
     {
         $code = $this->generateCode();
@@ -53,9 +43,9 @@ class PoolService
                 'owner_id' => $user->id,
                 'is_public' => $is_public,
             ]);
-            $this->poolMemberService->addMember($pool->id, PoolUserRole::OWNER, $user->id);
+            $this->poolMemberWriteService->addMember($pool->id, PoolUserRole::OWNER, $user->id);
         } catch (\Exception $e) {
-            throw new \Exception('Erro ao criar a Bolão: ' . $e->getMessage());
+            throw new \Exception('Erro ao criar o Bolão: ' . $e->getMessage());
         }
 
         return $pool;
@@ -73,14 +63,7 @@ class PoolService
             throw new \Exception('Apenas o proprietário do bolão pode removê-lo.');
         }
 
-        try {
-            $deleted = $this->poolRepository->deletePool($pool->id);
-            if (!$deleted) {
-                throw new \Exception('Bolão não encontrado.');
-            }
-        } catch (\Exception $e) {
-            throw new \Exception('Erro ao Remover Bolão: ' . $e->getMessage());
-        }
+        $this->poolRepository->deletePool($pool->id);
 
         return $pool;
     }
@@ -92,13 +75,13 @@ class PoolService
         if (!$pool) {
             throw new \Exception('Bolão não encontrado.');
         }
+
         $code = $this->generateCode();
 
         try {
-            $pool->join_code = $code;
-            $pool->save();
+            $pool = $this->poolRepository->updatePool($id, ['join_code' => $code]);
         } catch (\Exception $e) {
-            throw new \Exception('Erro ao Regenerar Código de Acesso: ' . $e);
+            throw new \Exception('Erro ao Regenerar Código de Acesso: ' . $e->getMessage());
         }
 
         return $pool;
@@ -115,20 +98,10 @@ class PoolService
         try {
             $poolUpdate = $this->poolRepository->updatePool($id, $data);
         } catch (\Exception $e) {
-            throw new \Exception('Erro ao Atualizar Bolão: ' . $e);
+            throw new \Exception('Erro ao Atualizar Bolão: ' . $e->getMessage());
         }
 
         return $poolUpdate;
-    }
-
-    public function getPoolsByUserId(int $userId): Collection
-    {
-        return $this->poolRepository->getPoolsByUserId($userId);
-    }
-
-    public function getPoolByJoinCode(string $join_code): ?Pool
-    {
-        return $this->poolRepository->getPoolByJoinCode($join_code);
     }
 
     public function joinPool(string $join_code, int $userId): array
@@ -139,15 +112,15 @@ class PoolService
             throw new \Exception('Bolão não encontrado.');
         }
 
-        if ($this->poolMemberService->isBanned($pool->id, $userId)) {
+        if ($this->poolMemberReadService->isBanned($pool->id, $userId)) {
             throw new \Exception('Você está banido deste bolão.');
         }
 
-        if ($this->poolMemberService->isMember($pool->id, $userId)) {
+        if ($this->poolMemberReadService->isMember($pool->id, $userId)) {
             throw new \Exception('Você já é membro deste bolão.');
         }
 
-        $member = $this->poolMemberService->addMember($pool->id, PoolUserRole::MEMBER, $userId);
+        $member = $this->poolMemberWriteService->addMember($pool->id, PoolUserRole::MEMBER, $userId);
 
         return [
             'Pool' => $pool,

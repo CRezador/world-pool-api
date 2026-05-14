@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Enums\UserRole;
 use App\Http\Requests\Authentication\CreateUserRequest;
+use App\Http\Requests\Authentication\UpdateUserRequest;
+use App\Http\Requests\Authentication\UpdateUserRoleRequest;
 use App\Http\Transformers\UserTransformers\UserTransformer;
-use App\Services\UserServices\UserService;
+use App\Services\UserServices\UserReadService;
+use App\Services\UserServices\UserWriteService;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +17,8 @@ use Throwable;
 class UserController extends Controller
 {
     public function __construct(
-        private UserService $userService,
+        private UserReadService $userReadService,
+        private UserWriteService $userWriteService,
         private UserTransformer $userTransformer
     ) {}
 
@@ -61,10 +66,10 @@ class UserController extends Controller
         $validated = $request->validated();
 
         try {
-            $user = $this->userService->createUser($validated);
-        } catch (Throwable $e) {
+            $user = $this->userWriteService->createUser($validated);
+        } catch (Throwable) {
             return response()->json([
-                'message' => 'Erro inesperado ao criar usuário.' . $e->getMessage(),
+                'message' => 'Erro inesperado ao criar usuário.',
             ], 500);
         }
 
@@ -88,23 +93,21 @@ class UserController extends Controller
             new OA\Response(response: 404, description: 'Usuário não encontrado'),
         ]
     )]
-    public function update(Request $request, int $id) {}
+    public function update(UpdateUserRequest $request, int $id): Response
+    {
+        $user = $this->userReadService->findById($id);
 
-    #[OA\Delete(
-        path: '/api/users/{id}',
-        summary: 'Remove ou desativa um usuário (admin)',
-        security: [['sanctum' => []]],
-        tags: ['Users'],
-        parameters: [
-            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-        ],
-        responses: [
-            new OA\Response(response: 200, description: 'Usuário removido'),
-            new OA\Response(response: 403, description: 'Acesso negado'),
-            new OA\Response(response: 404, description: 'Usuário não encontrado'),
-        ]
-    )]
-    public function destroy(int $id) {}
+        if (!$user) {
+            return response()->json(['message' => 'Usuário não encontrado.'], 404);
+        }
+
+        $user = $this->userWriteService->update($user, $request->validated());
+
+        return response()->json(
+            $this->userTransformer->item($user, 'Usuário atualizado'),
+            200
+        );
+    }
 
     #[OA\Patch(
         path: '/api/users/{id}/role',
@@ -128,5 +131,20 @@ class UserController extends Controller
             new OA\Response(response: 403, description: 'Acesso negado'),
         ]
     )]
-    public function updateRole(Request $request, int $id) {}
+    public function updateRole(UpdateUserRoleRequest $request, int $id): Response
+    {
+        $user = $this->userReadService->findById($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'Usuário não encontrado.'], 404);
+        }
+
+        $role = UserRole::from($request->validated()['role']);
+        $user = $this->userWriteService->updateRole($user, $role);
+
+        return response()->json(
+            $this->userTransformer->item($user, 'Papel atualizado'),
+            200
+        );
+    }
 }
