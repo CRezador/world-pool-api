@@ -36,7 +36,7 @@ class PoolMembersSeeder extends Seeder
         // PUB001 — Bob (OWNER), Alice + user01-user05 (MEMBER)
         $rows[] = ['pool_id' => $publicPool, 'user_id' => $bob,   'role' => 'OWNER',  'status' => 'ACTIVE', 'joined_at' => $now];
         $rows[] = ['pool_id' => $publicPool, 'user_id' => $alice, 'role' => 'MEMBER', 'status' => 'ACTIVE', 'joined_at' => $now];
-        foreach (array_slice($userIds, 0, 5) as $uid) {
+        foreach (\array_slice($userIds, 0, 5) as $uid) {
             $rows[] = ['pool_id' => $publicPool, 'user_id' => $uid, 'role' => 'MEMBER', 'status' => 'ACTIVE', 'joined_at' => $now];
         }
 
