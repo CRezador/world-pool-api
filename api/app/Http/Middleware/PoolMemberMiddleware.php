@@ -20,7 +20,15 @@ class PoolMemberMiddleware
             return response()->json(['message' => 'Bolão não encontrado'], 404);
         }
 
-        if (!$request->user() || !$this->poolMemberReadService->isMember($poolId, $request->user()->id)) {
+        if (!$request->user()) {
+            return response()->json(['message' => 'Acesso negado'], 403);
+        }
+
+        if ($request->user()->isAdmin()) {
+            return $next($request);
+        }
+
+        if (!$this->poolMemberReadService->isMember($poolId, $request->user()->id)) {
             return response()->json(['message' => 'Acesso negado'], 403);
         }
 
