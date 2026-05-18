@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\StandingsController;
 use App\Http\Controllers\TokenController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TeamController;
@@ -29,6 +30,9 @@ Route::middleware('auth:sanctum')->group(
         //Rotas de grupos
         Route::get('/groups', [GroupController::class, 'index']);
         Route::get('/groups/{id}', [GroupController::class, 'show']);
+
+        //Classificação externa
+        Route::get('/standings', [StandingsController::class, 'index']);
 
         //Rotas de partidas
         Route::get('/matches/{id}', [MatchController::class, 'show']);

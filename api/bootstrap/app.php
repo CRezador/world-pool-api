@@ -14,11 +14,17 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->api();
+        $middleware->statefulApi();
         $middleware->alias([
             'admin' => AdminMiddleware::class,
             'PoolMember' => \App\Http\Middleware\PoolMemberMiddleware::class,
             'PoolMemberAdmin' => \App\Http\Middleware\PoolMemberAdminMiddleware::class,
             'PoolOwner' => \App\Http\Middleware\PoolOwnerMiddleware::class,
+        ]);
+        $middleware->validateCsrfTokens(except: [
+            'api/login',
+            'api/register',
+            'api/logout',
         ]);
         $middleware->redirectGuestsTo(fn() => null);
     })
