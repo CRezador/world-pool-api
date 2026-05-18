@@ -3,21 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Authentication\LoginRequest;
-use App\Http\Transformers\TokenTransformers\TokenTransformer;
-use App\Services\TokenServices\TokenWriteService;
-use App\Services\UserServices\UserWriteService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
 class TokenController extends Controller
 {
-    public function __construct(
-        private UserWriteService $userWriteService,
-        private TokenWriteService $tokenWriteService,
-        private TokenTransformer $tokenTransformer
-    ) {}
-
     #[OA\Post(
         path: '/api/login',
         summary: 'Autentica usuário e retorna token de acesso',
@@ -33,7 +25,7 @@ class TokenController extends Controller
             )
         ),
         responses: [
-            new OA\Response(response: 200, description: 'Token gerado com sucesso'),
+            new OA\Response(response: 200, description: 'Login realizado com sucesso'),
             new OA\Response(response: 401, description: 'Credenciais inválidas'),
         ]
     )]
@@ -41,23 +33,18 @@ class TokenController extends Controller
     {
         $credentials = $request->validated();
 
-        try {
-            $user = $this->userWriteService->login($credentials['email'], $credentials['password']);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 500);
+        if (!Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']])) {
+            return response()->json(['message' => 'Credenciais inválidas.'], 401);
         }
 
-        $token = $this->tokenWriteService->createToken($user);
+        $request->session()->regenerate();
 
-        return response()->json(
-            $this->tokenTransformer->item($token, 'Login realizado com sucesso'),
-            200
-        );
+        return response()->json(['message' => 'Login realizado com sucesso.'], 200);
     }
 
     #[OA\Delete(
         path: '/api/logout',
-        summary: 'Revoga o token de acesso do usuário autenticado',
+        summary: 'Encerra a sessão do usuário autenticado',
         security: [['sanctum' => []]],
         tags: ['Auth'],
         responses: [
@@ -67,8 +54,11 @@ class TokenController extends Controller
     )]
     public function destroy(Request $request): Response
     {
-        $this->tokenWriteService->revokeCurrentToken($request->user());
+        Auth::guard('web')->logout();
 
-        return response()->json(['message' => 'Logout realizado com sucesso'], 200);
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json(['message' => 'Logout realizado com sucesso.'], 200);
     }
 }

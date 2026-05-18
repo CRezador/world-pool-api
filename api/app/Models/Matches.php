@@ -14,6 +14,7 @@ class Matches extends Model
 
     protected $table = 'matches';
     protected $fillable = [
+        'external_id',
         'kickoff_at',
         'game_day',
         'stage',

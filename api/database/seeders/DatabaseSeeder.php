@@ -15,7 +15,6 @@ class DatabaseSeeder extends Seeder
             UsersSeeder::class,
             GroupsSeeder::class,
             TeamsSeeder::class,
-            MatchesSeeder::class,
             PoolsSeeder::class,
             PoolMembersSeeder::class,
             GuessesSeeder::class,
