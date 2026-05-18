@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import RegiterUser from '../components/auth/RegiterUser.vue'
+import RegisterUser from '../components/auth/RegisterUser.vue'
 </script>
 
 <template>
-  <RegiterUser />
+  <RegisterUser />
 </template>

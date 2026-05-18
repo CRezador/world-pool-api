@@ -1,28 +1,32 @@
+import axios from "axios";
 import api from "./api";
 import type { User } from "../types/User";
 import type { AxiosResponse } from "axios";
 
+const csrfApi = axios.create({
+    baseURL: "http://localhost:8080",
+    withCredentials: true,
+});
+
+export const login = async (email: string, password: string): Promise<void> => {
+    await csrfApi.get("/sanctum/csrf-cookie");
+    await api.post("/login", { email, password });
+};
+
+export const logout = async (): Promise<void> => {
+    await api.delete("/logout");
+};
+
 export const register = async (name: string, email: string, password: string): Promise<User> => {
     try {
-        const response: AxiosResponse<User> = await api.post("/register", {
+        await csrfApi.get("/sanctum/csrf-cookie");
+        const response: AxiosResponse<{ data: User }> = await api.post("/register", {
             name,
             email,
             password,
         });
-        return response.data;
-    } catch (error) {
-        throw new Error("Register failed");
-    }
-};
-
-export const login = async (username: string, password: string): Promise<User> => {
-    try {
-        const response: AxiosResponse<User> = await api.post("/login", {
-            email: username,
-            password: password,
-        });
-        return response.data;
-    } catch (error) {
-        throw new Error("Login failed");
+        return response.data.data;
+    } catch (error: unknown) {
+        throw new Error((error as Error).message || "Registration failed");
     }
 };

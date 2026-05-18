@@ -1,8 +1,8 @@
-interface User {
+export type User = {
     id: number;
-    username: string;
+    name: string;
     email: string;
-    token: string;
-}
-
-export type { User };
+    role: string;
+    created_at: string;
+    updated_at: string;
+};
