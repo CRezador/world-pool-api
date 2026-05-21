@@ -155,14 +155,14 @@ A arquitetura é **API + SPA**: o backend Laravel expõe uma API REST e o fronte
 
 Tabelas principais (via Eloquent):
 
-- **groups** — grupos da competição (`id`, `name`)
-- **teams** — times (`id`, `name`, `code` UK, `group_id` FK, timestamps)
-- **matches** — partidas (`id`, `kickoff_at`, `stage` enum: `GROUP|ROUND_OF_16|QUARTER_FINALS|SEMI_FINALS|FINAL`, `group_id` FK nullable, `home_team_id`, `away_team_id`, `home_score` nullable, `away_score` nullable, timestamps)
-- **users** — usuários (`id`, `name`, `email` UK, `email_verified_at`, `password_hash`, `remember_token`, `role` enum: `ADMIN|USER`, timestamps)
-- **pools** — bolões (`id`, `name`, `join_code` UK, `owner_user_id` FK, `is_public` default true, timestamps)
-- **pool_members** — membros do bolão (`id`, `pool_id`, `user_id`, `role` enum: `OWNER|ADMIN|MEMBER`, `status` enum: `ACTIVE|LEFT|BANNED`, `joined_at`)
-- **guesses** — palpites (`id`, `pool_id`, `user_id`, `match_id`, `home_score`, `away_score`, `points` nullable, timestamps)
-- **leaderboard** — ranking por bolão (`id`, `pool_id`, `user_id`, `points_total`, `exact_hits`, `result_hits`, `guesses_count`, `updated_at`)
+- **groups** — grupos da competição (`id`, `name` UK — 1 char, ex.: `A`..`L`)
+- **teams** — times (`id`, `name`, `code` UK — 3 chars, `flag_code` nullable, `group_id` FK nullable, timestamps)
+- **matches** — partidas (`id`, `external_id` UK nullable, `game_day` int, `kickoff_at` nullable, `stage` enum: `GROUP_STAGE|ROUND_OF_16|QUARTER_FINALS|SEMI_FINALS|THIRD_PLACE|FINAL`, `status` enum: `SCHEDULED|IN_PROGRESS|FINISHED`, `group_id` FK nullable, `home_team_id` FK, `away_team_id` FK, `home_score` nullable default 0, `away_score` nullable default 0, timestamps)
+- **users** — usuários (`id`, `name`, `email` UK, `email_verified_at` nullable, `password`, `remember_token` nullable, `role` enum: `ADMIN|USER`, timestamps)
+- **pools** — bolões (`id`, `name`, `join_code` UK — 6 chars, `owner_id` FK, `is_public` default true, timestamps)
+- **pool_members** — membros do bolão (`id`, `pool_id`, `user_id`, `role` enum: `MEMBER|ADMIN|OWNER`, `status` enum: `ACTIVE|LEFT|BANNED`, `joined_at`, timestamps; UK em `(pool_id, user_id)`)
+- **guesses** — palpites (`id`, `pool_id`, `user_id`, `match_id`, `home_score`, `away_score`, `points` nullable default 0, timestamps; UK em `(pool_id, user_id, match_id)`)
+- **leaderboard** — ranking por bolão (`id`, `created_at` nullable, `pool_id`, `user_id`, `points` default 0, `exact_hits` default 0, `result_hits` default 0, `guesses_count` default 0, `updated_at`, `archived_at` nullable; UK em `(pool_id, user_id)`)
 
 ### Relações
 - `groups` 1—N `teams`

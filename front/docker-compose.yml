@@ -1,0 +1,23 @@
+services:
+  frontend:
+    user: "${UID:-1000}:${GID:-1000}"
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ${FRONT_TARGET:-dev}
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: pool-front
+    working_dir: /app
+    restart: unless-stopped
+    ports:
+      - "${FRONT_PORT:-5173}:5173"
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      HOME: /tmp
+      VITE_PROXY_TARGET: ${VITE_PROXY_TARGET:-http://host.docker.internal:8080}
