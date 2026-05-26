@@ -11,7 +11,7 @@ class MatchTransformer extends BaseTransformer
     public function transform(mixed $match): array
     {
         $teamTransformer = new TeamTransformer();
-        
+
         return [
             'id' => $match->id,
             'game_day' => $match->game_day,
