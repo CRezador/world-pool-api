@@ -28,5 +28,5 @@ const m = computed<Member | undefined>(() =>
       boxShadow: '1.5px 1.5px 0 var(--ink)',
       flexShrink: 0,
     }"
-  >{{ m.avatar }}</div>
+  >{{ m.name[0].toUpperCase() }}</div>
 </template>

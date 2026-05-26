@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { toneVar } from '@/data/mock';
 import type { Pool } from '@/types';
 
@@ -8,7 +9,7 @@ const props = defineProps<{
   index: number;
 }>();
 
-defineEmits<{ (e: 'click'): void }>();
+const router = useRouter();
 const accentVar = computed(() => toneVar(props.pool.accent));
 const ribbonFg = computed(() => props.pool.accent === 'lime' ? 'var(--ink)' : 'var(--paper)');
 const ratio = computed(() =>
@@ -46,7 +47,7 @@ function chipFg(r: string) {
       borderRadius: '6px', overflow: 'hidden',
       display: 'grid', gridTemplateColumns: '54px 1fr', gap: 0,
     }"
-    @click="$emit('click')"
+    @click="router.push(`/pool/${pool.id}`)"
   >
     <div :style="{
       background: accentVar,
@@ -92,7 +93,7 @@ function chipFg(r: string) {
             textTransform: 'uppercase', cursor: 'pointer', borderRadius: '3px',
             flexShrink: 0,
           }"
-          @click.stop="$emit('click')"
+          @click.stop="router.push(`/pool/${pool.id}`)"
         >Abrir bolão →</button>
       </div>
 

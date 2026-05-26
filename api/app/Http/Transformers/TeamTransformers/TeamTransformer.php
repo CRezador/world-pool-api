@@ -14,7 +14,7 @@ class TeamTransformer extends BaseTransformer
             'code'      => $team->code,
             'flag_code' => $team->flag_code,
             'flag_url'  => $team->flag_code ? "https://flagcdn.com/{$team->flag_code}.svg" : null,
-            'group'     => $team->group->name,
+            'group'     => $team->group?->name,
         ];
     }
 

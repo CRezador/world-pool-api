@@ -93,6 +93,42 @@ class MatchRepository
         return true;
     }
 
+    public function findNextGameDayMatches(): Collection
+    {
+        $nextGameDay = Matches::query()
+            ->where('status', '!=', MatchStatus::FINISHED->value)
+            ->min('game_day');
+
+        if ($nextGameDay === null) {
+            return collect();
+        }
+
+        return Matches::query()
+            ->select([
+                'matches.id',
+                'matches.game_day',
+                'matches.kickoff_at',
+                'matches.stage',
+                'matches.group_id',
+                'matches.home_team_id',
+                'matches.away_team_id',
+                'matches.status',
+                'matches.home_score',
+                'matches.away_score',
+            ])
+            ->with([
+                'homeTeam:id,name,code,flag_code,group_id',
+                'homeTeam.group:id,name',
+                'awayTeam:id,name,code,flag_code,group_id',
+                'awayTeam.group:id,name',
+                'group:id,name',
+            ])
+            ->where('game_day', $nextGameDay)
+            ->where('status', MatchStatus::SCHEDULED->value)
+            ->orderBy('kickoff_at')
+            ->get();
+    }
+
     public function getStatusById(int $id): ?MatchStatus
     {
         $match = $this->findById($id);

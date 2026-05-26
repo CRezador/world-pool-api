@@ -1,5 +1,5 @@
 import type {
-  Team, Match, Member, Pool, LeaderboardEntry, StandingRow,
+  Team, Match, Member, Pool, StandingRow,
 } from '@/types';
 
 // iso = flagcdn.com country code. Special: gb-eng = England, gb-sct = Scotland.
@@ -135,7 +135,7 @@ export const POOLS: Pool[] = [
   },
 ];
 
-export const LEADERBOARD: LeaderboardEntry[] = [
+export const LEADERBOARD = [
   { memberId: 1, points: 28, exact: 4, result: 16, guesses: 22, trend: 'up' },
   { memberId: 2, points: 24, exact: 3, result: 15, guesses: 22, trend: 'same' },
   { memberId: 3, points: 21, exact: 3, result: 12, guesses: 22, trend: 'up' },

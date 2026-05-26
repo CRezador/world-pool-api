@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import FlagImg from '@/components/FlagImg.vue';
 import ChipToggle from '@/components/ChipToggle.vue';
 import DesktopPoolCard from './DesktopPoolCard.vue';
-import { MATCHES, TEAMS, toneVar } from '@/data/mock';
+import DesktopUpcomingMatches from './DesktopUpcomingMatches.vue';
+import { toneVar } from '@/data/mock';
 import { usePools } from '@/composables/usePools';
 import { useJoinModal } from '@/composables/useJoinModal';
 import { useCreatePoolModal } from '@/composables/useCreatePoolModal';
@@ -21,7 +21,11 @@ const filters = ['TODOS', 'PRIVADOS', 'PÚBLICOS', 'ATIVOS HOJE'];
 const filter = ref('TODOS');
 
 const pools = computed(() => allPools.value.filter(p => {
-  if (filter.value === 'PRIVADOS') return !p.isPublic;
+  
+  if (filter.value === 'PRIVADOS'){
+    console.log(p.isPublic);
+    return !p.isPublic;
+  }
   if (filter.value === 'PÚBLICOS') return p.isPublic;
   return true;
 }));
@@ -32,14 +36,13 @@ const totalPts = computed(() => allPools.value.reduce((s, p) => s + p.myPoints, 
 const bestRank = computed(() => allPools.value.length ? Math.min(...allPools.value.map(p => p.myRank)) : 0);
 
 const stats = computed(() => [
-  { v: String(allPools.value.length),              l: 'BOLÕES',       tone: 'magenta' },
-  { v: String(totalPts.value),                     l: 'PTS TOTAIS',   tone: 'cobalt' },
-  { v: String(totalExacts),                        l: 'CRAVADAS',     tone: 'lime' },
-  { v: bestRank.value + 'º',                       l: 'MELHOR POS.',  tone: 'coral' },
-  { v: Math.round(guessRate * 100) + '%',          l: 'PALPITADOS',   tone: 'ink', small: true },
+  { value: String(allPools.value.length),              layer: 'BOLÕES',       tone: 'magenta' },
+  { value: String(totalPts.value),                     layer: 'PTS TOTAIS',   tone: 'cobalt' },
+  { value: String(totalExacts),                        layer: 'CRAVADAS',     tone: 'lime' },
+  { value: bestRank.value + 'º',                       layer: 'MELHOR POS.',  tone: 'coral' },
+  { value: Math.round(guessRate * 100) + '%',          layer: 'PALPITADOS',   tone: 'ink', small: true },
 ]);
 
-const upcomingMatches = MATCHES.filter(m => m.status === 'SCHEDULED').slice(0, 3);
 
 interface ActivityItem {
   pool: string; accent: string; who: string; what: string;
@@ -79,7 +82,7 @@ function ptsFg(act: ActivityItem) {
         <div
           class="font-mono"
           :style="{ fontSize: '11px', letterSpacing: '0.22em', fontWeight: 700 }"
-        >EDIÇÃO Nº 04 · BOLETIM DO SÓCIO · {{ allPools.length }} ATIVOS</div>
+        >EDIÇÃO Nº 04 · BOLETIM DO SÓCIO</div>
         <div
           class="font-display misprint-magenta"
           :style="{
@@ -99,8 +102,8 @@ function ptsFg(act: ActivityItem) {
         background: 'var(--paper-2)',
       }">
         <div
-          v-for="(s, i) in stats"
-          :key="s.l"
+          v-for="(stat, i) in stats"
+          :key="stat.layer"
           :style="{
             padding: '14px 20px', minWidth: '108px',
             borderRight: i < stats.length - 1 ? '1px dashed var(--ink)' : 'none',
@@ -110,14 +113,14 @@ function ptsFg(act: ActivityItem) {
           <div
             class="font-mono"
             :style="{ fontSize: '9px', letterSpacing: '0.16em', fontWeight: 700, opacity: 0.7 }"
-          >{{ s.l }}</div>
+          >{{ stat.layer }}</div>
           <div
             class="font-display"
-            :style="{ fontSize: s.small ? '28px' : '36px', lineHeight: 1, marginTop: '4px' }"
-          >{{ s.v }}</div>
+            :style="{ fontSize: stat.small ? '28px' : '36px', lineHeight: 1, marginTop: '4px' }"
+          >{{ stat.value }}</div>
           <div :style="{
             position: 'absolute', bottom: 0, left: 0, right: 0, height: '4px',
-            background: toneVar(s.tone),
+            background: toneVar(stat.tone),
           }" />
         </div>
       </div>
@@ -200,50 +203,7 @@ function ptsFg(act: ActivityItem) {
       </div>
 
       <div :style="{ padding: '22px 24px', background: 'var(--paper-2)' }">
-        <div :style="{
-          padding: '14px', background: 'var(--ink)', color: 'var(--paper)',
-          position: 'relative', overflow: 'hidden', marginBottom: '18px',
-        }">
-          <div :style="{ position: 'absolute', top: 0, right: 0, width: '90px', height: '28px', color: 'var(--coral)' }">
-            <div class="halftone" :style="{ height: '100%' }" />
-          </div>
-          <div
-            class="font-mono"
-            :style="{ fontSize: '10px', letterSpacing: '0.18em', fontWeight: 700, color: 'var(--coral)' }"
-          >· PENDENTE · {{ upcomingMatches.length }} JOGOS</div>
-          <div
-            class="font-display"
-            :style="{ fontSize: '22px', lineHeight: 1, marginTop: '6px', textTransform: 'uppercase' }"
-          >Falta apitar</div>
-          <div :style="{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }">
-            <div
-              v-for="m in upcomingMatches"
-              :key="m.id"
-              :style="{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                padding: '8px 10px',
-                background: 'rgba(242, 233, 210, 0.08)',
-                border: '1px dashed rgba(242, 233, 210, 0.3)',
-                cursor: 'pointer',
-              }"
-              @click="router.push(`/matches`)"
-            >
-              <FlagImg :team="m.home" :size="16" :radius="2" />
-              <span class="font-display" :style="{ fontSize: '14px' }">
-                {{ TEAMS[m.home].code }} × {{ TEAMS[m.away].code }}
-              </span>
-              <FlagImg :team="m.away" :size="16" :radius="2" />
-              <span
-                class="font-mono"
-                :style="{ fontSize: '10px', letterSpacing: '0.12em', opacity: 0.7, marginLeft: '4px' }"
-              >{{ m.day.toUpperCase() }} · {{ m.kickoff }}</span>
-              <span
-                class="font-display"
-                :style="{ fontSize: '12px', color: 'var(--lime)', marginLeft: 'auto' }"
-              >APITAR →</span>
-            </div>
-          </div>
-        </div>
+        <DesktopUpcomingMatches />
 
         <div
           class="font-mono"

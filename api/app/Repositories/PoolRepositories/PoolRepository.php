@@ -9,17 +9,25 @@ class PoolRepository
 {
     public function getPublicPools(): Collection
     {
-        return Pool::with('owner')->where('is_public', true)->get();
+        return Pool::with('owner')
+            ->withCount(['members as members_count' => fn ($q) => $q->where('status', 'ACTIVE')])
+            ->where('is_public', true)
+            ->get();
     }
 
     public function getPool(int $id): ?Pool
     {
-        return Pool::with('owner')->find($id);
+        return Pool::with('owner')
+            ->withCount(['members as members_count' => fn ($q) => $q->where('status', 'ACTIVE')])
+            ->find($id);
     }
 
     public function getPoolByJoinCode(string $join_code): ?Pool
     {
-        return Pool::with('owner')->where('join_code', $join_code)->first();
+        return Pool::with('owner')
+            ->withCount(['members as members_count' => fn ($q) => $q->where('status', 'ACTIVE')])
+            ->where('join_code', $join_code)
+            ->first();
     }
 
     public function createPool(array $pool): Pool
@@ -42,6 +50,7 @@ class PoolRepository
     public function getPoolsByUserId(int $userId): Collection
     {
         return Pool::with('owner')
+            ->withCount(['members as members_count' => fn ($q) => $q->where('status', 'ACTIVE')])
             ->select('pools.*')
             ->join('pool_members', 'pool_members.pool_id', '=', 'pools.id')
             ->where('pool_members.user_id', $userId)

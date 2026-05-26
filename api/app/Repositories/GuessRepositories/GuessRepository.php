@@ -67,6 +67,18 @@ class GuessRepository
             ->get();
     }
 
+    public function getLastScoredByUserAndPool(int $userId, int $poolId, int $limit = 3): array
+    {
+        return Guess::where('guesses.user_id', $userId)
+            ->where('guesses.pool_id', $poolId)
+            ->whereNotNull('guesses.points')
+            ->join('matches', 'matches.id', '=', 'guesses.match_id')
+            ->orderBy('matches.kickoff_at', 'desc')
+            ->limit($limit)
+            ->pluck('guesses.points')
+            ->toArray();
+    }
+
     public function aggregateStatsByUserAndPool(int $poolId, int $userId): array
     {
         $result = Guess::where('guesses.pool_id', $poolId)

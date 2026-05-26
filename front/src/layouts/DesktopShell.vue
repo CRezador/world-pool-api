@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import FlagImg from '@/components/FlagImg.vue';
 import Avatar from '@/components/Avatar.vue';
@@ -15,12 +15,57 @@ const create = useCreatePoolModal();
 const liveMatch = MATCHES.find(m => m.status === 'IN_PROGRESS');
 const nextMatch = MATCHES.find(m => m.status === 'SCHEDULED');
 
+type MenuItem = { divider: true } | {
+  divider?: false;
+  label: string;
+  sub: string;
+  icon: string;
+  tone: 'magenta' | 'cobalt' | 'lime' | 'coral';
+  action?: 'create' | 'join';
+  path?: string;
+};
+
 const nav = [
-  { label: 'Bolões', path: '/pools' },
-  { label: 'Jogos', path: '/matches' },
-  { label: 'Tabela', path: '/standings' },
-  { label: 'Admin', path: '/' },
+  { label: 'Bolões', path: '/pools', menu: [
+    { label: 'Meus bolões',        sub: '3 que você participa', icon: '◉', tone: 'magenta', path: '/pools'   } as MenuItem,
+    { label: 'Bolões públicos',    sub: '8.241 abertos',        icon: '◐', tone: 'cobalt',  path: '/explore' } as MenuItem,
+    { divider: true } as MenuItem,
+    { label: '+ Criar bolão',      sub: 'Do zero, em 30s',      icon: '+', tone: 'lime',    action: 'create' } as MenuItem,
+    { label: '+ Entrar com código',sub: 'Tenho um convite',     icon: '⎘', tone: 'coral',   action: 'join'   } as MenuItem,
+  ]},
+  { label: 'Jogos',   path: '/matches'   },
+  { label: 'Tabela',  path: '/standings' },
+  { label: 'Admin',   path: '/'          },
 ];
+
+const toneVar: Record<string, string> = {
+  magenta: 'var(--magenta)',
+  cobalt:  'var(--cobalt)',
+  lime:    'var(--lime)',
+  coral:   'var(--coral)',
+};
+
+const openId = ref<string | null>(null);
+
+function toggleMenu(label: string) {
+  openId.value = openId.value === label ? null : label;
+}
+
+function handleMenuAction(item: MenuItem) {
+  if ('divider' in item) return;
+  openId.value = null;
+  if (item.action === 'create') create.show();
+  else if (item.action === 'join') join.show();
+  else if (item.path) router.push(item.path);
+}
+
+function handleOutsideClick(e: MouseEvent) {
+  const nav = (e.target as HTMLElement).closest('.nav-item-wrapper');
+  if (!nav) openId.value = null;
+}
+
+onMounted(() => document.addEventListener('click', handleOutsideClick));
+onUnmounted(() => document.removeEventListener('click', handleOutsideClick));
 
 const activeIndex = computed(() => {
   if (route.path.startsWith('/pool') || route.path.startsWith('/explore')) return 0;
@@ -41,17 +86,64 @@ const activeIndex = computed(() => {
         BOLÃO<span :style="{ color: 'var(--magenta)' }">·</span>COPA <span :style="{ color: 'var(--cobalt)' }">26</span>
       </div>
       <nav class="font-mono" :style="{ display: 'flex', gap: '18px', marginLeft: '24px' }">
-        <span
+        <div
           v-for="(n, i) in nav"
           :key="n.label"
-          :style="{
-            fontSize: '12px', letterSpacing: '0.14em', fontWeight: 700,
-            padding: '6px 4px',
-            borderBottom: i === activeIndex ? '2px solid var(--magenta)' : '2px solid transparent',
-            cursor: 'pointer',
-          }"
-          @click="router.push(n.path)"
-        >{{ n.label.toUpperCase() }}</span>
+          class="nav-item-wrapper"
+        >
+          <span
+            :style="{
+              fontSize: '12px', letterSpacing: '0.14em', fontWeight: 700,
+              padding: '6px 4px',
+              borderBottom: i === activeIndex ? '2px solid var(--magenta)' : '2px solid transparent',
+              cursor: 'pointer',
+              display: 'inline-flex', alignItems: 'center', gap: '4px',
+              color: openId === n.label ? 'var(--magenta)' : 'var(--ink)',
+              transition: 'color 0.14s ease',
+            }"
+            @click="n.menu ? toggleMenu(n.label) : router.push(n.path)"
+          >
+            {{ n.label.toUpperCase() }}
+            <span
+              v-if="n.menu"
+              :style="{
+                fontSize: '9px', opacity: 0.6,
+                transform: openId === n.label ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.16s ease',
+              }"
+            >▾</span>
+          </span>
+
+          <!-- Dropdown Bolões -->
+          <div
+            v-if="n.menu && openId === n.label"
+            class="nav-dropdown"
+          >
+            <div class="nav-dropdown-notch" />
+            <div class="font-mono nav-dropdown-header">BOLÕES · ATALHOS</div>
+            <template v-for="(item, idx) in n.menu" :key="idx">
+              <div v-if="'divider' in item" class="nav-dropdown-divider" />
+              <div
+                v-else
+                class="nav-dropdown-item"
+                @click="handleMenuAction(item)"
+              >
+                <div
+                  class="font-display nav-dropdown-icon"
+                  :style="{
+                    background: toneVar[item.tone],
+                    color: item.tone === 'lime' ? 'var(--ink)' : 'var(--paper)',
+                  }"
+                >{{ item.icon }}</div>
+                <div :style="{ flex: 1 }">
+                  <div class="font-display" :style="{ fontSize: '15px', lineHeight: 1 }">{{ item.label }}</div>
+                  <div class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.08em', opacity: 0.65, marginTop: '3px' }">{{ item.sub }}</div>
+                </div>
+                <span :style="{ opacity: 0.4, fontSize: '14px' }">→</span>
+              </div>
+            </template>
+          </div>
+        </div>
       </nav>
       <div :style="{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '12px' }">
         <button
@@ -153,5 +245,72 @@ const activeIndex = computed(() => {
 
 .desktop-main {
   flex: 1;
+}
+
+.nav-item-wrapper {
+  position: relative;
+}
+
+/* ── Nav dropdown ── */
+.nav-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: -12px;
+  min-width: 280px;
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  z-index: 100;
+  animation: fadeUp 0.18s ease both;
+}
+
+.nav-dropdown-notch {
+  position: absolute;
+  top: -8px;
+  left: 22px;
+  width: 14px;
+  height: 14px;
+  background: var(--paper);
+  border-top: 1.5px solid var(--ink);
+  border-left: 1.5px solid var(--ink);
+  transform: rotate(45deg);
+}
+
+.nav-dropdown-header {
+  padding: 10px 16px 8px;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  opacity: 0.55;
+  border-bottom: 1.5px dashed var(--ink);
+}
+
+.nav-dropdown-divider {
+  border-top: 1.5px dashed var(--ink);
+  margin: 4px 0;
+}
+
+.nav-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+
+.nav-dropdown-item:hover {
+  background: var(--paper-2);
+}
+
+.nav-dropdown-icon {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  border: 1.5px solid var(--ink);
+  flex-shrink: 0;
 }
 </style>
