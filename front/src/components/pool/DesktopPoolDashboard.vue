@@ -1,25 +1,38 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import FlagImg from '@/components/FlagImg.vue';
+import { computed, onMounted } from 'vue';
 import Avatar from '@/components/Avatar.vue';
 import SectionHead from '@/components/SectionHead.vue';
 import Stamp from '@/components/Stamp.vue';
-import { LEADERBOARD, MEMBERS, STANDINGS_C, TEAMS, toneVar } from '@/data/mock';
-import type { Pool } from '@/types';
+import DesktopMatchCarousel from '@/components/match/DesktopMatchCarousel.vue';
+import DesktopGroupStandings from '@/components/pool/DesktopGroupStandings.vue';
+import { toneVar } from '@/data/mock';
+import { useMatch } from '@/composables/useMatch';
+import { useLeaderboard } from '@/composables/useLeaderboard';
+import type { Pool, Tone } from '@/types';
 
 const props = defineProps<{ pool: Pool }>();
 
+const TONES: Tone[] = ['magenta', 'cobalt', 'lime', 'coral'];
+function deriveTone(id: number): Tone {
+  return TONES[id % TONES.length];
+}
+
+const { upcomingMatches } = useMatch();
+const { leaderboard, myEntry, fetchLeaderboard } = useLeaderboard();
+
+const gameDay = computed(() => {
+  const d = upcomingMatches.value[0]?.gameDay;
+  return d != null ? String(d).padStart(2, '0') : null;
+});
+
 const stats = computed(() => [
-  { v: props.pool.myRank + 'º', l: 'SUA POS.', tone: 'lime' },
-  { v: String(props.pool.myPoints), l: 'PTS', tone: 'magenta' },
-  { v: '3', l: 'EXATOS', tone: 'cobalt' },
-  { v: '12', l: 'ACERTOS', tone: 'coral' },
+  { v: myEntry.value ? myEntry.value.rank + 'º' : '—', l: 'SUA POS.', tone: 'lime' },
+  { v: myEntry.value ? String(myEntry.value.points) : '—', l: 'PTS', tone: 'magenta' },
+  { v: myEntry.value ? String(myEntry.value.exactHits) : '—', l: 'EXATOS', tone: 'cobalt' },
+  { v: myEntry.value ? String(myEntry.value.resultHits) : '—', l: 'ACERTOS', tone: 'coral' },
 ]);
 
-const ranking = computed(() => LEADERBOARD.map(e => ({
-  entry: e,
-  member: MEMBERS.find(m => m.id === e.memberId)!,
-})));
+onMounted(() => fetchLeaderboard(props.pool.id));
 </script>
 
 <template>
@@ -31,20 +44,20 @@ const ranking = computed(() => LEADERBOARD.map(e => ({
       <div :style="{ flex: 1 }">
         <div
           class="font-mono"
-          :style="{ fontSize: '11px', letterSpacing: '0.2em', fontWeight: 700, marginBottom: '8px' }"
+          :style="{ fontSize: '11px', letterSpacing: '0.2em', fontWeight: 700, marginBottom: '12px' }"
         >BOLÃO Nº 01 · DESDE MAI/26</div>
         <div
           class="font-display misprint-magenta"
-          :style="{ fontSize: '80px', lineHeight: 0.88, letterSpacing: '0.01em', textTransform: 'uppercase' }"
+          :style="{ fontSize: '80px', lineHeight: 1, letterSpacing: '0.01em', textTransform: 'uppercase' }"
         >{{ pool.name }}</div>
-        <div :style="{ display: 'flex', gap: '14px', marginTop: '14px', alignItems: 'center' }">
+        <div :style="{ display: 'flex', gap: '14px', marginTop: '18px', alignItems: 'center' }">
           <div class="font-mono" :style="{ fontSize: '11px', letterSpacing: '0.14em' }">
             CÓDIGO <span :style="{ background: 'var(--ink)', color: 'var(--paper)', padding: '2px 8px' }">{{ pool.code }}</span>
           </div>
           <div class="font-mono" :style="{ fontSize: '11px', letterSpacing: '0.14em' }">
             {{ pool.isPublic ? 'PÚBLICO' : 'PRIVADO' }} · {{ pool.members }} SÓCIOS
           </div>
-          <Stamp tone="cobalt" :rotate="-4">RODADA 02 EM CURSO</Stamp>
+          <Stamp v-if="gameDay" tone="cobalt" :rotate="-4">RODADA {{ gameDay }} EM CURSO</Stamp>
         </div>
       </div>
       <div :style="{ display: 'flex', gap: 0, border: '1.5px solid var(--ink)' }">
@@ -54,7 +67,7 @@ const ranking = computed(() => LEADERBOARD.map(e => ({
           :style="{
             padding: '14px 22px', minWidth: '110px',
             background: 'var(--paper-2)',
-            borderRight: i < 3 ? '1.5px solid var(--ink)' : 'none',
+            borderRight: i < stats.length - 1 ? '1.5px solid var(--ink)' : 'none',
             position: 'relative',
           }"
         >
@@ -99,130 +112,45 @@ const ranking = computed(() => LEADERBOARD.map(e => ({
             <span :style="{ fontSize: '9px', letterSpacing: '0.14em', fontWeight: 700, textAlign: 'center' }">PTS</span>
           </div>
           <div
-            v-for="(row, i) in ranking"
-            :key="row.member.id"
+            v-for="(entry, i) in leaderboard"
+            :key="entry.userId"
             :style="{
               display: 'grid', gridTemplateColumns: '40px 1fr 70px 70px 70px 60px',
               padding: '12px 14px',
-              borderBottom: i < ranking.length - 1 ? '1px solid var(--ink)' : 'none',
-              background: row.member.isMe ? 'var(--lime)' : 'transparent',
+              borderBottom: i < leaderboard.length - 1 ? '1px solid var(--ink)' : 'none',
+              background: entry.isMe ? 'var(--lime)' : 'transparent',
               alignItems: 'center',
             }"
           >
-            <span class="font-display" :style="{ fontSize: '22px' }">{{ i + 1 }}</span>
+            <span class="font-display" :style="{ fontSize: '22px' }">{{ entry.rank }}</span>
             <div :style="{ display: 'flex', alignItems: 'center', gap: '10px' }">
-              <Avatar :member="row.member" :size="30" />
+              <Avatar
+                :member="{ id: entry.userId, name: entry.name, handle: '', avatar: '', tone: deriveTone(entry.userId), role: 'MEMBER', isMe: entry.isMe }"
+                :size="30"
+              />
               <div>
                 <div class="font-display" :style="{ fontSize: '15px', lineHeight: 1 }">
-                  {{ row.member.name }}
+                  {{ entry.name }}
                   <span
-                    v-if="row.member.isMe"
+                    v-if="entry.isMe"
                     class="font-mono"
                     :style="{ fontSize: '9px' }"
                   > · VOCÊ</span>
                 </div>
-                <div class="font-mono" :style="{ fontSize: '9px', opacity: 0.6, marginTop: '1px' }">
-                  {{ row.member.handle }}
-                </div>
               </div>
             </div>
-            <span class="font-mono" :style="{ textAlign: 'center', fontSize: '13px' }">{{ row.entry.exact }}</span>
-            <span class="font-mono" :style="{ textAlign: 'center', fontSize: '13px' }">{{ row.entry.result }}</span>
-            <span class="font-mono" :style="{ textAlign: 'center', fontSize: '13px' }">{{ row.entry.guesses }}</span>
-            <span class="font-display" :style="{ textAlign: 'center', fontSize: '22px' }">{{ row.entry.points }}</span>
+            <span class="font-mono" :style="{ textAlign: 'center', fontSize: '13px' }">{{ entry.exactHits }}</span>
+            <span class="font-mono" :style="{ textAlign: 'center', fontSize: '13px' }">{{ entry.resultHits }}</span>
+            <span class="font-mono" :style="{ textAlign: 'center', fontSize: '13px' }">{{ entry.guessesCount }}</span>
+            <span class="font-display" :style="{ textAlign: 'center', fontSize: '22px' }">{{ entry.points }}</span>
           </div>
         </div>
       </div>
 
       <div :style="{ display: 'flex', flexDirection: 'column', gap: '20px' }">
-        <div>
-          <SectionHead kicker="PRÓXIMO JOGO · AMANHÃ" title="FRA × BEL" />
-          <div :style="{ marginTop: '14px' }">
-            <div
-              class="perf-bottom"
-              :style="{
-                background: 'var(--paper-2)', border: '1.5px solid var(--ink)',
-                boxShadow: '5px 5px 0 var(--cobalt), 5px 5px 0 1px var(--ink)',
-                padding: '18px',
-              }"
-            >
-              <div :style="{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: '12px' }">
-                <div :style="{ textAlign: 'center' }">
-                  <FlagImg team="FRA" :size="56" :radius="4" :style="{ boxShadow: '3px 3px 0 var(--ink)' }" />
-                  <div class="font-display" :style="{ fontSize: '22px', marginTop: '8px' }">FRA</div>
-                </div>
-                <div :style="{ textAlign: 'center' }">
-                  <div class="font-display" :style="{ fontSize: '32px', opacity: 0.6 }">VS</div>
-                  <div class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.12em', marginTop: '4px' }">
-                    AMANHÃ · 16:00
-                  </div>
-                </div>
-                <div :style="{ textAlign: 'center' }">
-                  <FlagImg team="BEL" :size="56" :radius="4" :style="{ boxShadow: '3px 3px 0 var(--ink)' }" />
-                  <div class="font-display" :style="{ fontSize: '22px', marginTop: '8px' }">BEL</div>
-                </div>
-              </div>
-              <div :style="{
-                marginTop: '14px', padding: '10px 12px',
-                background: 'var(--ink)', color: 'var(--paper)',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              }">
-                <span class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.12em' }">
-                  SEU PALPITE · 2 × 0
-                </span>
-                <span class="font-display" :style="{ fontSize: '14px', color: 'var(--lime)' }">
-                  EDITAR PALPITE →
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <DesktopMatchCarousel />
 
-        <div>
-          <SectionHead kicker="GRUPO C · TABELA REAL" title="Como está o grupo" />
-          <table :style="{
-            width: '100%', borderCollapse: 'collapse', marginTop: '14px',
-            border: '1.5px solid var(--ink)',
-          }">
-            <thead>
-              <tr :style="{ background: 'var(--ink)', color: 'var(--paper)' }">
-                <th
-                  v-for="(h, i) in ['#','TIME','P','V','E','D','PTS']"
-                  :key="h"
-                  class="font-mono"
-                  :style="{
-                    padding: '6px 8px', fontSize: '9px', letterSpacing: '0.12em', fontWeight: 700,
-                    textAlign: i < 2 ? 'left' : 'center',
-                  }"
-                >{{ h }}</th>
-              </tr>
-            </thead>
-            <tbody :style="{ background: 'var(--paper-2)' }">
-              <tr
-                v-for="(row, i) in STANDINGS_C"
-                :key="row.team"
-                :style="{ borderBottom: i < STANDINGS_C.length - 1 ? '1px solid var(--ink)' : 'none' }"
-              >
-                <td class="font-display" :style="{ padding: '8px 8px', fontSize: '16px' }">
-                  {{ i + 1 }}<span v-if="i < 2" :style="{ color: 'var(--lime)', marginLeft: '4px' }">●</span>
-                </td>
-                <td :style="{ padding: '8px 4px' }">
-                  <div :style="{ display: 'flex', alignItems: 'center', gap: '8px' }">
-                    <FlagImg :team="row.team" :size="16" :radius="2" />
-                    <span class="font-display" :style="{ fontSize: '14px' }">{{ TEAMS[row.team].code }}</span>
-                  </div>
-                </td>
-                <td
-                  v-for="k in (['P','V','E','D'] as const)"
-                  :key="k"
-                  class="font-mono"
-                  :style="{ textAlign: 'center', fontSize: '12px', padding: '8px 0' }"
-                >{{ row[k] }}</td>
-                <td class="font-display" :style="{ textAlign: 'center', fontSize: '18px' }">{{ row.pts }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <DesktopGroupStandings />
       </div>
     </div>
   </div>

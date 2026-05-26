@@ -67,6 +67,25 @@ class MatchController extends Controller
     }
 
     #[OA\Get(
+        path: '/api/matches/upcoming',
+        summary: 'Lista partidas do próximo game day ainda não finalizado',
+        security: [['sanctum' => []]],
+        tags: ['Matches'],
+        responses: [
+            new OA\Response(response: 200, description: 'Partidas do próximo game day'),
+        ]
+    )]
+    public function upcomingMatches(): Response
+    {
+        $matches = $this->matchRepository->findNextGameDayMatches();
+
+        return response()->json(
+            $this->matchTransformer->collection($matches, 'Próximas partidas'),
+            200
+        );
+    }
+
+    #[OA\Get(
         path: '/api/stages/matches',
         summary: 'Lista partidas de uma fase específica',
         security: [['sanctum' => []]],

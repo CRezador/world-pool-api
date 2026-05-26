@@ -22,9 +22,11 @@ export interface User {
 };
 
 export interface Team {
+  id: number;
   name: string;
   code: string;
-  iso: string;
+  flag_code: string;
+  flag_url: string;
   group: string;
 }
 
@@ -36,8 +38,21 @@ export interface Match {
   stage: Stage;
   group: string;
   status: MatchStatus;
-  home: string;
-  away: string;
+  home: Team | string;
+  away: Team | string;
+  homeScore?: number;
+  awayScore?: number;
+}
+
+export interface ApiMatch {
+  id: number;
+  gameDay: number;
+  kickoff: string | null;
+  stage: Stage;
+  group: string | null;
+  status: MatchStatus;
+  home: Team;
+  away: Team;
   homeScore?: number;
   awayScore?: number;
 }
@@ -66,12 +81,14 @@ export interface Pool {
 }
 
 export interface LeaderboardEntry {
-  memberId: number;
+  rank: number;
+  userId: number;
+  name: string;
   points: number;
-  exact: number;
-  result: number;
-  guesses: number;
-  trend: 'up' | 'down' | 'same';
+  exactHits: number;
+  resultHits: number;
+  guessesCount: number;
+  isMe: boolean;
 }
 
 export interface StandingRow {
@@ -83,4 +100,21 @@ export interface StandingRow {
   GP: number;
   GC: number;
   pts: number;
+}
+
+export interface TeamStanding {
+  position: number;
+  team: string;
+  code: string;
+  crest: string;
+  played: number;
+  won: number;
+  draw: number;
+  lost: number;
+  points: number;
+}
+
+export interface GroupStanding {
+  group: string;
+  table: TeamStanding[];
 }

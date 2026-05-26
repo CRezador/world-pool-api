@@ -5,14 +5,13 @@ import SectionHead from '@/components/SectionHead.vue';
 import PrintButton from '@/components/PrintButton.vue';
 import LiveTicker from '@/components/LiveTicker.vue';
 import PoolCard from '@/components/pool/PoolCard.vue';
-import MatchPreview from '@/components/match/MatchPreview.vue';
+import MatchCarousel from '@/components/match/MatchCarousel.vue';
 import { MATCHES, POOLS } from '@/data/mock';
 import { useJoinModal } from '@/composables/useJoinModal';
 
 const router = useRouter();
 const join = useJoinModal();
 const liveMatch = MATCHES.find(m => m.status === 'IN_PROGRESS');
-const nextMatch = MATCHES[3];
 </script>
 
 <template>
@@ -43,12 +42,7 @@ const nextMatch = MATCHES[3];
       </PrintButton>
     </div>
 
-    <div :style="{ padding: '6px 18px 0' }">
-      <SectionHead kicker="PRÓXIMA RODADA · GRUPO C" title="Brasil em campo amanhã" />
-    </div>
-    <div :style="{ padding: '12px 18px 18px' }">
-      <MatchPreview :match="nextMatch" />
-    </div>
+    <MatchCarousel />
 
     <div :style="{
       padding: '18px',

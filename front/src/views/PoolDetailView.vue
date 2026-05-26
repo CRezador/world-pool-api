@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import PoolHeader from '@/components/pool/PoolHeader.vue';
 import PoolRankTab from '@/components/pool/tabs/PoolRankTab.vue';
@@ -8,12 +8,14 @@ import PoolGuessesTab from '@/components/pool/tabs/PoolGuessesTab.vue';
 import PoolConfigTab from '@/components/pool/tabs/PoolConfigTab.vue';
 import RefreshIndicator from '@/components/RefreshIndicator.vue';
 import DesktopPoolDashboard from '@/components/pool/DesktopPoolDashboard.vue';
-import { findPool } from '@/data/mock';
+import { usePools } from '@/composables/usePools';
 import { useBreakpoint } from '@/composables/useBreakpoint';
 
 const route = useRoute();
 const { isDesktop } = useBreakpoint();
-const pool = computed(() => findPool(route.params.id as string));
+const { currentPool: pool, fetchPoolById } = usePools();
+
+onMounted(() => fetchPoolById(route.params.id as string));
 
 const tab = ref<'rank' | 'members' | 'guesses' | 'config'>('rank');
 const refreshing = ref(false);
@@ -32,8 +34,8 @@ function onRefresh() {
 </script>
 
 <template>
-  <DesktopPoolDashboard v-if="isDesktop" :pool="pool" />
-  <div v-else :style="{ background: 'var(--paper)', minHeight: '100%' }">
+  <DesktopPoolDashboard v-if="isDesktop && pool" :pool="pool" />
+  <div v-else-if="pool" :style="{ background: 'var(--paper)', minHeight: '100%' }">
     <PoolHeader :pool="pool" />
 
     <div :style="{

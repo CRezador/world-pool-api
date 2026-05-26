@@ -4,16 +4,19 @@ namespace App\Http\Transformers\MatchTransformers;
 
 use App\Http\Enums\MatchStage;
 use App\Http\Transformers\BaseTransformers\BaseTransformer;
+use App\Http\Transformers\TeamTransformers\TeamTransformer;
 
 class MatchTransformer extends BaseTransformer
 {
     public function transform(mixed $match): array
     {
+        $teamTransformer = new TeamTransformer();
+
         return [
             'id' => $match->id,
             'game_day' => $match->game_day,
-            'home_team' => $match->homeTeam->name,
-            'away_team' => $match->awayTeam->name,
+            'home_team' => $teamTransformer->transform($match->homeTeam),
+            'away_team' => $teamTransformer->transform($match->awayTeam),
             'stage' => $match->stage->name,
             'group' => $match->stage->name === 'GROUP_STAGE'
               ? $match->group->name

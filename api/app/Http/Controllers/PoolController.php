@@ -52,7 +52,7 @@ class PoolController extends Controller
     )]
     public function myPools(Request $request): Response
     {
-        $pools = $this->poolReadService->getPoolsByUserId($request->user()->id);
+        $pools = $this->poolReadService->getMyPoolsWithStats($request->user()->id);
 
         return response()->json(
             $this->poolTransformer->collection($pools, 'Lista de bolões do usuário'),

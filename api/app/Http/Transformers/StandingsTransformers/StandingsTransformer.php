@@ -25,6 +25,7 @@ class StandingsTransformer extends BaseTransformer
                 return [
                     'position'      => $row['position'],
                     'team'          => $team?->name ?? $row['team']['name'],
+                    'code'          => $team?->code ?? $row['team']['tla'],
                     'crest'         => $team?->flag_code
                         ? "https://flagcdn.com/{$team->flag_code}.svg"
                         : $row['team']['crest'],

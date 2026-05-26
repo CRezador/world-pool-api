@@ -192,7 +192,6 @@ const stats = [
             <div style="width: 18px; height: 18px; border: 1.5px solid var(--ink); background: var(--ink); color: var(--lime); display: flex; align-items: center; justify-content: center; font-size: 13px;">✓</div>
             <span class="font-mono" style="font-size: 11px; letter-spacing: 0.12em;">LEMBRAR DE MIM</span>
           </label>
-          <Stamp tone="cobalt" :rotate="-5">SEGURO · SANCTUM</Stamp>
         </div>
 
         <PerfDivider />
