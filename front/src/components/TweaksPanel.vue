@@ -64,6 +64,10 @@ const accents: Array<{ value: 'magenta' | 'cobalt' | 'lime'; label: string }> = 
   bottom: 18px;
   right: 18px;
   z-index: 100;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 12px;
 }
 
 .tweaks-fab {
@@ -80,9 +84,6 @@ const accents: Array<{ value: 'magenta' | 'cobalt' | 'lime'; label: string }> = 
 }
 
 .tweaks-panel {
-  position: absolute;
-  bottom: 64px;
-  right: 0;
   background: var(--paper);
   border: 1.5px solid var(--ink);
   box-shadow: 4px 4px 0 var(--ink);

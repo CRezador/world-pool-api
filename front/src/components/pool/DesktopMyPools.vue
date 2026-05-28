@@ -8,6 +8,7 @@ import { toneVar } from '@/data/mock';
 import { usePools } from '@/composables/usePools';
 import { useJoinModal } from '@/composables/useJoinModal';
 import { useCreatePoolModal } from '@/composables/useCreatePoolModal';
+import DesktopActivityFeed from './DesktopActivityFeed.vue';
 
 const router = useRouter();
 const join = useJoinModal();
@@ -44,31 +45,6 @@ const stats = computed(() => [
 ]);
 
 
-interface ActivityItem {
-  pool: string; accent: string; who: string; what: string;
-  pts: string; when: string; isMe?: boolean; isPending?: boolean;
-}
-
-const activity: ActivityItem[] = [
-  { pool: 'Resenha do Bar',  accent: 'magenta', who: 'Helena V.',  what: 'cravou BRA 2×1 CRO', pts: '+3', when: 'há 2 min' },
-  { pool: 'Resenha do Bar',  accent: 'magenta', who: 'Você',       what: 'cravou BRA 2×1 CRO', pts: '+3', when: 'há 4 min', isMe: true },
-  { pool: 'Trampo FC',       accent: 'cobalt',  who: 'Diretoria',  what: 'acertou vencedor',   pts: '+1', when: 'há 9 min' },
-  { pool: 'Geral Brasil',    accent: 'lime',    who: '@neto88',    what: 'cravou MEX 1×0 USA', pts: '+3', when: 'há 22 min' },
-  { pool: 'Resenha do Bar',  accent: 'magenta', who: 'Diego K.',   what: 'errou JPN 1×1 GER',  pts: '0',  when: 'há 1h' },
-  { pool: 'Trampo FC',       accent: 'cobalt',  who: 'Você',       what: 'palpitou FRA 2×0 BEL', pts: 'pendente', when: 'há 1h', isMe: true, isPending: true },
-  { pool: 'Geral Brasil',    accent: 'lime',    who: '@duda_rj',   what: 'acertou vencedor',   pts: '+1', when: 'há 2h' },
-];
-
-function ptsBg(act: ActivityItem) {
-  if (act.isPending) return 'transparent';
-  if (act.pts === '0') return 'var(--paper-3)';
-  if (act.pts === '+3') return 'var(--lime)';
-  return 'var(--cobalt)';
-}
-function ptsFg(act: ActivityItem) {
-  if (act.isPending || act.pts === '+3' || act.pts === '0') return 'var(--ink)';
-  return 'var(--paper)';
-}
 </script>
 
 <template>
@@ -205,67 +181,7 @@ function ptsFg(act: ActivityItem) {
       <div :style="{ padding: '22px 24px', background: 'var(--paper-2)' }">
         <DesktopUpcomingMatches />
 
-        <div
-          class="font-mono"
-          :style="{ fontSize: '10px', letterSpacing: '0.2em', fontWeight: 700, marginBottom: '4px' }"
-        >ATIVIDADE · ÚLTIMOS LANCES</div>
-        <div
-          class="font-display"
-          :style="{ fontSize: '20px', marginBottom: '12px', textTransform: 'uppercase' }"
-        >no calor da mesa</div>
-        <div :style="{ display: 'flex', flexDirection: 'column', gap: 0 }">
-          <div
-            v-for="(act, i) in activity"
-            :key="i"
-            :style="{
-              display: 'flex', alignItems: 'flex-start', gap: '10px',
-              padding: '10px 0',
-              borderBottom: i < activity.length - 1 ? '1px dashed var(--ink)' : 'none',
-              background: act.isMe ? 'rgba(212, 247, 92, 0.16)' : 'transparent',
-              marginLeft: act.isMe ? '-8px' : 0, marginRight: act.isMe ? '-8px' : 0,
-              paddingLeft: act.isMe ? '8px' : 0, paddingRight: act.isMe ? '8px' : 0,
-            }"
-          >
-            <div :style="{
-              width: '6px', alignSelf: 'stretch', background: toneVar(act.accent),
-              flexShrink: 0,
-            }" />
-            <div :style="{ flex: 1, minWidth: 0 }">
-              <div
-                class="font-mono"
-                :style="{ fontSize: '9px', letterSpacing: '0.14em', fontWeight: 700, opacity: 0.7 }"
-              >{{ act.pool.toUpperCase() }} · {{ act.when.toUpperCase() }}</div>
-              <div :style="{ fontSize: '12px', marginTop: '2px' }">
-                <b>{{ act.who }}</b> {{ act.what }}
-              </div>
-            </div>
-            <span
-              class="font-display"
-              :style="{
-                padding: '3px 7px', fontSize: '12px',
-                background: ptsBg(act),
-                border: act.isPending ? '1.5px dashed var(--ink)' : 'none',
-                color: ptsFg(act),
-                letterSpacing: '0.02em',
-                borderRadius: '2px',
-                whiteSpace: 'nowrap',
-              }"
-            >{{ act.pts }}</span>
-          </div>
-        </div>
-
-        <div :style="{
-          marginTop: '18px', padding: '12px 14px',
-          border: '1.5px dashed var(--ink)', borderRadius: '4px',
-        }">
-          <div
-            class="font-mono"
-            :style="{ fontSize: '10px', letterSpacing: '0.16em', fontWeight: 700 }"
-          >· COMO SUBIR NA TABELA</div>
-          <div :style="{ fontSize: '12px', marginTop: '4px', lineHeight: 1.45 }">
-            Placar exato paga <b>+3</b>. Só vencedor, <b>+1</b>. Errou tudo? Próximo jogo, mestre.
-          </div>
-        </div>
+        <DesktopActivityFeed />
       </div>
     </div>
   </div>

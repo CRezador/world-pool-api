@@ -79,6 +79,15 @@ class GuessRepository
             ->toArray();
     }
 
+    public function recentActivityForPools(array $poolIds, int $limit = 20): Collection
+    {
+        return Guess::whereIn('pool_id', $poolIds)
+            ->with(['user', 'pool', 'match.homeTeam', 'match.awayTeam'])
+            ->orderByDesc('created_at')
+            ->limit($limit)
+            ->get();
+    }
+
     public function aggregateStatsByUserAndPool(int $poolId, int $userId): array
     {
         $result = Guess::where('guesses.pool_id', $poolId)

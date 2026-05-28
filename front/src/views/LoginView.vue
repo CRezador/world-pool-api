@@ -155,7 +155,7 @@ const stats = [
 
       <!-- form ticket card -->
       <div class="form-ticket perf-bottom">
-        <div class="font-mono" style="position: absolute; top: 10px; right: 14px; font-size: 9px; letter-spacing: 0.18em; opacity: 0.5;">
+        <div class="form-ticket-serial font-mono">
           Nº 26·0001·{{ mode === 'login' ? 'IN' : 'RG' }}
         </div>
 
@@ -260,9 +260,7 @@ const stats = [
       </div>
     </div>
 
-    <div :style="{ color: 'var(--cobalt)', height: '60px', position: 'relative', overflow: 'hidden' }">
-      <div class="halftone-lg" :style="{ position: 'absolute', inset: 0 }" />
-    </div>
+    <div class="halftone-lg" :style="{ color: 'var(--cobalt)', height: '60px' }" />
 
     <div :style="{ padding: '20px 22px 0' }">
       <TicketCard accent="magenta">
@@ -387,7 +385,6 @@ const stats = [
   padding: 32px 48px;
   display: flex;
   flex-direction: column;
-  position: relative;
   background: var(--paper);
 }
 
@@ -411,7 +408,16 @@ const stats = [
   background: var(--paper-2);
   border: 1.5px solid var(--ink);
   box-shadow: 6px 6px 0 var(--magenta), 6px 6px 0 1px var(--ink);
-  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-ticket-serial {
+  align-self: flex-end;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  opacity: 0.5;
+  margin-bottom: 8px;
 }
 
 .social-btn {

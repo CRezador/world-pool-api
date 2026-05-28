@@ -4,7 +4,7 @@ import { ref } from "vue";
 
 const TONES: Tone[] = ['magenta', 'cobalt', 'lime', 'coral'];
 
-function deriveAccent(id: number | string): Tone {
+export function deriveAccent(id: number | string): Tone {
     return TONES[Number(id) % TONES.length];
 }
 
@@ -20,8 +20,9 @@ function mapPool(p: any): Pool {
         isPublic: p.is_public ?? false,
         myRank: p.my_rank ?? 0,
         myPoints: p.my_points ?? 0,
-        leader: p.owner ?? '',
-        leaderPoints: p.leader_points ?? 0,
+        leader: p.leader?.name ?? 'TBD',
+        leaderPoints: p.leader?.points ?? 0,
+        lastResults: p.last_results ?? [],
         accent: deriveAccent(p.id),
     };
 }

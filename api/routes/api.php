@@ -7,6 +7,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\GuessController;
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\PoolController;
 use App\Http\Controllers\PoolMemberController;
@@ -45,6 +46,8 @@ Route::middleware('auth:sanctum')->group(
         Route::post('/pools', [PoolController::class, 'store']);
         Route::get('/pools', [PoolController::class, 'index']);
         Route::get('/me/pools', [PoolController::class, 'myPools']);
+        Route::get('/me/stats', [LeaderboardController::class, 'myStats']);
+        Route::get('/me/activity', [ActivityController::class, 'myActivity']);
         Route::get('/pools/{id}', [PoolController::class, 'show']);
         Route::delete('/pools/{id}', [PoolController::class, 'destroy']);
         Route::post('/pools/join', [PoolController::class, 'join']);

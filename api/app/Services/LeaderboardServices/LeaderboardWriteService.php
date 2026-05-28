@@ -47,6 +47,7 @@ class LeaderboardWriteService
             foreach ($entries as $entry) {
                 $this->syncUser($poolId, $entry->user_id);
             }
+            $this->leaderboardRepository->updateRanks($poolId);
         });
     }
 }

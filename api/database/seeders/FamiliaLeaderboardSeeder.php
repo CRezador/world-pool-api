@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Repositories\LeaderboardRepositories\LeaderboardRepository;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -70,6 +71,8 @@ class FamiliaLeaderboardSeeder extends Seeder
                 ])
             );
         }
+
+        app(LeaderboardRepository::class)->updateRanks($poolId);
 
         $this->command->info("Leaderboard do Bolão da Família populado com {$members->count()} membros.");
     }

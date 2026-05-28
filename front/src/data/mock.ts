@@ -1,5 +1,5 @@
 import type {
-  Team, Match, Member, Pool, StandingRow,
+  Team, Match, Member, Pool, StandingRow, ActivityItem,
 } from '@/types';
 
 // iso = flagcdn.com country code. Special: gb-eng = England, gb-sct = Scotland.
@@ -107,6 +107,7 @@ export const POOLS: Pool[] = [
     myPoints: 21,
     leader: 'Helena Vasques',
     leaderPoints: 28,
+    lastResults: [3, 1, 3],
     accent: 'magenta',
   },
   {
@@ -119,6 +120,7 @@ export const POOLS: Pool[] = [
     myPoints: 15,
     leader: 'Diretoria',
     leaderPoints: 32,
+    lastResults: [1, 0, 1],
     accent: 'cobalt',
   },
   {
@@ -131,6 +133,7 @@ export const POOLS: Pool[] = [
     myPoints: 18,
     leader: '@neto88',
     leaderPoints: 41,
+    lastResults: [3, 0, 1],
     accent: 'lime',
   },
 ];
@@ -186,6 +189,100 @@ export const TONE_TO_VAR: Record<string, string> = {
   ink: 'var(--ink)',
   paper: 'var(--paper)',
 };
+
+function ago(ms: number): string {
+  return new Date(Date.now() - ms).toISOString();
+}
+
+// Pools do seeder: id 1 = Bolão da Família, id 2 = Bolão Público, id 3 = Bolão do Trampo
+// Usuários do seeder: alice (isMe), User01–User10, bob, carol
+// Partidas finalizadas: BRA 2×1 MEX, ARG 1×1 FRA, ESP 3×0 POR, GHA 0×2 BEL, JPN 1×2 COL
+export const ACTIVITY_FEED: ActivityItem[] = [
+  {
+    id: 1, poolId: 1, poolName: 'Bolão da Família',
+    createdAt: ago(2 * 60_000),
+    actor: 'User01', isMe: false,
+    action: 'cravou', subject: 'BRA 2×1 MEX', points: 3,
+  },
+  {
+    id: 2, poolId: 1, poolName: 'Bolão da Família',
+    createdAt: ago(4 * 60_000),
+    actor: 'Alice', isMe: true,
+    action: 'acertou', subject: 'vencedor', points: 1,
+  },
+  {
+    id: 3, poolId: 3, poolName: 'Bolão do Trampo',
+    createdAt: ago(9 * 60_000),
+    actor: 'Carol', isMe: false,
+    action: 'cravou', subject: 'ESP 3×0 POR', points: 3,
+  },
+  {
+    id: 4, poolId: 2, poolName: 'Bolão Público',
+    createdAt: ago(22 * 60_000),
+    actor: 'Bob', isMe: false,
+    action: 'errou', subject: 'ARG 0×0 FRA', points: 0,
+  },
+  {
+    id: 5, poolId: 1, poolName: 'Bolão da Família',
+    createdAt: ago(60 * 60_000),
+    actor: 'User03', isMe: false,
+    action: 'errou', subject: 'JPN 2×3 COL', points: 0,
+  },
+  {
+    id: 6, poolId: 3, poolName: 'Bolão do Trampo',
+    createdAt: ago(65 * 60_000),
+    actor: 'Alice', isMe: true,
+    action: 'palpitou', subject: 'GER 1×1 ESP', points: null,
+  },
+  {
+    id: 7, poolId: 2, poolName: 'Bolão Público',
+    createdAt: ago(2 * 3_600_000),
+    actor: 'User02', isMe: false,
+    action: 'acertou', subject: 'vencedor', points: 1,
+  },
+  {
+    id: 8, poolId: 1, poolName: 'Bolão da Família',
+    createdAt: ago(3 * 3_600_000),
+    actor: 'Bob', isMe: false,
+    action: 'cravou', subject: 'URU 2×0 CAN', points: 3,
+  },
+  {
+    id: 9, poolId: 3, poolName: 'Bolão do Trampo',
+    createdAt: ago(4 * 3_600_000),
+    actor: 'User04', isMe: false,
+    action: 'errou', subject: 'ESP 2×1 POR', points: 0,
+  },
+  {
+    id: 10, poolId: 2, poolName: 'Bolão Público',
+    createdAt: ago(5 * 3_600_000),
+    actor: 'User05', isMe: false,
+    action: 'acertou', subject: 'vencedor', points: 1,
+  },
+  {
+    id: 11, poolId: 1, poolName: 'Bolão da Família',
+    createdAt: ago(6 * 3_600_000),
+    actor: 'Alice', isMe: true,
+    action: 'cravou', subject: 'ESP 3×0 POR', points: 3,
+  },
+  {
+    id: 12, poolId: 3, poolName: 'Bolão do Trampo',
+    createdAt: ago(8 * 3_600_000),
+    actor: 'User07', isMe: false,
+    action: 'palpitou', subject: 'USA 1×1 CAN', points: null,
+  },
+  {
+    id: 13, poolId: 2, poolName: 'Bolão Público',
+    createdAt: ago(9 * 3_600_000),
+    actor: 'User08', isMe: false,
+    action: 'cravou', subject: 'GHA 0×2 BEL', points: 3,
+  },
+  {
+    id: 14, poolId: 1, poolName: 'Bolão da Família',
+    createdAt: ago(12 * 3_600_000),
+    actor: 'Alice', isMe: true,
+    action: 'acertou', subject: 'vencedor', points: 1,
+  },
+];
 
 export function toneVar(tone: string | undefined): string {
   return TONE_TO_VAR[tone || 'ink'] || 'var(--ink)';

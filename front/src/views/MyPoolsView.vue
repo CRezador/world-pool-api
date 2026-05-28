@@ -1,44 +1,59 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Masthead from '@/components/Masthead.vue';
 import ChipToggle from '@/components/ChipToggle.vue';
 import PrintButton from '@/components/PrintButton.vue';
 import MyPoolCard from '@/components/pool/MyPoolCard.vue';
 import DesktopMyPools from '@/components/pool/DesktopMyPools.vue';
-import { POOLS, toneVar } from '@/data/mock';
+import ActivityFeed from '@/components/pool/ActivityFeed.vue';
+import { toneVar } from '@/data/mock';
 import { useBreakpoint } from '@/composables/useBreakpoint';
 import { useJoinModal } from '@/composables/useJoinModal';
+import { usePools } from '@/composables/usePools';
+import { useLeaderboard } from '@/composables/useLeaderboard';
+import { useActivity } from '@/composables/useActivity';
 
 const router = useRouter();
 const { isDesktop } = useBreakpoint();
 const join = useJoinModal();
+const { pools: allPools, fetchMyPools } = usePools();
+const { myStats, fetchMyStats } = useLeaderboard();
+const { activity, fetchActivity } = useActivity();
+
+onMounted(() => Promise.all([fetchMyPools(), fetchMyStats(), fetchActivity()]));
 
 const filters = ['TODOS', 'PRIVADOS', 'PÚBLICOS'];
 const filter = ref('TODOS');
 
-const pools = computed(() => POOLS.filter(p => {
+const pools = computed(() => allPools.value.filter(p => {
   if (filter.value === 'PRIVADOS') return !p.isPublic;
   if (filter.value === 'PÚBLICOS') return p.isPublic;
   return true;
 }));
 
-const totalPts = POOLS.reduce((s, p) => s + p.myPoints, 0);
-const totalExacts = 8;
-const bestRank = Math.min(...POOLS.map(p => p.myRank));
+const stats = computed(() => [
+  { l: 'BOLÕES',      v: myStats.value ? String(myStats.value.poolsCount)       : '—', tone: 'magenta' },
+  { l: 'PTS TOTAIS',  v: myStats.value ? String(myStats.value.totalPoints)      : '—', tone: 'cobalt' },
+  { l: 'CRAVADAS',    v: myStats.value ? String(myStats.value.totalExactHits)   : '—', tone: 'lime' },
+  { l: 'MELHOR POS.', v: myStats.value?.bestRank ? myStats.value.bestRank + 'º' : '—', tone: 'coral', small: true },
+]);
 
-const stats = [
-  { l: 'BOLÕES',      v: String(POOLS.length), tone: 'magenta' },
-  { l: 'PTS TOTAIS',  v: String(totalPts),     tone: 'cobalt' },
-  { l: 'CRAVADAS',    v: String(totalExacts),  tone: 'lime' },
-  { l: 'MELHOR POS.', v: bestRank + 'º',       tone: 'coral', small: true },
-];
-
-const activity: Record<string, { result: string; detail: string; tone: string }> = {
-  'pool-resenha': { result: '+3', detail: 'BRA 2×1 CRO · cravou',   tone: 'lime' },
-  'pool-trampo':  { result: '+1', detail: 'BRA 2×1 CRO · vencedor', tone: 'cobalt' },
-  'pool-publico': { result:  '0', detail: 'BRA 2×1 CRO · errou',    tone: 'paper-3' },
-};
+const lastActivityByPool = computed(() => {
+  const map: Record<string, { result: string; detail: string; tone: string }> = {};
+  for (const item of activity.value) {
+    const key = String(item.poolId);
+    if (!map[key]) {
+      const pts = item.points;
+      map[key] = {
+        result: pts === null ? '?' : pts > 0 ? `+${pts}` : '0',
+        detail: `${item.subject} · ${item.action}`,
+        tone: pts === 3 ? 'lime' : pts === 1 ? 'cobalt' : 'paper-3',
+      };
+    }
+  }
+  return map;
+});
 </script>
 
 <template>
@@ -47,7 +62,7 @@ const activity: Record<string, { result: string; detail: string; tone: string }>
     <Masthead
       kicker="EDIÇÃO Nº 04 · MEUS BOLÕES"
       title="MEUS BOLÕES"
-      :sub="`${POOLS.length} ATIVOS`"
+      :sub="`${allPools.length} ATIVOS`"
     />
 
     <div :style="{
@@ -114,7 +129,7 @@ const activity: Record<string, { result: string; detail: string; tone: string }>
         :key="p.id"
         :pool="p"
         :index="i + 1"
-        :activity="activity[p.id]"
+        :activity="lastActivityByPool[p.id]"
         @click="router.push(`/pool/${p.id}`)"
       />
 
@@ -180,6 +195,10 @@ const activity: Record<string, { result: string; detail: string; tone: string }>
           @click="router.push('/explore')"
         >Explorar públicos →</span>
       </div>
+    </div>
+
+    <div :style="{ borderTop: '1.5px solid var(--ink)', marginTop: '18px', paddingTop: '18px' }">
+      <ActivityFeed :items="activity" />
     </div>
   </div>
 </template>

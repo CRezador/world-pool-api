@@ -77,6 +77,7 @@ export interface Pool {
   myPoints: number;
   leader: string;
   leaderPoints: number;
+  lastResults: number[];
   accent: Tone;
 }
 
@@ -117,4 +118,18 @@ export interface TeamStanding {
 export interface GroupStanding {
   group: string;
   table: TeamStanding[];
+}
+
+export type ActivityAction = 'cravou' | 'acertou' | 'errou' | 'palpitou';
+
+export interface ActivityItem {
+  id: number;
+  poolId: number;
+  poolName: string;
+  createdAt: string;
+  actor: string;
+  isMe: boolean;
+  action: ActivityAction;
+  subject: string;
+  points: number | null;
 }

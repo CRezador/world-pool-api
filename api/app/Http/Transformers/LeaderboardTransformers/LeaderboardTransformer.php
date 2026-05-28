@@ -8,8 +8,8 @@ class LeaderboardTransformer extends BaseTransformer
 {
     public function transform(mixed $leaderboard): array
     {
-        return [
-            'rank'          => $leaderboard->rank,
+        $data = [
+            'rank'          => $leaderboard->position,
             'user'          => [
                 'id'   => $leaderboard->user->id,
                 'name' => $leaderboard->user->name,
@@ -20,5 +20,11 @@ class LeaderboardTransformer extends BaseTransformer
             'guesses_count' => $leaderboard->guesses_count,
             'updated_at'    => $leaderboard->updated_at?->toDateTimeString(),
         ];
+
+        if (isset($leaderboard->last_results)) {
+            $data['last_results'] = $leaderboard->last_results;
+        }
+
+        return $data;
     }
 }

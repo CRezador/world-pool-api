@@ -18,7 +18,16 @@ function deriveTone(id: number): Tone {
 }
 
 const { upcomingMatches } = useMatch();
-const { leaderboard, myEntry, fetchLeaderboard } = useLeaderboard();
+const { leaderboard, myEntry, myPoolEntry, fetchLeaderboard } = useLeaderboard();
+
+function chipBg(n: number) {
+  if (n === 3) return 'var(--lime)';
+  if (n > 0)  return 'var(--cobalt)';
+  return 'var(--paper-3)';
+}
+function chipFg(n: number) {
+  return n === 3 || n === 0 ? 'var(--ink)' : 'var(--paper)';
+}
 
 const gameDay = computed(() => {
   const d = upcomingMatches.value[0]?.gameDay;
@@ -67,7 +76,7 @@ onMounted(() => fetchLeaderboard(props.pool.id));
           :style="{
             padding: '14px 22px', minWidth: '110px',
             background: 'var(--paper-2)',
-            borderRight: i < stats.length - 1 ? '1.5px solid var(--ink)' : 'none',
+            borderRight: '1.5px solid var(--ink)',
             position: 'relative',
           }"
         >
@@ -82,6 +91,27 @@ onMounted(() => fetchLeaderboard(props.pool.id));
             position: 'absolute', bottom: 0, left: 0, right: 0, height: '4px',
             background: toneVar(s.tone),
           }" />
+        </div>
+        <div :style="{ padding: '14px 22px', background: 'var(--paper-2)', position: 'relative' }">
+          <div
+            class="font-mono"
+            :style="{ fontSize: '9px', letterSpacing: '0.16em', fontWeight: 700, opacity: 0.7 }"
+          >ÚLTIMOS 3</div>
+          <div :style="{ display: 'flex', gap: '4px', marginTop: '8px' }">
+            <template v-if="myPoolEntry?.lastResults.length">
+              <span
+                v-for="(n, i) in myPoolEntry.lastResults"
+                :key="i"
+                class="font-display"
+                :style="{
+                  minWidth: '32px', padding: '3px 6px', textAlign: 'center',
+                  background: chipBg(n), color: chipFg(n),
+                  fontSize: '20px', border: '1px solid var(--ink)',
+                }"
+              >{{ n > 0 ? `+${n}` : '0' }}</span>
+            </template>
+            <span v-else class="font-display" :style="{ fontSize: '20px', opacity: 0.4 }">—</span>
+          </div>
         </div>
       </div>
     </div>

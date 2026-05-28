@@ -51,10 +51,7 @@ class PoolRepository
     {
         return Pool::with('owner')
             ->withCount(['members as members_count' => fn($q) => $q->where('status', 'ACTIVE')])
-            ->select('pools.*')
-            ->join('pool_members', 'pool_members.pool_id', '=', 'pools.id')
-            ->where('pool_members.user_id', $userId)
-            ->where('pool_members.status', 'ACTIVE')
+            ->whereHas('members', fn($q) => $q->where('user_id', $userId)->where('status', 'ACTIVE'))
             ->get();
     }
 }

@@ -17,14 +17,12 @@ const ratio = computed(() =>
 );
 const fmt = new Intl.NumberFormat('pt-BR');
 
-const last3 = computed<string[]>(() => {
-  if (props.pool.id === 'pool-resenha') return ['+3', '+1', '+3'];
-  if (props.pool.id === 'pool-trampo') return ['+1', '0', '+1'];
-  return ['+3', '0', '+1'];
-});
+const last3 = computed<string[]>(() =>
+  props.pool.lastResults.map(n => n > 0 ? `+${n}` : '0'),
+);
 
 function chipColor(r: string) {
-  return r === '+3' ? 'lime' : r === '+1' ? 'cobalt' : 'paper-3';
+  return r === '+3' ? 'lime' : r !== '0' ? 'cobalt' : 'paper-3';
 }
 function chipBg(r: string) {
   const c = chipColor(r);
@@ -40,14 +38,13 @@ function chipFg(r: string) {
   <div
     class="perf-bottom"
     :style="{
-      position: 'relative', cursor: 'pointer',
+      position: 'relative',
       background: 'var(--paper-2)',
       border: '1.5px solid var(--ink)',
       boxShadow: `6px 6px 0 ${accentVar}, 6px 6px 0 1px var(--ink)`,
       borderRadius: '6px', overflow: 'hidden',
       display: 'grid', gridTemplateColumns: '54px 1fr', gap: 0,
     }"
-    @click="router.push(`/pool/${pool.id}`)"
   >
     <div :style="{
       background: accentVar,

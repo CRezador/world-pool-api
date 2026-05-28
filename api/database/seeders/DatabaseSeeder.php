@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             TeamsSeeder::class,
             PoolsSeeder::class,
             PoolMembersSeeder::class,
+            FinishedMatchesSeeder::class,
             GuessesSeeder::class,
             LeaderboardSeeder::class,
         ]);
