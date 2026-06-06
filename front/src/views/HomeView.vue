@@ -9,11 +9,13 @@ import PoolCard from '@/components/pool/PoolCard.vue';
 import MatchCarouselMobile from '@/components/match/MatchCarouselMobile.vue';
 import { MATCHES } from '@/data/mock';
 import { useJoinModal } from '@/composables/useJoinModal';
+import { useCreatePoolModal } from '@/composables/useCreatePoolModal';
 import { usePools } from '@/composables/usePools';
 import { useMatch } from '@/composables/useMatch';
 
 const router = useRouter();
-const join = useJoinModal();
+const join   = useJoinModal();
+const create = useCreatePoolModal();
 const liveMatch = MATCHES.find(m => m.status === 'IN_PROGRESS');
 
 const { pools, fetchMyPools } = usePools();
@@ -58,7 +60,7 @@ const nextMatchKicker = computed(() => {
       <PrintButton tone="cobalt" size="sm" @click="join.show()">
         + Entrar c/ código
       </PrintButton>
-      <PrintButton tone="lime" size="sm" @click="router.push('/create')">
+      <PrintButton tone="lime" size="sm" @click="create.show()">
         + Criar bolão
       </PrintButton>
     </div>

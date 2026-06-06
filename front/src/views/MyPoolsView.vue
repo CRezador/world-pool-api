@@ -3,25 +3,23 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Masthead from '@/components/Masthead.vue';
 import ChipToggle from '@/components/ChipToggle.vue';
-import PrintButton from '@/components/PrintButton.vue';
 import MyPoolCard from '@/components/pool/MyPoolCard.vue';
 import DesktopMyPools from '@/components/pool/DesktopMyPools.vue';
-import ActivityFeed from '@/components/pool/ActivityFeed.vue';
 import { toneVar } from '@/data/mock';
 import { useBreakpoint } from '@/composables/useBreakpoint';
 import { useJoinModal } from '@/composables/useJoinModal';
+import { useCreatePoolModal } from '@/composables/useCreatePoolModal';
 import { usePools } from '@/composables/usePools';
 import { useLeaderboard } from '@/composables/useLeaderboard';
-import { useActivity } from '@/composables/useActivity';
 
 const router = useRouter();
 const { isDesktop } = useBreakpoint();
-const join = useJoinModal();
+const join   = useJoinModal();
+const create = useCreatePoolModal();
 const { pools: allPools, fetchMyPools } = usePools();
 const { myStats, fetchMyStats } = useLeaderboard();
-const { activity, fetchActivity } = useActivity();
 
-onMounted(() => Promise.all([fetchMyPools(), fetchMyStats(), fetchActivity()]));
+onMounted(() => Promise.all([fetchMyPools(), fetchMyStats()]));
 
 const filters = ['TODOS', 'PRIVADOS', 'PÚBLICOS'];
 const filter = ref('TODOS');
@@ -38,22 +36,6 @@ const stats = computed(() => [
   { l: 'CRAVADAS',    v: myStats.value ? String(myStats.value.totalExactHits)   : '—', tone: 'lime' },
   { l: 'MELHOR POS.', v: myStats.value?.bestRank ? myStats.value.bestRank + 'º' : '—', tone: 'coral', small: true },
 ]);
-
-const lastActivityByPool = computed(() => {
-  const map: Record<string, { result: string; detail: string; tone: string }> = {};
-  for (const item of activity.value) {
-    const key = String(item.poolId);
-    if (!map[key]) {
-      const pts = item.points;
-      map[key] = {
-        result: pts === null ? '?' : pts > 0 ? `+${pts}` : '0',
-        detail: `${item.subject} · ${item.action}`,
-        tone: pts === 3 ? 'lime' : pts === 1 ? 'cobalt' : 'paper-3',
-      };
-    }
-  }
-  return map;
-});
 </script>
 
 <template>
@@ -115,12 +97,6 @@ const lastActivityByPool = computed(() => {
         :active="filter === f"
         @click="filter = f"
       >{{ f }}</ChipToggle>
-      <span class="font-mono" :style="{ marginLeft: 'auto' }">
-        <span :style="{
-          fontSize: '9px', letterSpacing: '0.14em', opacity: 0.7, fontWeight: 700,
-          padding: '6px 8px', border: '1.5px solid var(--ink)', borderRadius: '3px',
-        }">ATIVIDADE ▾</span>
-      </span>
     </div>
 
     <div :style="{ padding: '8px 18px 4px', display: 'flex', flexDirection: 'column', gap: '16px' }">
@@ -129,7 +105,6 @@ const lastActivityByPool = computed(() => {
         :key="p.id"
         :pool="p"
         :index="i + 1"
-        :activity="lastActivityByPool[p.id]"
         @click="router.push(`/pool/${p.id}`)"
       />
 
@@ -153,8 +128,26 @@ const lastActivityByPool = computed(() => {
       padding: '14px 18px 8px',
       display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px',
     }">
-      <PrintButton tone="cobalt" @click="join.show()">+ C/ código</PrintButton>
-      <PrintButton tone="lime" @click="router.push('/create')">+ Criar bolão</PrintButton>
+      <button
+        class="font-display press"
+        :style="{
+          padding: '14px 8px', cursor: 'pointer', width: '100%',
+          background: 'var(--cobalt)', color: 'var(--paper)',
+          border: '1.5px solid var(--ink)', boxShadow: '4px 4px 0 var(--ink)',
+          fontSize: '15px', letterSpacing: '0.04em', borderRadius: '4px',
+        }"
+        @click="join.show()"
+      >+ C/ código</button>
+      <button
+        class="font-display press"
+        :style="{
+          padding: '14px 8px', cursor: 'pointer', width: '100%',
+          background: 'var(--lime)', color: 'var(--ink)',
+          border: '1.5px solid var(--ink)', boxShadow: '4px 4px 0 var(--ink)',
+          fontSize: '15px', letterSpacing: '0.04em', borderRadius: '4px',
+        }"
+        @click="create.show()"
+      >+ Criar bolão</button>
     </div>
 
     <div :style="{
@@ -197,8 +190,5 @@ const lastActivityByPool = computed(() => {
       </div>
     </div>
 
-    <div :style="{ borderTop: '1.5px solid var(--ink)', marginTop: '18px', paddingTop: '18px' }">
-      <ActivityFeed :items="activity" />
-    </div>
   </div>
 </template>

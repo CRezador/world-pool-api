@@ -35,8 +35,8 @@ function onKey(e: KeyboardEvent) {
 onMounted(() => window.addEventListener('keydown', onKey));
 onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 
-const homeTeam = computed(() => props.match ? TEAMS[props.match.home] : null);
-const awayTeam = computed(() => props.match ? TEAMS[props.match.away] : null);
+const homeTeam = computed(() => props.match ? TEAMS[props.match.home as string] : null);
+const awayTeam = computed(() => props.match ? TEAMS[props.match.away as string] : null);
 
 const popularGuesses = [
   { score: '2-1', pct: 28 },
@@ -126,7 +126,7 @@ function accept() {
             }"
           >
             <div :style="{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }">
-              <FlagChip :team="match.home" :size="variant === 'desktop' ? 64 : 50" tone="magenta" />
+              <FlagChip :team="(match.home as string)" :size="variant === 'desktop' ? 64 : 50" tone="magenta" />
               <div
                 class="font-display"
                 :style="{ fontSize: variant === 'desktop' ? '22px' : '18px', marginTop: '8px' }"
@@ -145,7 +145,7 @@ function accept() {
               }"
             >×</div>
             <div :style="{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }">
-              <FlagChip :team="match.away" :size="variant === 'desktop' ? 64 : 50" tone="cobalt" />
+              <FlagChip :team="(match.away as string)" :size="variant === 'desktop' ? 64 : 50" tone="cobalt" />
               <div
                 class="font-display"
                 :style="{ fontSize: variant === 'desktop' ? '22px' : '18px', marginTop: '8px' }"
@@ -230,7 +230,7 @@ function accept() {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: 300;
   background: rgba(20, 17, 14, 0.6);
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);

@@ -1,77 +1,64 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import ChipToggle from '@/components/ChipToggle.vue';
+import DesktopHero from '@/components/DesktopHero.vue';
 import DesktopPoolCard from './DesktopPoolCard.vue';
 import DesktopUpcomingMatches from './DesktopUpcomingMatches.vue';
 import { toneVar } from '@/data/mock';
 import { usePools } from '@/composables/usePools';
+import { useLeaderboard } from '@/composables/useLeaderboard';
 import { useJoinModal } from '@/composables/useJoinModal';
 import { useCreatePoolModal } from '@/composables/useCreatePoolModal';
 import DesktopActivityFeed from './DesktopActivityFeed.vue';
 
 const router = useRouter();
+const route = useRoute();
 const join = useJoinModal();
 const create = useCreatePoolModal();
 
 const { pools: allPools, fetchMyPools } = usePools();
+const { myStats, fetchMyStats } = useLeaderboard();
 
-onMounted(() => fetchMyPools());
+onMounted(() => Promise.all([fetchMyPools(), fetchMyStats()]));
 
 const filters = ['TODOS', 'PRIVADOS', 'PÚBLICOS', 'ATIVOS HOJE'];
 const filter = ref('TODOS');
 
 const pools = computed(() => allPools.value.filter(p => {
-  
-  if (filter.value === 'PRIVADOS'){
-    console.log(p.isPublic);
-    return !p.isPublic;
-  }
+  if (filter.value === 'PRIVADOS') return !p.isPublic;
   if (filter.value === 'PÚBLICOS') return p.isPublic;
   return true;
 }));
 
-const totalExacts = 8;
-const guessRate = 0.86;
-const totalPts = computed(() => allPools.value.reduce((s, p) => s + p.myPoints, 0));
-const bestRank = computed(() => allPools.value.length ? Math.min(...allPools.value.map(p => p.myRank)) : 0);
+const hitRate = computed(() => {
+  if (!myStats.value || !myStats.value.totalGuesses) return null;
+  return Math.round(((myStats.value.totalExactHits + myStats.value.totalResultHits) / myStats.value.totalGuesses) * 100);
+});
 
 const stats = computed(() => [
-  { value: String(allPools.value.length),              layer: 'BOLÕES',       tone: 'magenta' },
-  { value: String(totalPts.value),                     layer: 'PTS TOTAIS',   tone: 'cobalt' },
-  { value: String(totalExacts),                        layer: 'CRAVADAS',     tone: 'lime' },
-  { value: bestRank.value + 'º',                       layer: 'MELHOR POS.',  tone: 'coral' },
-  { value: Math.round(guessRate * 100) + '%',          layer: 'PALPITADOS',   tone: 'ink', small: true },
+  { value: myStats.value ? String(myStats.value.poolsCount)      : String(allPools.value.length), layer: 'BOLÕES',      tone: 'magenta' },
+  { value: myStats.value ? String(myStats.value.totalPoints)     : '—',                           layer: 'PTS TOTAIS',  tone: 'cobalt'  },
+  { value: myStats.value ? String(myStats.value.totalExactHits)  : '—',                           layer: 'CRAVADAS',    tone: 'lime'    },
+  { value: myStats.value?.bestRank ? myStats.value.bestRank + 'º': '—',                           layer: 'MELHOR POS.', tone: 'coral'   },
+  { value: hitRate.value !== null ? hitRate.value + '%'          : '—',                           layer: 'PALPITADOS',  tone: 'ink', small: true },
 ]);
 
+watch(
+  () => route.params.id,
+  () => fetchMyPools(),
+);
 
 </script>
 
 <template>
   <div :style="{ minHeight: '100%', display: 'flex', flexDirection: 'column' }">
-    <div :style="{
-      padding: '28px 32px 22px',
-      borderBottom: '1.5px solid var(--ink)',
-      display: 'flex', alignItems: 'flex-end', gap: '28px', position: 'relative',
-    }">
-      <div :style="{ flex: 1 }">
-        <div
-          class="font-mono"
-          :style="{ fontSize: '11px', letterSpacing: '0.22em', fontWeight: 700 }"
-        >EDIÇÃO Nº 04 · BOLETIM DO SÓCIO</div>
-        <div
-          class="font-display misprint-magenta"
-          :style="{
-            fontSize: '86px', lineHeight: 0.88, marginTop: '6px',
-            textTransform: 'uppercase', letterSpacing: '0.005em',
-          }"
-        >Meus bolões</div>
-        <div
-          class="font-mono"
-          :style="{ fontSize: '12px', letterSpacing: '0.14em', marginTop: '14px', opacity: 0.85 }"
-        >ONDE VOCÊ JOGA · CONTRA QUEM · POR QUANTO</div>
-      </div>
-
+    <DesktopHero
+      kicker="EDIÇÃO Nº 04 · BOLETIM DO SÓCIO"
+      title="Meus bolões"
+      sub="ONDE VOCÊ JOGA · CONTRA QUEM · POR QUANTO"
+      tone="magenta"
+    >
       <div :style="{
         display: 'flex', gap: 0,
         border: '1.5px solid var(--ink)',
@@ -100,7 +87,7 @@ const stats = computed(() => [
           }" />
         </div>
       </div>
-    </div>
+    </DesktopHero>
 
     <div :style="{
       display: 'flex', gap: '10px', padding: '14px 32px',
@@ -120,11 +107,6 @@ const stats = computed(() => [
         class="font-mono"
         :style="{ marginLeft: 'auto', display: 'flex', gap: '10px', alignItems: 'center' }"
       >
-        <span :style="{ fontSize: '10px', letterSpacing: '0.16em', opacity: 0.6 }">ORDENAR</span>
-        <span :style="{
-          fontSize: '11px', letterSpacing: '0.12em', fontWeight: 700,
-          padding: '4px 8px', border: '1.5px solid var(--ink)', cursor: 'pointer',
-        }">ATIVIDADE ▾</span>
         <button
           class="font-display press"
           :style="{

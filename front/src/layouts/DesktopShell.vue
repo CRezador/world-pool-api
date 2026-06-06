@@ -6,6 +6,8 @@ import Avatar from '@/components/Avatar.vue';
 import { MATCHES, MEMBERS } from '@/data/mock';
 import { useJoinModal } from '@/composables/useJoinModal';
 import { useCreatePoolModal } from '@/composables/useCreatePoolModal';
+import { useAuth } from '@/composables/useAuth';
+import { logout } from '@/services/auth.services';
 
 const route = useRoute();
 const router = useRouter();
@@ -46,9 +48,12 @@ const toneVar: Record<string, string> = {
 };
 
 const openId = ref<string | null>(null);
+const avatarMenuOpen = ref(false);
+const { clearUser } = useAuth();
 
 function toggleMenu(label: string) {
   openId.value = openId.value === label ? null : label;
+  avatarMenuOpen.value = false;
 }
 
 function handleMenuAction(item: MenuItem) {
@@ -59,9 +64,18 @@ function handleMenuAction(item: MenuItem) {
   else if (item.path) router.push(item.path);
 }
 
+async function handleLogout() {
+  avatarMenuOpen.value = false;
+  try { await logout(); } catch {}
+  clearUser();
+  router.push('/login');
+}
+
 function handleOutsideClick(e: MouseEvent) {
   const nav = (e.target as HTMLElement).closest('.nav-item-wrapper');
+  const avatar = (e.target as HTMLElement).closest('.avatar-wrapper');
   if (!nav) openId.value = null;
+  if (!avatar) avatarMenuOpen.value = false;
 }
 
 onMounted(() => document.addEventListener('click', handleOutsideClick));
@@ -73,6 +87,8 @@ const activeIndex = computed(() => {
   if (route.path.startsWith('/standings')) return 2;
   return -1;
 });
+
+const isMeActive = computed(() => route.name === 'me');
 </script>
 
 <template>
@@ -167,7 +183,46 @@ const activeIndex = computed(() => {
           }"
           @click="create.show()"
         >+ Novo bolão</button>
-        <Avatar :member="MEMBERS[2]" :size="38" />
+        <div class="avatar-wrapper" :style="{ position: 'relative' }">
+          <div
+            :style="{
+              display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer',
+              paddingBottom: '2px',
+              borderBottom: isMeActive ? '2px solid var(--magenta)' : '2px solid transparent',
+            }"
+            @click="avatarMenuOpen = !avatarMenuOpen; openId = null"
+          >
+            <Avatar :member="MEMBERS[2]" :size="38" />
+            <span
+              class="font-mono"
+              :style="{
+                fontSize: '12px', letterSpacing: '0.14em', fontWeight: 700,
+                color: isMeActive ? 'var(--magenta)' : 'var(--ink)',
+              }"
+            >EU <span :style="{ fontSize: '9px', opacity: 0.5 }">▾</span></span>
+          </div>
+
+          <div v-if="avatarMenuOpen" class="nav-dropdown" :style="{ right: 0, left: 'auto' }">
+            <div class="nav-dropdown-notch" :style="{ left: 'auto', right: '22px' }" />
+            <div class="font-mono nav-dropdown-header">MINHA CONTA</div>
+            <div class="nav-dropdown-item" @click="avatarMenuOpen = false; router.push('/eu')">
+              <div class="font-display nav-dropdown-icon" :style="{ background: 'var(--cobalt)', color: 'var(--paper)' }">◐</div>
+              <div :style="{ flex: 1 }">
+                <div class="font-display" :style="{ fontSize: '15px', lineHeight: 1 }">Meu perfil</div>
+                <div class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.08em', opacity: 0.65, marginTop: '3px' }">Estatísticas e histórico</div>
+              </div>
+              <span :style="{ opacity: 0.4, fontSize: '14px' }">→</span>
+            </div>
+            <div class="nav-dropdown-divider" />
+            <div class="nav-dropdown-item" @click="handleLogout">
+              <div class="font-display nav-dropdown-icon" :style="{ background: 'var(--coral)', color: 'var(--paper)' }">✕</div>
+              <div :style="{ flex: 1 }">
+                <div class="font-display" :style="{ fontSize: '15px', lineHeight: 1 }">Sair</div>
+                <div class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.08em', opacity: 0.65, marginTop: '3px' }">Encerrar sessão</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -188,9 +243,9 @@ const activeIndex = computed(() => {
         class="font-display"
         :style="{ fontSize: '16px', display: 'inline-flex', alignItems: 'center', gap: '8px' }"
       >
-        <FlagImg :team="liveMatch.home" :size="16" :radius="2" />
+        <FlagImg :team="String(liveMatch.home)" :size="16" :radius="2" />
         {{ liveMatch.home }} {{ liveMatch.homeScore }} × {{ liveMatch.awayScore }} {{ liveMatch.away }}
-        <FlagImg :team="liveMatch.away" :size="16" :radius="2" />
+        <FlagImg :team="String(liveMatch.away)" :size="16" :radius="2" />
       </span>
       <span class="font-mono" :style="{ fontSize: '11px', opacity: 0.7 }">
         {{ liveMatch.kickoff }} · MetLife
@@ -208,7 +263,7 @@ const activeIndex = computed(() => {
     <main class="desktop-main">
       <RouterView v-slot="{ Component }">
         <Transition name="route-fade" mode="out-in">
-          <component :is="Component" />
+          <component :is="Component" :key="$route.path" />
         </Transition>
       </RouterView>
     </main>

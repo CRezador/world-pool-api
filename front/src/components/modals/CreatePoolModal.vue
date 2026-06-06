@@ -5,6 +5,8 @@ import PrintButton from '@/components/PrintButton.vue';
 import ChipToggle from '@/components/ChipToggle.vue';
 import FormField from '@/components/FormField.vue';
 import { useJoinModal } from '@/composables/useJoinModal';
+import { createPool } from '@/composables/usePools';
+import { router } from '@/router';
 
 const props = withDefaults(defineProps<{
   open: boolean;
@@ -27,16 +29,6 @@ const emit = defineEmits<{
 
 const name = ref('Quinta dos amigos');
 const isPublic = ref(false);
-const code = ref('QUINTA');
-
-const CODES = ['QUINTA','TERÇÃO','PELADA','BARÔAS','GOLAÇO','RACHA1','BANCÃO','TORCID'];
-function regenerateCode() {
-  let next = code.value;
-  while (next === code.value) {
-    next = CODES[Math.floor(Math.random() * CODES.length)];
-  }
-  code.value = next;
-}
 
 function onKey(e: KeyboardEvent) {
   if (e.key === 'Escape' && props.open) emit('close');
@@ -46,7 +38,14 @@ onMounted(() => window.addEventListener('keydown', onKey));
 onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 
 function submit() {
-  emit('create', { name: name.value, isPublic: isPublic.value, code: code.value });
+  const createPoolRequest = createPool(name.value, isPublic.value).then((response: any) => {
+    const pool = response.data.data.id;
+    console.log(pool);
+    router.push(`/pool/${pool}`);
+    emit('close');
+  }).catch((e: any) => {
+    alert(e.response?.data?.message || 'Erro ao criar o bolão. Tente novamente.');
+  });
 }
 </script>
 
@@ -120,29 +119,6 @@ function submit() {
 
           <PerfDivider />
 
-          <div
-            class="font-mono"
-            :style="{ fontSize: '10px', letterSpacing: '0.14em', marginBottom: '6px' }"
-          >CÓDIGO GERADO</div>
-          <div :style="{
-            background: 'var(--ink)', color: 'var(--paper)',
-            padding: '14px 16px', borderRadius: '3px',
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            gap: '12px',
-          }">
-            <div
-              class="font-display"
-              :style="{
-                fontSize: variant === 'desktop' ? '36px' : '32px',
-                letterSpacing: '0.16em', lineHeight: 1,
-              }"
-            >{{ code }}</div>
-            <button
-              class="font-mono press code-regen"
-              @click="regenerateCode"
-            >↻ TROCAR</button>
-          </div>
-
           <div :style="{ display: 'flex', gap: '8px', marginTop: '16px' }">
             <button class="font-display press modal-cancel" @click="$emit('close')">Cancelar</button>
             <PrintButton tone="lime" full @click="submit">Fundar o bolão</PrintButton>
@@ -169,7 +145,7 @@ function submit() {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: 300;
   background: rgba(20, 17, 14, 0.6);
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
