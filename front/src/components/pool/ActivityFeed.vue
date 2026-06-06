@@ -1,17 +1,51 @@
 <script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { ActivityItem } from '@/types';
 import { toneVar, toneFg } from '@/data/mock';
 import { deriveAccent } from '@/composables/usePools';
 
-defineProps<{ items: ActivityItem[] }>();
+const props = defineProps<{ items: ActivityItem[] }>();
+
+const TICKER_ROW_H = 58;
+const MAX_VISIBLE  = 5;
+const INTERVAL_MS  = 3000;
+const ANIM_MS      = 620;
+
+const offset    = ref(0);
+const animating = ref(false);
+const paused    = ref(false);
+
+let timerId: ReturnType<typeof setInterval> | null = null;
+
+onMounted(() => {
+  timerId = setInterval(() => {
+    if (paused.value || props.items.length <= MAX_VISIBLE) return;
+    animating.value = true;
+    setTimeout(() => {
+      offset.value = (offset.value + 1) % props.items.length;
+      animating.value = false;
+    }, ANIM_MS);
+  }, INTERVAL_MS);
+});
+
+onUnmounted(() => { if (timerId) clearInterval(timerId); });
+
+const visible = computed<Array<ActivityItem & { _k: number }>>(() => {
+  const items = props.items;
+  if (!items.length) return [];
+  return Array.from({ length: MAX_VISIBLE + 1 }, (_, i) => ({
+    ...items[(offset.value + i) % items.length],
+    _k: offset.value + i,
+  }));
+});
 
 function formatTimeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  if (mins < 1) return 'AGORA';
-  if (mins < 60) return `HÁ ${mins} MIN`;
+  const diff  = Date.now() - new Date(iso).getTime();
+  const mins  = Math.floor(diff / 60_000);
+  const hours = Math.floor(diff / 3_600_000);
+  const days  = Math.floor(diff / 86_400_000);
+  if (mins  < 1)  return 'AGORA';
+  if (mins  < 60) return `HÁ ${mins} MIN`;
   if (hours < 24) return `HÁ ${hours}H`;
   return `HÁ ${days}D`;
 }
@@ -23,25 +57,19 @@ function formatActor(name: string, isMe: boolean): string {
   return `${parts[0]} ${parts[parts.length - 1][0]}.`;
 }
 
-function badgeBg(points: number | null): string {
-  if (points === null || points === 0) return 'transparent';
-  if (points >= 3) return toneVar('lime');
-  return toneVar('cobalt');
+function ptsBg(act: ActivityItem): string {
+  if (act.points === null || act.points === 0) return 'transparent';
+  return act.points >= 3 ? toneVar('lime') : toneVar('cobalt');
 }
 
-function badgeFg(points: number | null): string {
-  if (points === null || points === 0) return 'var(--ink)';
-  if (points >= 3) return toneFg('lime');
-  return toneFg('cobalt');
+function ptsFg(act: ActivityItem): string {
+  if (act.points === null || act.points === 0) return 'var(--ink)';
+  return act.points >= 3 ? toneFg('lime') : toneFg('cobalt');
 }
 
-function badgeLabel(points: number | null): string {
-  if (points === null) return 'pendente';
-  return points > 0 ? `+${points}` : '0';
-}
-
-function badgeBorder(points: number | null): string {
-  return points === null ? '1.5px dashed var(--ink)' : 'none';
+function ptsLabel(act: ActivityItem): string {
+  if (act.points === null) return 'pendente';
+  return act.points > 0 ? `+${act.points}` : '0';
 }
 </script>
 
@@ -70,44 +98,118 @@ function badgeBorder(points: number | null): string {
       </div>
     </div>
 
+    <!-- Ticker window -->
     <div
-      v-for="(item, i) in items"
-      :key="item.id"
+      v-else
       :style="{
-        display: 'flex', alignItems: 'center', gap: '10px',
-        padding: '10px 0',
-        borderBottom: i < items.length - 1 ? '1px dashed var(--ink)' : 'none',
+        position: 'relative',
+        height: `${TICKER_ROW_H * MAX_VISIBLE}px`,
+        overflow: 'hidden',
+        borderTop: '1.5px solid var(--ink)',
+        borderBottom: '1.5px solid var(--ink)',
+        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 18px), transparent 100%)',
+        maskImage: 'linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 18px), transparent 100%)',
       }"
+      @touchstart.passive="paused = true"
+      @touchend.passive="paused = false"
     >
+      <!-- Sliding track -->
       <div :style="{
-        width: '3px', alignSelf: 'stretch', flexShrink: 0,
-        background: toneVar(deriveAccent(item.poolId)),
-      }" />
-
-      <div :style="{ flex: 1, minWidth: 0 }">
+        transform: animating ? `translateY(-${TICKER_ROW_H}px)` : 'translateY(0)',
+        transition: animating ? `transform ${ANIM_MS}ms cubic-bezier(.55,.05,.2,1)` : 'none',
+        willChange: 'transform',
+      }">
         <div
-          class="font-mono"
-          :style="{ fontSize: '8px', letterSpacing: '0.14em', fontWeight: 700, opacity: 0.6, marginBottom: '3px' }"
-        >{{ item.poolName.toUpperCase() }} · {{ formatTimeAgo(item.createdAt) }}</div>
-        <div :style="{ fontSize: '13px', lineHeight: 1.3 }">
-          <span :style="{ fontWeight: 700 }">{{ formatActor(item.actor, item.isMe) }}</span>
-          {{ ' ' }}{{ item.action }} {{ item.subject }}
+          v-for="(act, i) in visible"
+          :key="act._k"
+          :style="{
+            height: `${TICKER_ROW_H}px`,
+            boxSizing: 'border-box',
+            display: 'flex', alignItems: 'center', gap: '10px',
+            padding: '10px 0',
+            borderBottom: '1px dashed var(--ink)',
+            background: act.isMe ? 'rgba(212, 247, 92, 0.18)' : 'transparent',
+            marginLeft: act.isMe ? '-4px' : 0,
+            marginRight: act.isMe ? '-4px' : 0,
+            paddingLeft: act.isMe ? '4px' : 0,
+            paddingRight: act.isMe ? '4px' : 0,
+            opacity: i === MAX_VISIBLE && !animating ? 0 : 1,
+            transition: animating ? `opacity ${ANIM_MS}ms ease` : 'none',
+          }"
+        >
+          <div :style="{
+            width: '3px', alignSelf: 'stretch', flexShrink: 0,
+            background: toneVar(deriveAccent(act.poolId)),
+          }" />
+
+          <div :style="{ flex: 1, minWidth: 0 }">
+            <div
+              class="font-mono"
+              :style="{
+                fontSize: '8px', letterSpacing: '0.14em', fontWeight: 700, opacity: 0.6, marginBottom: '3px',
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              }"
+            >{{ act.poolName.toUpperCase() }} · {{ formatTimeAgo(act.createdAt) }}</div>
+            <div :style="{
+              fontSize: '13px', lineHeight: 1.3,
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }">
+              <b>{{ formatActor(act.actor, act.isMe) }}</b>
+              {{ ' ' }}{{ act.action }} {{ act.subject }}
+            </div>
+          </div>
+
+          <div
+            class="font-mono"
+            :style="{
+              flexShrink: 0,
+              padding: '4px 8px',
+              fontSize: '11px', fontWeight: 700, letterSpacing: '0.04em',
+              background: ptsBg(act),
+              color: ptsFg(act),
+              border: act.points === null ? '1.5px dashed var(--ink)' : 'none',
+              borderRadius: '2px',
+              minWidth: '36px', textAlign: 'center',
+            }"
+          >{{ ptsLabel(act) }}</div>
         </div>
       </div>
 
-      <div
-        class="font-mono"
-        :style="{
-          flexShrink: 0,
-          padding: '4px 8px',
-          fontSize: '11px', fontWeight: 700, letterSpacing: '0.04em',
-          background: badgeBg(item.points),
-          color: badgeFg(item.points),
-          border: badgeBorder(item.points),
-          borderRadius: '2px',
-          minWidth: '36px', textAlign: 'center',
-        }"
-      >{{ badgeLabel(item.points) }}</div>
+      <!-- Coral progress bar — restarts on each tick via :key -->
+      <div :style="{
+        position: 'absolute', left: 0, right: 0, bottom: 0, height: '2px',
+        background: 'var(--paper-3)',
+      }">
+        <div
+          :key="`${offset}-${paused ? 'p' : 'r'}`"
+          class="activity-feed-progress"
+          :style="{
+            height: '100%',
+            background: 'var(--coral)',
+            animation: paused ? 'none' : `activityBar ${INTERVAL_MS}ms linear forwards`,
+            width: paused ? '100%' : '0%',
+            opacity: paused ? 0.4 : 1,
+          }"
+        />
+      </div>
     </div>
+
+    <!-- Counter -->
+    <div
+      v-if="items.length > MAX_VISIBLE"
+      class="font-mono"
+      :style="{
+        marginTop: '8px',
+        fontSize: '9px', letterSpacing: '0.16em', fontWeight: 700, opacity: 0.5,
+        textAlign: 'right',
+      }"
+    >{{ offset + 1 }}/{{ items.length }} · TOQUE P/ PAUSAR</div>
   </div>
 </template>
+
+<style>
+@keyframes activityBar {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+</style>

@@ -29,14 +29,17 @@ const myPoolEntry = ref<MyPoolEntry | null>(null);
 
 function mapEntry(e: any, userId?: number): LeaderboardEntry {
     return {
-        rank: e.rank,
-        userId: e.user.id,
-        name: e.user.name,
-        points: e.points,
-        exactHits: e.exact_hits,
-        resultHits: e.result_hits,
+        rank:         e.rank,
+        previousRank: e.previous_rank ?? null,
+        trend:        e.trend ?? 'equal',
+        userId:       e.user.id,
+        name:         e.user.name,
+        role:         e.role ?? 'MEMBER',
+        points:       e.points,
+        exactHits:    e.exact_hits,
+        resultHits:   e.result_hits,
         guessesCount: e.guesses_count,
-        isMe: e.user.id === userId,
+        isMe:         e.user.id === userId,
     };
 }
 

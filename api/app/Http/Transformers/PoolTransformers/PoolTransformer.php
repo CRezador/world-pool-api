@@ -17,6 +17,7 @@ class PoolTransformer extends BaseTransformer
             'is_public'     => (bool) $pool->is_public,
             'owner'         => $pool->owner->name,
             'members_count' => $pool->members_count ?? null,
+            'is_member'     => (bool) ($pool->is_member ?? false),
             'leader'        => $leader ? [
                 'id'     => $leader->user->id,
                 'name'   => $leader->user->name,

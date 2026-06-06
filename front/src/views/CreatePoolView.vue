@@ -9,7 +9,7 @@ import PerfDivider from '@/components/PerfDivider.vue';
 import PrintButton from '@/components/PrintButton.vue';
 
 const router = useRouter();
-const name = ref('Quinta dos amigos');
+const name = ref('');
 const isPublic = ref(false);
 </script>
 

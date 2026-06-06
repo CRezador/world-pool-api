@@ -51,6 +51,7 @@ Route::middleware('auth:sanctum')->group(
         Route::get('/pools/{id}', [PoolController::class, 'show']);
         Route::delete('/pools/{id}', [PoolController::class, 'destroy']);
         Route::post('/pools/join', [PoolController::class, 'join']);
+        Route::post('/pools/{id}/join-public', [PoolController::class, 'joinPublic']);
         Route::put('/pools/{id}', [PoolController::class, 'update'])->middleware('PoolOwner');
 
         //Rota PoolMember

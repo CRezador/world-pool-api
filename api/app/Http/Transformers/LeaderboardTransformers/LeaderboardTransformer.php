@@ -9,11 +9,14 @@ class LeaderboardTransformer extends BaseTransformer
     public function transform(mixed $leaderboard): array
     {
         $data = [
-            'rank'          => $leaderboard->position,
-            'user'          => [
+            'rank'              => $leaderboard->position,
+            'previous_rank'     => $leaderboard->previous_position,
+            'trend'             => $this->deriveTrend($leaderboard->position, $leaderboard->previous_position),
+            'user'              => [
                 'id'   => $leaderboard->user->id,
                 'name' => $leaderboard->user->name,
             ],
+            'role'              => $leaderboard->member_role ?? 'MEMBER',
             'points'        => $leaderboard->points,
             'exact_hits'    => $leaderboard->exact_hits,
             'result_hits'   => $leaderboard->result_hits,
@@ -26,5 +29,16 @@ class LeaderboardTransformer extends BaseTransformer
         }
 
         return $data;
+    }
+
+    private function deriveTrend(?int $current, ?int $previous): string
+    {
+        if ($previous === null || $current === null) {
+            return 'equal';
+        }
+
+        if ($current < $previous) return 'up';
+        if ($current > $previous) return 'down';
+        return 'equal';
     }
 }

@@ -45,6 +45,8 @@ class GuessRepository
     {
         return Guess::where('user_id', $userId)
             ->where('pool_id', $poolId)
+            ->with('match.homeTeam', 'match.awayTeam')
+            ->orderBy('match_id')
             ->get();
     }
 

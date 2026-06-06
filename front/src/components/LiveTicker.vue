@@ -7,8 +7,8 @@ import type { Match } from '@/types';
 const props = defineProps<{ match: Match }>();
 const router = useRouter();
 
-const home = TEAMS[props.match.home];
-const away = TEAMS[props.match.away];
+const home = TEAMS[props.match.home as string];
+const away = TEAMS[props.match.away as string];
 </script>
 
 <template>
@@ -33,11 +33,11 @@ const away = TEAMS[props.match.away];
         }"
       />AO VIVO
     </span>
-    <FlagImg :team="match.home" :size="20" :radius="2" />
+    <FlagImg :team="(match.home as string)" :size="20" :radius="2" />
     <span class="font-display" :style="{ fontSize: '18px' }">
       {{ home.code }} {{ match.homeScore }} × {{ match.awayScore }} {{ away.code }}
     </span>
-    <FlagImg :team="match.away" :size="20" :radius="2" />
+    <FlagImg :team="(match.away as string)" :size="20" :radius="2" />
     <span class="font-mono" :style="{ fontSize: '11px', marginLeft: 'auto' }">{{ match.kickoff }}</span>
   </div>
 </template>

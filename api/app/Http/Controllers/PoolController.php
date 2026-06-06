@@ -27,15 +27,24 @@ class PoolController extends Controller
         summary: 'Lista bolões públicos disponíveis',
         security: [['sanctum' => []]],
         tags: ['Pools'],
+        parameters: [
+            new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 1)),
+            new OA\Parameter(name: 'per_page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 10)),
+        ],
         responses: [
             new OA\Response(response: 200, description: 'Lista de bolões públicos'),
             new OA\Response(response: 401, description: 'Não autenticado'),
         ]
     )]
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $perPage = (int) $request->query('per_page', 10);
+
         return response()->json(
-            $this->poolTransformer->collection($this->poolReadService->showPublicPools(), 'Lista de bolões públicos'),
+            $this->poolTransformer->paginated(
+                $this->poolReadService->showPublicPools($perPage, $request->user()->id),
+                'Lista de bolões públicos'
+            ),
             200
         );
     }
@@ -230,6 +239,40 @@ class PoolController extends Controller
             $this->poolTransformer->item($pool, 'Bolão atualizado'),
             200
         );
+    }
+
+    #[OA\Post(
+        path: '/api/pools/{id}/join-public',
+        summary: 'Usuário entra em um bolão público pelo ID',
+        security: [['sanctum' => []]],
+        tags: ['Pools'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Entrou no bolão com sucesso'),
+            new OA\Response(response: 400, description: 'Usuário já é membro ou banido'),
+            new OA\Response(response: 404, description: 'Bolão não encontrado ou não é público'),
+        ]
+    )]
+    public function joinPublic(int $id, Request $request): Response
+    {
+        $pool = $this->poolReadService->showPool($id);
+
+        if (!$pool || !$pool->is_public) {
+            return response()->json(['message' => 'Bolão não encontrado ou não é público.'], 404);
+        }
+
+        try {
+            $result = $this->poolWriteService->joinPublicPool($id, $request->user()->id);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
+        }
+
+        return response()->json([
+            'pool'   => $this->poolTransformer->item($result['Pool'], 'Entrou no bolão'),
+            'member' => $this->poolMemberTransformer->item($result['Member'], 'Membro adicionado'),
+        ], 200);
     }
 
     #[OA\Post(

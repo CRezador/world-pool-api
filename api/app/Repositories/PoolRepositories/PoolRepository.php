@@ -4,15 +4,17 @@ namespace App\Repositories\PoolRepositories;
 
 use App\Models\Pool;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class PoolRepository
 {
-    public function getPublicPools(): Collection
+    public function getPublicPools(int $perPage = 10, int $userId = 0): LengthAwarePaginator
     {
         return Pool::with('owner')
             ->withCount(['members as members_count' => fn($q) => $q->where('status', 'ACTIVE')])
+            ->withExists(['members as is_member' => fn($q) => $q->where('user_id', $userId)->where('status', 'ACTIVE')])
             ->where('is_public', true)
-            ->get();
+            ->paginate($perPage);
     }
 
     public function getPool(int $id): ?Pool

@@ -19,6 +19,7 @@ class Leaderboard extends Model
         'result_hits',
         'guesses_count',
         'position',
+        'previous_position',
     ];
     protected $casts = [
         'created_at' => 'datetime',

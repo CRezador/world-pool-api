@@ -104,6 +104,30 @@ class PoolWriteService
         return $poolUpdate;
     }
 
+    public function joinPublicPool(int $poolId, int $userId): array
+    {
+        $pool = $this->poolRepository->getPool($poolId);
+
+        if (!$pool) {
+            throw new \Exception('Bolão não encontrado.');
+        }
+
+        if ($this->poolMemberReadService->isBanned($pool->id, $userId)) {
+            throw new \Exception('Você está banido deste bolão.');
+        }
+
+        if ($this->poolMemberReadService->isMember($pool->id, $userId)) {
+            throw new \Exception('Você já é membro deste bolão.');
+        }
+
+        $member = $this->poolMemberWriteService->addMember($pool->id, PoolUserRole::MEMBER, $userId);
+
+        return [
+            'Pool'   => $pool,
+            'Member' => $member,
+        ];
+    }
+
     public function joinPool(string $join_code, int $userId): array
     {
         $pool = $this->poolRepository->getPoolByJoinCode($join_code);

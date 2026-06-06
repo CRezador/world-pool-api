@@ -61,6 +61,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/StandingsView.vue'),
     meta: { desktopLayout: true },
   },
+  {
+    path: '/eu',
+    name: 'me',
+    component: () => import('@/views/MeView.vue'),
+    meta: { desktopLayout: true },
+  },
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ];
 

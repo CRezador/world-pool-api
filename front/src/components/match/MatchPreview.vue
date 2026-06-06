@@ -9,8 +9,8 @@ import type { Match } from '@/types';
 const props = defineProps<{ match: Match }>();
 const router = useRouter();
 
-const home = computed(() => TEAMS[props.match.home]);
-const away = computed(() => TEAMS[props.match.away]);
+const home = computed(() => TEAMS[props.match.home as string]);
+const away = computed(() => TEAMS[props.match.away as string]);
 </script>
 
 <template>
@@ -32,7 +32,7 @@ const away = computed(() => TEAMS[props.match.away]);
     </div>
     <div :style="{ display: 'flex', alignItems: 'center', gap: '14px' }">
       <div :style="{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }">
-        <FlagChip :team="match.home" :size="48" tone="cobalt" />
+        <FlagChip :team="(match.home as string)" :size="48" tone="cobalt" />
         <div class="font-display" :style="{ fontSize: '18px', marginTop: '6px' }">{{ home.code }}</div>
         <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.1em', opacity: 0.7 }">
           {{ home.name.toUpperCase() }}
@@ -40,7 +40,7 @@ const away = computed(() => TEAMS[props.match.away]);
       </div>
       <div class="font-display" :style="{ fontSize: '28px', opacity: 0.6 }">×</div>
       <div :style="{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }">
-        <FlagChip :team="match.away" :size="48" tone="coral" />
+        <FlagChip :team="(match.away as string)" :size="48" tone="coral" />
         <div class="font-display" :style="{ fontSize: '18px', marginTop: '6px' }">{{ away.code }}</div>
         <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.1em', opacity: 0.7 }">
           {{ away.name.toUpperCase() }}

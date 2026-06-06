@@ -12,8 +12,8 @@ import { findMatch, MEMBERS, TEAMS } from '@/data/mock';
 const route = useRoute();
 const matchId = computed(() => Number(route.params.matchId));
 const match = computed(() => findMatch(matchId.value));
-const home = computed(() => TEAMS[match.value.home]);
-const away = computed(() => TEAMS[match.value.away]);
+const home = computed(() => TEAMS[match.value.home as string]);
+const away = computed(() => TEAMS[match.value.away as string]);
 const isLive = computed(() => match.value.status === 'IN_PROGRESS');
 
 const guesses = computed(() => {
@@ -62,7 +62,7 @@ const guesses = computed(() => {
         <div :style="{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }">
           <div :style="{ textAlign: 'center', flex: 1 }">
             <FlagImg
-              :team="match.home"
+              :team="(match.home as string)"
               :size="56"
               :radius="4"
               :style="{ boxShadow: '3px 3px 0 var(--magenta)', border: '1.5px solid var(--paper)' }"
@@ -77,7 +77,7 @@ const guesses = computed(() => {
           </div>
           <div :style="{ textAlign: 'center', flex: 1 }">
             <FlagImg
-              :team="match.away"
+              :team="(match.away as string)"
               :size="56"
               :radius="4"
               :style="{ boxShadow: '3px 3px 0 var(--cobalt)', border: '1.5px solid var(--paper)' }"

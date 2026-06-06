@@ -7,6 +7,7 @@ use App\Repositories\GuessRepositories\GuessRepository;
 use App\Repositories\LeaderboardRepositories\LeaderboardRepository;
 use App\Repositories\PoolRepositories\PoolRepository;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class PoolReadService
 {
@@ -16,9 +17,9 @@ class PoolReadService
         private GuessRepository $guessRepository,
     ) {}
 
-    public function showPublicPools(): Collection
+    public function showPublicPools(int $perPage = 10, int $userId = 0): LengthAwarePaginator
     {
-        return $this->poolRepository->getPublicPools();
+        return $this->poolRepository->getPublicPools($perPage, $userId);
     }
 
     public function showPool(int $id): ?Pool

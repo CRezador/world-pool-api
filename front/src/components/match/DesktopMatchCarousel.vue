@@ -26,8 +26,14 @@ function go(delta: number) {
 
 let intervalId: ReturnType<typeof setInterval> | null = null;
 
+const loading = ref(true);
+
 onMounted(async () => {
-  await fetchUpcomingMatches();
+  try {
+    await fetchUpcomingMatches();
+  } finally {
+    loading.value = false;
+  }
   intervalId = setInterval(() => {
     if (!paused.value && total.value > 0) {
       idx.value = (idx.value + 1) % total.value;
@@ -41,8 +47,26 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <!-- Carousel skeleton -->
+  <div v-if="loading">
+    <div :style="{ marginBottom: '14px' }">
+      <div class="skeleton" :style="{ height: '10px', width: '130px', marginBottom: '8px' }" />
+      <div :style="{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }">
+        <div class="skeleton" :style="{ height: '22px', width: '160px' }" />
+        <div :style="{ display: 'flex', gap: '8px' }">
+          <div class="skeleton" :style="{ width: '30px', height: '30px' }" />
+          <div class="skeleton" :style="{ width: '30px', height: '30px' }" />
+        </div>
+      </div>
+    </div>
+    <div class="skeleton" :style="{ height: '210px' }" />
+    <div :style="{ display: 'flex', gap: '6px', marginTop: '12px' }">
+      <div v-for="n in 4" :key="n" class="skeleton" :style="{ width: '8px', height: '8px' }" />
+    </div>
+  </div>
+
   <div
-    v-if="total > 0 && slide"
+    v-else-if="total > 0 && slide"
     @mouseenter="paused = true"
     @mouseleave="paused = false"
   >
