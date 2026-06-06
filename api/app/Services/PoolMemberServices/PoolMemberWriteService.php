@@ -20,7 +20,11 @@ class PoolMemberWriteService
     public function addMember(int $poolId, PoolUserRole $role, int $userId): PoolMember
     {
         return DB::transaction(function () use ($poolId, $role, $userId) {
-            $member = $this->poolMemberRepository->addMember($poolId, $role, $userId);
+            if ($this->poolMemberRepository->hasLeft($poolId, $userId)) {
+                $member = $this->poolMemberRepository->rejoin($poolId, $role, $userId);
+            } else {
+                $member = $this->poolMemberRepository->addMember($poolId, $role, $userId);
+            }
             $this->leaderboardWriteService->createEntry($poolId, $userId);
 
             return $member;

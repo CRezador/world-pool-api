@@ -2,22 +2,37 @@
 
 namespace App\Services\StandingsServices;
 
+use App\Models\Standing;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Http;
 
 class StandingsReadService
 {
     public function getStandings(): Collection
     {
-        $response = Http::withHeader('X-Auth-Token', config('services.football_data.token'))
-            ->get('https://api.football-data.org/v4/competitions/WC/standings');
-
-        if (!$response->successful()) {
-            throw new \Exception('Erro ao buscar classificação externa.', 502);
-        }
-
-        return collect($response->json('standings'))
-            ->filter(fn($s) => $s['type'] === 'TOTAL')
+        return Standing::with('team')
+            ->orderBy('group')
+            ->orderBy('position')
+            ->get()
+            ->groupBy('group')
+            ->map(fn(Collection $rows, string $group) => [
+                'group' => "Group {$group}",
+                'table' => $rows->map(fn(Standing $s) => [
+                    'position'       => $s->position,
+                    'playedGames'    => $s->played,
+                    'won'            => $s->won,
+                    'draw'           => $s->draw,
+                    'lost'           => $s->lost,
+                    'goalsFor'       => $s->goals_for,
+                    'goalsAgainst'   => $s->goals_against,
+                    'goalDifference' => $s->goal_diff,
+                    'points'         => $s->points,
+                    'team'           => [
+                        'tla'  => $s->team->code,
+                        'name' => $s->team->name,
+                        'crest' => null,
+                    ],
+                ])->values()->toArray(),
+            ])
             ->values();
     }
 }
