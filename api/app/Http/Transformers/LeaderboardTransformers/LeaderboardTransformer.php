@@ -37,8 +37,12 @@ class LeaderboardTransformer extends BaseTransformer
             return 'equal';
         }
 
-        if ($current < $previous) return 'up';
-        if ($current > $previous) return 'down';
+        if ($current < $previous) {
+            return 'up';
+        }
+        if ($current > $previous) {
+            return 'down';
+        }
         return 'equal';
     }
 }

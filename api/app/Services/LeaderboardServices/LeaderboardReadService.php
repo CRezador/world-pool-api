@@ -63,7 +63,7 @@ class LeaderboardReadService
             'pools_count'      => (int) $row->pools_count,
             'total_points'     => (int) $row->total_points,
             'total_exact_hits' => (int) $row->total_exact_hits,
-            'total_result_hits'=> (int) $row->total_result_hits,
+            'total_result_hits' => (int) $row->total_result_hits,
             'total_guesses'    => (int) $row->total_guesses,
             'best_rank'        => $row->best_rank !== null ? (int) $row->best_rank : null,
         ];
