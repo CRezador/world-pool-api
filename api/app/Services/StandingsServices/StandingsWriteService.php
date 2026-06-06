@@ -18,15 +18,18 @@ class StandingsWriteService
             throw new \Exception('Erro ao buscar classificação externa.', 502);
         }
 
-        $teams = Team::all()->keyBy('code');
+        $allTeams = Team::all();
+        $teamsByTla  = $allTeams->filter(fn($t) => $t->tla)->keyBy('tla');
+        $teamsByCode = $allTeams->keyBy('code');
 
         collect($response->json('standings'))
             ->filter(fn($s) => $s['type'] === 'TOTAL')
-            ->each(function ($standing) use ($teams) {
+            ->each(function ($standing) use ($teamsByTla, $teamsByCode) {
                 $group = str_replace('Group ', '', $standing['group']);
 
-                collect($standing['table'])->each(function ($row) use ($group, $teams) {
-                    $team = $teams->get($row['team']['tla']);
+                collect($standing['table'])->each(function ($row) use ($group, $teamsByTla, $teamsByCode) {
+                    $tla  = $row['team']['tla'];
+                    $team = $teamsByTla->get($tla) ?? $teamsByCode->get($tla);
 
                     if (!$team) {
                         return;

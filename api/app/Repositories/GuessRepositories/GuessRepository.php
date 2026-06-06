@@ -87,6 +87,11 @@ class GuessRepository
             ->toArray();
     }
 
+    public function getLastScoredByUserAndPool(int $userId, int $poolId, int $limit = 3): array
+    {
+        return $this->getLastScoredByUser($userId, $limit);
+    }
+
     public function recentActivityForPools(array $poolIds, int $limit = 20): Collection
     {
         $memberUserIds = PoolMember::whereIn('pool_id', $poolIds)

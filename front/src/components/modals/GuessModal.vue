@@ -16,7 +16,10 @@ const props = withDefaults(defineProps<{
   variant: 'desktop',
 });
 
-const emit = defineEmits<{ (e: 'close'): void }>();
+const emit = defineEmits<{
+  (e: 'close'): void;
+  (e: 'submit'): void;
+}>();
 
 const { guesses, fetchMyGuesses, createGuess, updateGuess } = useGuesses();
 

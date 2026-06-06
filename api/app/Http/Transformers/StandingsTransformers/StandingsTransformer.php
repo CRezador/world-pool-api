@@ -8,11 +8,14 @@ use Illuminate\Support\Collection;
 
 class StandingsTransformer extends BaseTransformer
 {
-    private Collection $teams;
+    private Collection $teamsByTla;
+    private Collection $teamsByCode;
 
     public function __construct()
     {
-        $this->teams = Team::all()->keyBy('code');
+        $allTeams         = Team::all();
+        $this->teamsByTla  = $allTeams->filter(fn($t) => $t->tla)->keyBy('tla');
+        $this->teamsByCode = $allTeams->keyBy('code');
     }
 
     public function transform(mixed $standing): array
@@ -20,7 +23,8 @@ class StandingsTransformer extends BaseTransformer
         return [
             'group' => str_replace('Group ', '', $standing['group']),
             'table' => collect($standing['table'])->map(function ($row) {
-                $team = $this->teams->get($row['team']['tla']);
+                $tla  = $row['team']['tla'];
+                $team = $this->teamsByTla->get($tla) ?? $this->teamsByCode->get($tla);
 
                 return [
                     'position'      => $row['position'],

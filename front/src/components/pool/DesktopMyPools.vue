@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import ChipToggle from '@/components/ChipToggle.vue';
 import DesktopHero from '@/components/DesktopHero.vue';
 import DesktopPoolCard from './DesktopPoolCard.vue';
@@ -13,14 +13,13 @@ import { useCreatePoolModal } from '@/composables/useCreatePoolModal';
 import DesktopActivityFeed from './DesktopActivityFeed.vue';
 
 const router = useRouter();
-const route = useRoute();
 const join = useJoinModal();
 const create = useCreatePoolModal();
 
 const { pools: allPools, fetchMyPools } = usePools();
 const { myStats, fetchMyStats } = useLeaderboard();
 
-onMounted(() => Promise.all([fetchMyPools(), fetchMyStats()]));
+onMounted(() => Promise.all([fetchMyPools(), fetchMyStats()]).catch(() => {}));
 
 const filters = ['TODOS', 'PRIVADOS', 'PÚBLICOS', 'ATIVOS HOJE'];
 const filter = ref('TODOS');
@@ -43,11 +42,6 @@ const stats = computed(() => [
   { value: myStats.value?.bestRank ? myStats.value.bestRank + 'º': '—',                           layer: 'MELHOR POS.', tone: 'coral'   },
   { value: hitRate.value !== null ? hitRate.value + '%'          : '—',                           layer: 'PALPITADOS',  tone: 'ink', small: true },
 ]);
-
-watch(
-  () => route.params.id,
-  () => fetchMyPools(),
-);
 
 </script>
 
