@@ -30,13 +30,15 @@ async function loadPool(id: string) {
     ]);
     myRole.value   = membership.role;
     joinedAt.value = membership.joinedAt;
+  } catch {
+    // suppress — rejection must not leak to the next page after navigation
   } finally {
     loading.value = false;
   }
 }
 
 onMounted(() => loadPool(route.params.id as string));
-watch(() => route.params.id, (id) => loadPool(id as string));
+watch(() => route.params.id, (id) => { if (id) loadPool(id as string); });
 
 type TabId = 'rank' | 'members' | 'config';
 

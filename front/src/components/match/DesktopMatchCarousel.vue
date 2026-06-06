@@ -31,14 +31,16 @@ const loading = ref(true);
 onMounted(async () => {
   try {
     await fetchUpcomingMatches();
+    intervalId = setInterval(() => {
+      if (!paused.value && total.value > 0) {
+        idx.value = (idx.value + 1) % total.value;
+      }
+    }, 4500);
+  } catch {
+    // suppress — rejection must not leak to the next page after navigation
   } finally {
     loading.value = false;
   }
-  intervalId = setInterval(() => {
-    if (!paused.value && total.value > 0) {
-      idx.value = (idx.value + 1) % total.value;
-    }
-  }, 4500);
 });
 
 onUnmounted(() => {

@@ -1,37 +1,42 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import FlagImg from '@/components/FlagImg.vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import Stamp from '@/components/Stamp.vue';
-import { STANDINGS_ALL } from '@/data/standings';
 import { toneVar } from '@/data/mock';
+import { useStandings } from '@/composables/useStandings';
 
-const focus = ref('C');
+const { standings, fetchStandings } = useStandings();
+
+const focus = ref('');
+
+onMounted(async () => {
+  await fetchStandings();
+  if (standings.value.length && !focus.value) {
+    focus.value = standings.value[0].group;
+  }
+});
+
+watch(standings, (val) => {
+  if (val.length && !focus.value) focus.value = val[0].group;
+});
 
 const focusGroup = computed(() =>
-  STANDINGS_ALL.find(g => g.g === focus.value) ?? STANDINGS_ALL[2],
+  standings.value.find(g => g.group === focus.value) ?? standings.value[0],
 );
 
-const totalTeams = STANDINGS_ALL.length * 4;
-const totalQualified = STANDINGS_ALL.length * 2;
-const totalMatches = STANDINGS_ALL.reduce((s, g) => s + g.rows[0].P, 0);
+const totalTeams = computed(() => standings.value.reduce((s, g) => s + g.table.length, 0));
+const totalQualified = computed(() => standings.value.length * 2);
+const totalMatches = computed(() =>
+  standings.value.reduce((s, g) => s + (g.table[0]?.played ?? 0), 0),
+);
 
-const stats = [
-  { v: totalTeams,     l: 'SELEÇÕES',     tone: 'magenta' },
-  { v: totalQualified, l: 'VAGAS DIRETAS',tone: 'lime' },
-  { v: 8,              l: '3ºs CONVITES', tone: 'cobalt' },
-  { v: totalMatches,   l: 'JOGOS RODADOS',tone: 'coral' },
-];
+const stats = computed(() => [
+  { v: totalTeams.value,     l: 'SELEÇÕES',     tone: 'magenta' },
+  { v: totalQualified.value, l: 'VAGAS DIRETAS', tone: 'lime' },
+  { v: totalMatches.value,   l: 'JOGOS RODADOS', tone: 'coral' },
+]);
 
-function formColor(r: string) {
-  return r === 'W' ? 'lime' : r === 'D' ? 'cobalt' : r === 'L' ? 'coral' : 'paper-3';
-}
-function formBg(r: string) {
-  const c = formColor(r);
-  return c === 'paper-3' ? 'var(--paper-3)' : toneVar(c);
-}
-function formFg(r: string) {
-  const c = formColor(r);
-  return c === 'lime' || c === 'paper-3' ? 'var(--ink)' : 'var(--paper)';
+function diffStr(n: number) {
+  return n > 0 ? `+${n}` : `${n}`;
 }
 </script>
 
@@ -46,7 +51,7 @@ function formFg(r: string) {
         <div
           class="font-mono"
           :style="{ fontSize: '11px', letterSpacing: '0.22em', fontWeight: 700 }"
-        >CLASSIFICAÇÃO REAL · COPA 26 · {{ STANDINGS_ALL.length }} GRUPOS</div>
+        >CLASSIFICAÇÃO REAL · COPA 26 · {{ standings.length }} GRUPOS</div>
         <div
           class="font-display misprint-cobalt"
           :style="{
@@ -55,11 +60,11 @@ function formFg(r: string) {
           }"
         >Tabela oficial</div>
         <div :style="{ display: 'flex', gap: '12px', marginTop: '14px', alignItems: 'center' }">
-          <Stamp tone="cobalt" :rotate="-3">RODADA 02/03 EM CURSO</Stamp>
+          <Stamp tone="cobalt" :rotate="-3">DADOS AO VIVO</Stamp>
           <span
             class="font-mono"
             :style="{ fontSize: '11px', letterSpacing: '0.14em', opacity: 0.85 }"
-          >ATUALIZADO HÁ 2 MIN · FONTE FOOTBALL-DATA.ORG</span>
+          >FONTE FOOTBALL-DATA.ORG</span>
         </div>
       </div>
 
@@ -101,25 +106,29 @@ function formFg(r: string) {
         :style="{ fontSize: '10px', letterSpacing: '0.18em', fontWeight: 700, marginRight: '6px' }"
       >GRUPO</span>
       <button
-        v-for="g in STANDINGS_ALL"
-        :key="g.g"
+        v-for="g in standings"
+        :key="g.group"
         class="font-display press"
         :style="{
           minWidth: '40px', height: '36px',
-          background: focus === g.g ? 'var(--ink)' : 'var(--paper-2)',
-          color: focus === g.g ? 'var(--lime)' : 'var(--ink)',
+          background: focus === g.group ? 'var(--ink)' : 'var(--paper-2)',
+          color: focus === g.group ? 'var(--lime)' : 'var(--ink)',
           border: '1.5px solid var(--ink)',
           fontSize: '16px', cursor: 'pointer', borderRadius: '3px',
-          boxShadow: focus === g.g ? '2px 2px 0 var(--magenta)' : 'none',
+          boxShadow: focus === g.group ? '2px 2px 0 var(--magenta)' : 'none',
         }"
-        @click="focus = g.g"
-      >{{ g.g }}</button>
+        @click="focus = g.group"
+      >{{ g.group }}</button>
       <span class="font-mono" :style="{ marginLeft: 'auto', fontSize: '10px', letterSpacing: '0.14em', opacity: 0.7 }">
-        ● CLASSIFICADO · ◐ DISPUTA 3ºs · ✕ ELIMINADO
+        ● CLASSIFICADO · ✕ ELIMINADO
       </span>
     </div>
 
-    <div :style="{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 0, flex: 1 }">
+    <div v-if="!focusGroup" :style="{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }">
+      <span class="font-mono" :style="{ fontSize: '12px', opacity: 0.5 }">CARREGANDO...</span>
+    </div>
+
+    <div v-else :style="{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 0, flex: 1 }">
       <div :style="{ padding: '24px 28px', borderRight: '1.5px solid var(--ink)' }">
         <div :style="{ display: 'flex', alignItems: 'flex-end', gap: '14px', marginBottom: '16px' }">
           <div
@@ -129,12 +138,12 @@ function formFg(r: string) {
               textShadow: '4px 4px 0 var(--ink)',
               padding: '0 18px', flexShrink: 0,
             }"
-          >{{ focusGroup.g }}</div>
+          >{{ focusGroup.group }}</div>
           <div :style="{ flex: 1 }">
             <div
               class="font-mono"
               :style="{ fontSize: '11px', letterSpacing: '0.2em', fontWeight: 700, opacity: 0.8 }"
-            >GRUPO {{ focusGroup.g }} · DESTAQUE</div>
+            >GRUPO {{ focusGroup.group }} · DESTAQUE</div>
             <div
               class="font-display"
               :style="{ fontSize: '26px', lineHeight: 1, marginTop: '4px', textTransform: 'uppercase' }"
@@ -150,23 +159,22 @@ function formFg(r: string) {
           <thead>
             <tr :style="{ background: 'var(--ink)', color: 'var(--paper)' }">
               <th
-                v-for="(h, i) in ['#','SELEÇÃO','P','V','E','D','GP','GC','SG','FORMA','PTS']"
+                v-for="(h, i) in ['#','SELEÇÃO','P','V','E','D','GP','GC','SG','PTS']"
                 :key="h"
                 class="font-mono"
                 :style="{
                   padding: '8px 6px', fontSize: '10px', letterSpacing: '0.14em', fontWeight: 700,
                   textAlign: i === 1 ? 'left' : 'center',
-                  width: i === 1 ? 'auto' : i === 9 ? '78px' : 'auto',
                 }"
               >{{ h }}</th>
             </tr>
           </thead>
           <tbody :style="{ background: 'var(--paper-2)' }">
             <tr
-              v-for="(row, i) in focusGroup.rows"
+              v-for="(row, i) in focusGroup.table"
               :key="row.code"
               :style="{
-                borderBottom: i < focusGroup.rows.length - 1 ? '1px solid var(--ink)' : 'none',
+                borderBottom: i < focusGroup.table.length - 1 ? '1px solid var(--ink)' : 'none',
                 background: i < 2 ? 'rgba(212, 247, 92, 0.1)' : 'transparent',
               }"
             >
@@ -174,13 +182,13 @@ function formFg(r: string) {
                 <span class="font-display" :style="{ fontSize: '20px' }">{{ i + 1 }}</span>
                 <span :style="{
                   marginLeft: '4px', fontSize: '11px',
-                  color: i < 2 ? 'var(--lime)' : i === 2 ? 'var(--cobalt)' : 'var(--coral)',
-                }">{{ i < 2 ? '●' : i === 2 ? '◐' : '✕' }}</span>
+                  color: i < 2 ? 'var(--lime)' : 'var(--coral)',
+                }">{{ i < 2 ? '●' : '✕' }}</span>
               </td>
               <td :style="{ padding: '10px 4px' }">
                 <div :style="{ display: 'flex', alignItems: 'center', gap: '10px' }">
                   <img
-                    :src="`https://flagcdn.com/40x30/${row.iso}.png`"
+                    :src="row.crest"
                     alt=""
                     :style="{
                       width: '28px', height: '21px',
@@ -193,12 +201,12 @@ function formFg(r: string) {
                     <div
                       class="font-mono"
                       :style="{ fontSize: '9px', letterSpacing: '0.08em', opacity: 0.7, marginTop: '2px' }"
-                    >{{ row.name.toUpperCase() }}</div>
+                    >{{ row.team.toUpperCase() }}</div>
                   </div>
                 </div>
               </td>
               <td
-                v-for="k in (['P','V','E','D','GP','GC'] as const)"
+                v-for="k in (['played','won','draw','lost','goals_for','goals_against'] as const)"
                 :key="k"
                 class="font-mono"
                 :style="{ textAlign: 'center', fontSize: '13px', padding: '10px 0' }"
@@ -206,88 +214,22 @@ function formFg(r: string) {
               <td
                 class="font-mono"
                 :style="{ textAlign: 'center', fontSize: '13px', padding: '10px 0', fontWeight: 700 }"
-              >{{ row.GP - row.GC > 0 ? '+' : '' }}{{ row.GP - row.GC }}</td>
-              <td :style="{ padding: '10px 0', textAlign: 'center' }">
-                <div :style="{ display: 'flex', gap: '3px', justifyContent: 'center' }">
-                  <span
-                    v-for="(f, j) in row.form"
-                    :key="j"
-                    class="font-display"
-                    :style="{
-                      minWidth: '18px', height: '18px', lineHeight: '18px',
-                      fontSize: '10px', textAlign: 'center',
-                      background: formBg(f), color: formFg(f),
-                      border: '1px solid var(--ink)', borderRadius: '2px',
-                    }"
-                  >{{ f === '-' ? '·' : f }}</span>
-                </div>
-              </td>
+              >{{ diffStr(row.goal_diff) }}</td>
               <td
                 class="font-display"
                 :style="{
                   textAlign: 'center', fontSize: '28px', padding: '10px 6px',
                   color: i < 2 ? 'var(--lime)' : 'var(--ink)',
                 }"
-              >{{ row.pts }}</td>
+              >{{ row.points }}</td>
             </tr>
           </tbody>
         </table>
-
-        <div :style="{ marginTop: '20px' }">
-          <div
-            class="font-mono"
-            :style="{ fontSize: '10px', letterSpacing: '0.18em', fontWeight: 700, marginBottom: '8px', opacity: 0.85 }"
-          >PRÓXIMA RODADA · GRUPO {{ focusGroup.g }}</div>
-          <div :style="{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }">
-            <div
-              v-for="i in [0, 1]"
-              :key="i"
-              class="perf-bottom"
-              :style="{
-                background: 'var(--paper-2)',
-                border: '1.5px solid var(--ink)',
-                boxShadow: '3px 3px 0 var(--cobalt), 3px 3px 0 1px var(--ink)',
-                padding: '12px',
-              }"
-            >
-              <div
-                class="font-mono"
-                :style="{ fontSize: '9px', letterSpacing: '0.16em', fontWeight: 700, opacity: 0.7 }"
-              >QUI · 16:00 · MetLife</div>
-              <div :style="{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }">
-                <img
-                  :src="`https://flagcdn.com/40x30/${focusGroup.rows[i*2].iso}.png`"
-                  alt=""
-                  :style="{
-                    width: '22px', height: '16px', border: '1px solid var(--ink)',
-                    borderRadius: '2px', objectFit: 'cover',
-                  }"
-                />
-                <span class="font-display" :style="{ fontSize: '18px' }">{{ focusGroup.rows[i*2].code }}</span>
-                <span class="font-display" :style="{ fontSize: '16px', opacity: 0.4, margin: '0 6px' }">×</span>
-                <span
-                  v-if="focusGroup.rows[i*2+1]"
-                  class="font-display"
-                  :style="{ fontSize: '18px' }"
-                >{{ focusGroup.rows[i*2+1].code }}</span>
-                <img
-                  v-if="focusGroup.rows[i*2+1]"
-                  :src="`https://flagcdn.com/40x30/${focusGroup.rows[i*2+1].iso}.png`"
-                  alt=""
-                  :style="{
-                    width: '22px', height: '16px', border: '1px solid var(--ink)',
-                    borderRadius: '2px', objectFit: 'cover',
-                  }"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div :style="{ padding: '22px 24px', background: 'var(--paper-2)' }">
         <div class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.2em', fontWeight: 700 }">
-          OS 12 GRUPOS · TOQUE PARA ABRIR
+          OS {{ standings.length }} GRUPOS · TOQUE PARA ABRIR
         </div>
         <div
           class="font-display"
@@ -295,18 +237,18 @@ function formFg(r: string) {
         >o tabuleiro</div>
         <div :style="{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }">
           <div
-            v-for="g in STANDINGS_ALL"
-            :key="g.g"
+            v-for="g in standings"
+            :key="g.group"
             :style="{
               cursor: 'pointer',
-              background: g.g === focus ? 'var(--ink)' : 'var(--paper)',
-              color: g.g === focus ? 'var(--paper)' : 'var(--ink)',
+              background: g.group === focus ? 'var(--ink)' : 'var(--paper)',
+              color: g.group === focus ? 'var(--paper)' : 'var(--ink)',
               border: '1.5px solid var(--ink)',
-              boxShadow: g.g === focus ? '3px 3px 0 var(--magenta)' : '2px 2px 0 var(--ink)',
+              boxShadow: g.group === focus ? '3px 3px 0 var(--magenta)' : '2px 2px 0 var(--ink)',
               padding: '8px 10px 6px',
               transition: 'box-shadow 0.14s ease',
             }"
-            @click="focus = g.g"
+            @click="focus = g.group"
           >
             <div :style="{
               display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px',
@@ -315,22 +257,22 @@ function formFg(r: string) {
                 class="font-display"
                 :style="{
                   fontSize: '20px', lineHeight: 1,
-                  color: g.g === focus ? 'var(--lime)' : 'var(--ink)',
+                  color: g.group === focus ? 'var(--lime)' : 'var(--ink)',
                 }"
-              >{{ g.g }}</div>
+              >{{ g.group }}</div>
               <div
                 class="font-mono"
                 :style="{ fontSize: '8px', letterSpacing: '0.16em', fontWeight: 700, opacity: 0.6 }"
               >GRUPO</div>
             </div>
             <div
-              v-for="(row, i) in g.rows"
+              v-for="(row, i) in g.table"
               :key="row.code"
               :style="{
                 display: 'flex', alignItems: 'center', gap: '6px',
                 padding: '3px 0',
-                borderBottom: i < g.rows.length - 1
-                  ? `1px dashed ${g.g === focus ? 'rgba(242,233,210,0.3)' : 'var(--ink)'}`
+                borderBottom: i < g.table.length - 1
+                  ? `1px dashed ${g.group === focus ? 'rgba(242,233,210,0.3)' : 'var(--ink)'}`
                   : 'none',
               }"
             >
@@ -339,11 +281,11 @@ function formFg(r: string) {
                 :style="{ width: '12px', fontSize: '11px', opacity: 0.65, textAlign: 'center' }"
               >{{ i + 1 }}</span>
               <img
-                :src="`https://flagcdn.com/40x30/${row.iso}.png`"
+                :src="row.crest"
                 alt=""
                 :style="{
                   width: '16px', height: '12px',
-                  border: `1px solid ${g.g === focus ? 'rgba(242,233,210,0.4)' : 'var(--ink)'}`,
+                  border: `1px solid ${g.group === focus ? 'rgba(242,233,210,0.4)' : 'var(--ink)'}`,
                   borderRadius: '1px', objectFit: 'cover', flexShrink: 0,
                 }"
               />
@@ -352,12 +294,12 @@ function formFg(r: string) {
               </span>
               <span :style="{
                 fontSize: '10px',
-                color: i < 2 ? 'var(--lime)' : i === 2 ? 'var(--cobalt)' : 'transparent',
-              }">{{ i < 2 ? '●' : i === 2 ? '◐' : '' }}</span>
+                color: i < 2 ? 'var(--lime)' : 'transparent',
+              }">{{ i < 2 ? '●' : '' }}</span>
               <span
                 class="font-mono"
                 :style="{ fontSize: '11px', fontWeight: 700, minWidth: '14px', textAlign: 'right' }"
-              >{{ row.pts }}</span>
+              >{{ row.points }}</span>
             </div>
           </div>
         </div>

@@ -19,7 +19,7 @@ const create = useCreatePoolModal();
 const { pools: allPools, fetchMyPools } = usePools();
 const { myStats, fetchMyStats } = useLeaderboard();
 
-onMounted(() => Promise.all([fetchMyPools(), fetchMyStats()]));
+onMounted(() => Promise.all([fetchMyPools(), fetchMyStats()]).catch(() => {}));
 
 const filters = ['TODOS', 'PRIVADOS', 'PÚBLICOS'];
 const filter = ref('TODOS');

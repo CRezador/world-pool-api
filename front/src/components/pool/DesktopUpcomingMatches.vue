@@ -4,7 +4,7 @@ import { useMatch } from '@/composables/useMatch';
 import PendingMatchRow from './PendingMatchRow.vue';
 
 const { upcomingMatches, fetchUpcomingMatches } = useMatch();
-onMounted(fetchUpcomingMatches);
+onMounted(() => fetchUpcomingMatches().catch(() => {}));
 
 const slides = computed(() => {
   const pending = upcomingMatches.value;

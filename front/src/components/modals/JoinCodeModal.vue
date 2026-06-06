@@ -15,6 +15,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void;
+  (e: 'accept'): void;
 }>();
 
 const code = ref(['', '', '', '', '', '']);

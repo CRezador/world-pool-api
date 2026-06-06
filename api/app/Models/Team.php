@@ -11,7 +11,7 @@ class Team extends Model
     use HasFactory;
 
     protected $table = 'teams';
-    protected $fillable = ['name', 'code', 'group_id'];
+    protected $fillable = ['name', 'code', 'tla', 'group_id'];
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

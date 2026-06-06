@@ -19,6 +19,9 @@ export function useStandings() {
                 won: r.won,
                 draw: r.draw,
                 lost: r.lost,
+                goals_for: r.goals_for ?? 0,
+                goals_against: r.goals_against ?? 0,
+                goal_diff: r.goal_diff ?? 0,
                 points: r.points,
             })),
         }));

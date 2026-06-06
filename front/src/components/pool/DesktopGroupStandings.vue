@@ -36,10 +36,12 @@ const loading = ref(true);
 onMounted(async () => {
   try {
     if (standings.value.length === 0) await fetchStandings();
+    startTimer();
+  } catch {
+    // suppress — rejection must not leak to the next page after navigation
   } finally {
     loading.value = false;
   }
-  startTimer();
 });
 onUnmounted(() => { if (timer) clearInterval(timer); });
 </script>
