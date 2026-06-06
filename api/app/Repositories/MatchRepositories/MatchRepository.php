@@ -47,6 +47,7 @@ class MatchRepository
         return Matches::query()
           ->select([
               'matches.id',
+              'matches.game_day',
               'matches.kickoff_at',
               'matches.stage',
               'matches.group_id',

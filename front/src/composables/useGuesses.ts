@@ -26,11 +26,33 @@ function mapGuess(g: any): GuessEntry {
 }
 
 export function useGuesses() {
-    const fetchMyGuesses = async (poolId: string) => {
-        const res = await api.get(`pools/${poolId}/guesses`);
+    const fetchMyGuesses = async () => {
+        const res = await api.get('guesses');
         const raw: any[] = res.data.data ?? res.data;
         guesses.value = raw.map(mapGuess);
     };
 
-    return { guesses, fetchMyGuesses };
+    const createGuess = async (matchId: number, homeScore: number, awayScore: number): Promise<GuessEntry> => {
+        const res = await api.post('guesses', {
+            match_id:   matchId,
+            home_score: homeScore,
+            away_score: awayScore,
+        });
+        const created = mapGuess(res.data.data ?? res.data);
+        guesses.value = [...guesses.value, created];
+        return created;
+    };
+
+    const updateGuess = async (guessId: number, homeScore: number, awayScore: number): Promise<void> => {
+        await api.put(`guesses/${guessId}`, {
+            home_score: homeScore,
+            away_score: awayScore,
+        });
+        const idx = guesses.value.findIndex(g => g.id === guessId);
+        if (idx !== -1) {
+            guesses.value[idx] = { ...guesses.value[idx], homeScore, awayScore };
+        }
+    };
+
+    return { guesses, fetchMyGuesses, createGuess, updateGuess };
 }

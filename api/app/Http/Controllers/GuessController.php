@@ -8,7 +8,6 @@ use App\Http\Transformers\GuessTransformers\GuessTransformer;
 use App\Services\GuessServices\GuessReadService;
 use App\Services\GuessServices\GuessWriteService;
 use Illuminate\Http\Request;
-use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
 class GuessController extends Controller
@@ -19,22 +18,9 @@ class GuessController extends Controller
         private GuessTransformer $guessTransformer,
     ) {}
 
-    #[OA\Get(
-        path: '/api/pools/{poolId}/guesses',
-        summary: 'Lista os palpites do usuário autenticado no bolão',
-        security: [['sanctum' => []]],
-        tags: ['Guesses'],
-        parameters: [
-            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-        ],
-        responses: [
-            new OA\Response(response: 200, description: 'Palpites do usuário'),
-            new OA\Response(response: 401, description: 'Não autenticado'),
-        ]
-    )]
-    public function index(Request $request, int $poolId): Response
+    public function index(Request $request): Response
     {
-        $guesses = $this->guessReadService->getMyGuesses($poolId, $request->user()->id);
+        $guesses = $this->guessReadService->getMyGuesses($request->user()->id);
 
         return response()->json(
             $this->guessTransformer->collection($guesses, 'Palpites listados com sucesso'),
@@ -42,42 +28,33 @@ class GuessController extends Controller
         );
     }
 
-    #[OA\Post(
-        path: '/api/pools/{poolId}/guesses',
-        summary: 'Cria um novo palpite para uma partida',
-        security: [['sanctum' => []]],
-        tags: ['Guesses'],
-        parameters: [
-            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-        ],
-        requestBody: new OA\RequestBody(
-            required: true,
-            content: new OA\JsonContent(
-                required: ['match_id', 'home_score', 'away_score'],
-                properties: [
-                    new OA\Property(property: 'match_id', type: 'integer'),
-                    new OA\Property(property: 'home_score', type: 'integer'),
-                    new OA\Property(property: 'away_score', type: 'integer'),
-                ]
-            )
-        ),
-        responses: [
-            new OA\Response(response: 201, description: 'Palpite criado'),
-            new OA\Response(response: 400, description: 'Partida já iniciada ou dados inválidos'),
-        ]
-    )]
-    public function store(StoreGuessRequest $request, int $poolId): Response
+    public function store(StoreGuessRequest $request): Response
     {
         $data = $request->validated();
+        $userId = $request->user()->id;
 
         try {
+            $existing = $this->guessReadService->getGuessForMatch($userId, $data['match_id']);
+
+            if ($existing) {
+                $guess = $this->guessWriteService->updateGuess($existing->id, $userId, [
+                    'home_score' => $data['home_score'],
+                    'away_score' => $data['away_score'],
+                ]);
+                $guess->load(['match.homeTeam', 'match.awayTeam']);
+                return response()->json(
+                    $this->guessTransformer->item($guess, 'Palpite atualizado com sucesso'),
+                    200
+                );
+            }
+
             $guess = $this->guessWriteService->createGuess([
-                'user_id' => $request->user()->id,
-                'pool_id' => $poolId,
-                'match_id' => $data['match_id'],
+                'user_id'    => $userId,
+                'match_id'   => $data['match_id'],
                 'home_score' => $data['home_score'],
                 'away_score' => $data['away_score'],
             ]);
+            $guess->load(['match.homeTeam', 'match.awayTeam']);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 500);
         }
@@ -88,64 +65,30 @@ class GuessController extends Controller
         );
     }
 
-    #[OA\Put(
-        path: '/api/pools/{poolId}/guesses/{guessId}',
-        summary: 'Atualiza um palpite existente',
-        security: [['sanctum' => []]],
-        tags: ['Guesses'],
-        parameters: [
-            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-            new OA\Parameter(name: 'guessId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-        ],
-        requestBody: new OA\RequestBody(
-            required: true,
-            content: new OA\JsonContent(
-                required: ['home_score', 'away_score'],
-                properties: [
-                    new OA\Property(property: 'home_score', type: 'integer'),
-                    new OA\Property(property: 'away_score', type: 'integer'),
-                ]
-            )
-        ),
-        responses: [
-            new OA\Response(response: 200, description: 'Palpite atualizado'),
-            new OA\Response(response: 400, description: 'Partida já iniciada'),
-        ]
-    )]
-    public function update(UpdateGuessRequest $request, int $poolId, int $guessId): Response
+    public function update(UpdateGuessRequest $request, int $guessId): Response
     {
         $data = $request->validated();
 
         try {
-            $this->guessWriteService->updateGuess($guessId, $request->user()->id, $poolId, [
+            $guess = $this->guessWriteService->updateGuess($guessId, $request->user()->id, [
                 'home_score' => $data['home_score'],
                 'away_score' => $data['away_score'],
             ]);
+            $guess->load(['match.homeTeam', 'match.awayTeam']);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
         }
 
-        return response()->json(['message' => 'Palpite atualizado com sucesso'], 200);
+        return response()->json(
+            $this->guessTransformer->item($guess, 'Palpite atualizado com sucesso'),
+            200
+        );
     }
 
-    #[OA\Delete(
-        path: '/api/pools/{poolId}/guesses/{guessId}',
-        summary: 'Remove um palpite do usuário',
-        security: [['sanctum' => []]],
-        tags: ['Guesses'],
-        parameters: [
-            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-            new OA\Parameter(name: 'guessId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-        ],
-        responses: [
-            new OA\Response(response: 200, description: 'Palpite removido'),
-            new OA\Response(response: 400, description: 'Partida já iniciada'),
-        ]
-    )]
-    public function destroy(Request $request, int $poolId, int $guessId): Response
+    public function destroy(Request $request, int $guessId): Response
     {
         try {
-            $this->guessWriteService->deleteGuess($guessId, $request->user()->id, $poolId);
+            $this->guessWriteService->deleteGuess($guessId, $request->user()->id);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
         }
@@ -153,46 +96,6 @@ class GuessController extends Controller
         return response()->json(['message' => 'Palpite removido com sucesso'], 200);
     }
 
-    #[OA\Get(
-        path: '/api/pools/{poolId}/members/{memberId}/guesses',
-        summary: 'Lista todos os palpites de um membro específico no bolão',
-        security: [['sanctum' => []]],
-        tags: ['Guesses'],
-        parameters: [
-            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-            new OA\Parameter(name: 'memberId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-        ],
-        responses: [
-            new OA\Response(response: 200, description: 'Palpites do membro'),
-        ]
-    )]
-    public function memberGuesses(int $poolId, int $memberId): Response
-    {
-        try {
-            $guesses = $this->guessReadService->getMemberGuesses($memberId, $poolId);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 404);
-        }
-
-        return response()->json(
-            $this->guessTransformer->collection($guesses, 'Palpites do membro listados com sucesso'),
-            200
-        );
-    }
-
-    #[OA\Get(
-        path: '/api/pools/{poolId}/matches/{matchId}/guesses',
-        summary: 'Lista todos os palpites feitos para uma partida no bolão',
-        security: [['sanctum' => []]],
-        tags: ['Guesses'],
-        parameters: [
-            new OA\Parameter(name: 'poolId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-            new OA\Parameter(name: 'matchId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
-        ],
-        responses: [
-            new OA\Response(response: 200, description: 'Palpites da partida'),
-        ]
-    )]
     public function matchGuesses(int $poolId, int $matchId): Response
     {
         try {
@@ -207,4 +110,17 @@ class GuessController extends Controller
         );
     }
 
+    public function memberGuesses(int $poolId, int $memberId): Response
+    {
+        try {
+            $guesses = $this->guessReadService->getMemberGuesses($memberId, $poolId);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 404);
+        }
+
+        return response()->json(
+            $this->guessTransformer->collection($guesses, 'Palpites do membro listados com sucesso'),
+            200
+        );
+    }
 }

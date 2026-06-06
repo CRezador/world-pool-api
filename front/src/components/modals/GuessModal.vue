@@ -5,57 +5,75 @@ import StageBadge from '@/components/StageBadge.vue';
 import ScoreStepper from '@/components/ScoreStepper.vue';
 import PerfDivider from '@/components/PerfDivider.vue';
 import PrintButton from '@/components/PrintButton.vue';
-import { TEAMS } from '@/data/mock';
-import type { Match } from '@/types';
+import { useGuesses } from '@/composables/useGuesses';
+import { formatKickoff } from '@/utils/date';
+import type { ApiMatch, GuessEntry } from '@/types';
 
 const props = withDefaults(defineProps<{
-  match: Match | null;
+  match: ApiMatch | null;
   variant?: 'compact' | 'desktop';
 }>(), {
   variant: 'desktop',
 });
 
-const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'submit', payload: { matchId: number; home: number; away: number }): void;
-}>();
+const emit = defineEmits<{ (e: 'close'): void }>();
 
-const home = ref(2);
+const { guesses, fetchMyGuesses, createGuess, updateGuess } = useGuesses();
+
+const home = ref(0);
 const away = ref(0);
 const saved = ref(false);
+const loadingGuess = ref(false);
+const submitError = ref<string | null>(null);
 
-watch(() => props.match?.id, (id) => {
-  if (id) { home.value = 2; away.value = 0; saved.value = false; }
+const existingGuess = computed<GuessEntry | null>(() =>
+  props.match ? (guesses.value.find(g => g.matchId === props.match!.id) ?? null) : null,
+);
+
+async function loadGuesses(matchId: number) {
+  loadingGuess.value = true;
+  try {
+    await fetchMyGuesses();
+    const found = guesses.value.find(g => g.matchId === matchId);
+    home.value = found?.homeScore ?? 0;
+    away.value = found?.awayScore ?? 0;
+  } finally {
+    loadingGuess.value = false;
+  }
+}
+
+watch(() => props.match?.id, async (id) => {
+  if (!id) return;
+  saved.value = false;
+  submitError.value = null;
+  home.value = 0;
+  away.value = 0;
+  await loadGuesses(id);
 });
 
 function onKey(e: KeyboardEvent) {
   if (e.key === 'Escape' && props.match) emit('close');
 }
-
 onMounted(() => window.addEventListener('keydown', onKey));
 onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 
-const homeTeam = computed(() => props.match ? TEAMS[props.match.home as string] : null);
-const awayTeam = computed(() => props.match ? TEAMS[props.match.away as string] : null);
+const kickoffLabel = computed(() => formatKickoff(props.match?.kickoff));
 
-const popularGuesses = [
-  { score: '2-1', pct: 28 },
-  { score: '1-1', pct: 19 },
-  { score: '2-0', pct: 15 },
-  { score: '1-2', pct: 12 },
-  { score: '3-1', pct: 9 },
-];
-
-const myScoreKey = computed(() => `${home.value}-${away.value}`);
-
-function accept() {
-  if (!props.match) return;
+async function accept() {
+  if (!props.match || loadingGuess.value) return;
+  submitError.value = null;
   saved.value = true;
-  const payload = { matchId: props.match.id, home: home.value, away: away.value };
-  setTimeout(() => {
-    emit('submit', payload);
-    emit('close');
-  }, 700);
+  try {
+    if (existingGuess.value) {
+      await updateGuess(existingGuess.value.id, home.value, away.value);
+    } else {
+      await createGuess(props.match.id, home.value, away.value);
+    }
+    setTimeout(() => emit('close'), 700);
+  } catch (e: any) {
+    saved.value = false;
+    submitError.value = e?.response?.data?.message ?? 'Erro ao salvar palpite';
+  }
 }
 </script>
 
@@ -82,6 +100,7 @@ function accept() {
             <div class="halftone" :style="{ height: '100%' }" />
           </div>
 
+          <!-- Header -->
           <div :style="{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }">
             <div :style="{ flex: 1, minWidth: 0 }">
               <div
@@ -90,7 +109,7 @@ function accept() {
                   fontSize: variant === 'desktop' ? '10px' : '9px',
                   letterSpacing: '0.2em', fontWeight: 700, opacity: 0.75,
                 }"
-              >CRAVE O PLACAR · {{ match.day.toUpperCase() }} · {{ match.kickoff }}</div>
+              >CRAVE O PLACAR · {{ kickoffLabel }}</div>
               <div
                 class="font-display"
                 :style="{
@@ -98,13 +117,14 @@ function accept() {
                   lineHeight: 0.95,
                   marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.01em',
                 }"
-              >Apitar palpite</div>
-              <div :style="{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }">
-                <StageBadge :stage="match.stage" :group="match.group" tone="magenta" />
+              >{{ existingGuess ? 'Atualizar palpite' : 'Apitar palpite' }}</div>
+              <div :style="{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', flexWrap: 'wrap' }">
+                <StageBadge :stage="match.stage" :group="match.group ?? undefined" tone="magenta" />
                 <span
+                  v-if="existingGuess && !loadingGuess"
                   class="font-mono"
-                  :style="{ fontSize: '10px', letterSpacing: '0.12em', opacity: 0.75 }"
-                >📍 {{ match.venue.toUpperCase() }}</span>
+                  :style="{ fontSize: '10px', letterSpacing: '0.1em', opacity: 0.7 }"
+                >palpite atual: {{ existingGuess.homeScore }} × {{ existingGuess.awayScore }}</span>
               </div>
             </div>
             <button
@@ -114,6 +134,7 @@ function accept() {
             >✕</button>
           </div>
 
+          <!-- Teams & steppers -->
           <div
             :style="{
               marginTop: variant === 'desktop' ? '18px' : '14px',
@@ -123,19 +144,27 @@ function accept() {
               borderRadius: '4px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               gap: '10px',
+              opacity: loadingGuess ? 0.5 : 1,
+              transition: 'opacity 0.2s',
             }"
           >
             <div :style="{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }">
-              <FlagChip :team="(match.home as string)" :size="variant === 'desktop' ? 64 : 50" tone="magenta" />
+              <FlagChip
+                :flagCode="match.home.flag_code"
+                :teamName="match.home.name"
+                :teamCode="match.home.code"
+                :size="variant === 'desktop' ? 64 : 50"
+                tone="magenta"
+              />
               <div
                 class="font-display"
                 :style="{ fontSize: variant === 'desktop' ? '22px' : '18px', marginTop: '8px' }"
-              >{{ homeTeam?.code }}</div>
+              >{{ match.home.code }}</div>
               <div
                 class="font-mono"
                 :style="{ fontSize: '9px', letterSpacing: '0.1em', opacity: 0.65, marginBottom: '10px' }"
-              >{{ homeTeam?.name.toUpperCase() }}</div>
-              <ScoreStepper v-model:value="home" accent="magenta" />
+              >{{ match.home.name.toUpperCase() }}</div>
+              <ScoreStepper v-model:value="home" accent="magenta" :disabled="loadingGuess" />
             </div>
             <div
               class="font-display"
@@ -145,19 +174,26 @@ function accept() {
               }"
             >×</div>
             <div :style="{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }">
-              <FlagChip :team="(match.away as string)" :size="variant === 'desktop' ? 64 : 50" tone="cobalt" />
+              <FlagChip
+                :flagCode="match.away.flag_code"
+                :teamName="match.away.name"
+                :teamCode="match.away.code"
+                :size="variant === 'desktop' ? 64 : 50"
+                tone="cobalt"
+              />
               <div
                 class="font-display"
                 :style="{ fontSize: variant === 'desktop' ? '22px' : '18px', marginTop: '8px' }"
-              >{{ awayTeam?.code }}</div>
+              >{{ match.away.code }}</div>
               <div
                 class="font-mono"
                 :style="{ fontSize: '9px', letterSpacing: '0.1em', opacity: 0.65, marginBottom: '10px' }"
-              >{{ awayTeam?.name.toUpperCase() }}</div>
-              <ScoreStepper v-model:value="away" accent="cobalt" />
+              >{{ match.away.name.toUpperCase() }}</div>
+              <ScoreStepper v-model:value="away" accent="cobalt" :disabled="loadingGuess" />
             </div>
           </div>
 
+          <!-- Points info -->
           <div :style="{
             marginTop: '14px', padding: '10px 12px',
             background: 'var(--ink)', color: 'var(--paper)', borderRadius: '3px',
@@ -172,52 +208,32 @@ function accept() {
             <span
               class="font-mono"
               :style="{ fontSize: '10px', letterSpacing: '0.12em', opacity: 0.7 }"
-            >FECHA {{ match.day }} {{ match.kickoff }}</span>
+            >FECHA {{ kickoffLabel }}</span>
           </div>
 
-          <div v-if="variant === 'desktop'" :style="{ marginTop: '14px' }">
-            <div
-              class="font-mono"
-              :style="{
-                fontSize: '10px', letterSpacing: '0.16em', fontWeight: 700,
-                marginBottom: '6px', opacity: 0.85,
-              }"
-            >O QUE A GERAL ACHA · 12 SÓCIOS</div>
-            <div :style="{ display: 'flex', flexDirection: 'column', gap: '4px' }">
-              <div
-                v-for="p in popularGuesses"
-                :key="p.score"
-                :style="{ display: 'flex', alignItems: 'center', gap: '10px' }"
-              >
-                <div class="font-display" :style="{ fontSize: '14px', minWidth: '36px' }">{{ p.score }}</div>
-                <div :style="{
-                  flex: 1, height: '12px', background: 'var(--paper-2)',
-                  border: '1.5px solid var(--ink)', position: 'relative',
-                }">
-                  <div :style="{
-                    height: '100%', width: `${p.pct * 3}%`,
-                    background: p.score === myScoreKey ? 'var(--magenta)' : 'var(--ink)',
-                  }" />
-                  <div class="halftone" :style="{
-                    position: 'absolute', inset: 0,
-                    color: 'var(--paper)', opacity: 0.35,
-                    mixBlendMode: 'difference', pointerEvents: 'none',
-                  }" />
-                </div>
-                <div
-                  class="font-mono"
-                  :style="{ fontSize: '11px', minWidth: '32px', textAlign: 'right' }"
-                >{{ p.pct }}%</div>
-              </div>
-            </div>
+          <!-- Error -->
+          <div
+            v-if="submitError"
+            :style="{ marginTop: '10px', padding: '8px 12px', background: 'var(--coral)', borderRadius: '3px' }"
+          >
+            <span class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.1em', color: 'var(--paper)' }">
+              {{ submitError }}
+            </span>
           </div>
 
           <PerfDivider />
 
           <div :style="{ display: 'flex', gap: '8px', marginTop: '12px' }">
             <button class="font-display press modal-cancel" @click="$emit('close')">Cancelar</button>
-            <PrintButton :tone="saved ? 'lime' : 'magenta'" full @click="accept">
-              {{ saved ? '✓ Palpite cravado' : `Cravar ${home} × ${away}` }}
+            <PrintButton
+              :tone="saved ? 'lime' : 'magenta'"
+              full
+              :disabled="loadingGuess"
+              @click="accept"
+            >
+              <span v-if="loadingGuess">Carregando...</span>
+              <span v-else-if="saved">✓ Palpite cravado</span>
+              <span v-else>{{ existingGuess ? 'Atualizar' : 'Cravar' }} {{ home }} × {{ away }}</span>
             </PrintButton>
           </div>
         </div>

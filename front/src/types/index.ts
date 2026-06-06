@@ -167,6 +167,7 @@ export interface GroupTableRow {
 
 /** A full group (letter + its 4 teams) for the Jogos group grid / drill-down. */
 export interface GroupFull {
+  id: number;
   g: string;
   rows: GroupTableRow[];
 }

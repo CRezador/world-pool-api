@@ -35,7 +35,7 @@ class LeaderboardWriteService
 
     public function syncUser(int $poolId, int $userId): void
     {
-        $stats = $this->guessRepository->aggregateStatsByUserAndPool($poolId, $userId);
+        $stats = $this->guessRepository->aggregateStatsByUser($userId);
         $this->leaderboardRepository->updateStats($poolId, $userId, $stats);
     }
 

@@ -1,17 +1,60 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import DesktopGroupCard from '@/components/match/DesktopGroupCard.vue';
 import DesktopMatchCard from '@/components/match/DesktopMatchCard.vue';
-import {
-  MATCHES, ALL_GROUPS_STANDINGS, KNOCKOUT_STAGES, getGroupMatches, toneVar, toneFg,
-} from '@/data/mock';
+import { useMatchesBoard, KNOCKOUT_STAGES } from '@/composables/useMatchesBoard';
 import { useGuessModal } from '@/composables/useGuessModal';
-import type { Match, MatchStatus } from '@/types';
+import { useGuesses } from '@/composables/useGuesses';
+import { toneVar, toneFg } from '@/utils/tone';
+import type { ApiMatch, GroupFull, MatchStatus } from '@/types';
+
+const router = useRouter();
+const route = useRoute();
 
 const guess = useGuessModal();
+const { groups, matches, loading, error, load, loadGroupMatches, loadKnockoutMatches, groupByStatus, currentRodada } = useMatchesBoard();
+const { fetchMyGuesses } = useGuesses();
+
+const knockoutMatchesByStage = computed(() => {
+  const map: Record<string, ApiMatch[]> = {};
+  for (const stg of KNOCKOUT_STAGES) {
+    map[stg.id] = matches.value.filter(m => m.stage === stg.id);
+  }
+  return map;
+});
 
 const phase = ref<'groups' | 'knockout'>('groups');
 const group = ref<string | null>(null);
+
+async function initGroup(groupId: string | undefined) {
+  if (!groupId) return;
+  await load();
+  const found = groups.value.find(g => String(g.id) === groupId);
+  if (found) {
+    group.value = found.g;
+    loadGroupMatches(found.id);
+  }
+}
+
+onMounted(async () => {
+  fetchMyGuesses();
+  const groupId = route.params.groupId as string | undefined;
+  if (groupId) {
+    await initGroup(groupId);
+  } else {
+    load();
+  }
+});
+
+watch(() => route.params.groupId, (groupId) => {
+  if (!groupId) {
+    group.value = null;
+    phase.value = 'groups';
+  } else {
+    initGroup(groupId as string);
+  }
+});
 
 const phases = [
   { id: 'groups', label: 'Fase de grupos' },
@@ -21,6 +64,11 @@ const phases = [
 function switchPhase(p: 'groups' | 'knockout') {
   phase.value = p;
   group.value = null;
+  if (p === 'knockout') loadKnockoutMatches();
+}
+
+function selectGroup(g: GroupFull) {
+  router.push(`/matches/${g.id}`);
 }
 
 const statusCols: MatchStatus[] = ['SCHEDULED', 'IN_PROGRESS', 'FINISHED'];
@@ -32,18 +80,14 @@ const statusAccents: Record<MatchStatus, string> = {
 };
 
 const selectedGroup = computed(() =>
-  group.value ? ALL_GROUPS_STANDINGS.find(g => g.g === group.value) ?? null : null,
-);
-const groupMatches = computed(() => (group.value ? getGroupMatches(group.value) : []));
-const groupByStatus = (status: MatchStatus) => groupMatches.value.filter(m => m.status === status);
-
-const knockoutBlocks = computed(() =>
-  KNOCKOUT_STAGES
-    .map(stg => ({ stg, list: MATCHES.filter(m => m.stage === stg.id) }))
-    .filter(b => b.list.length > 0),
+  group.value ? groups.value.find(g => g.g === group.value) ?? null : null,
 );
 
-function palpitar(m: Match) {
+const selectedGroupRodada = computed(() =>
+  group.value ? currentRodada(group.value) : null,
+);
+
+function palpitar(m: ApiMatch) {
   guess.show(m);
 }
 </script>
@@ -86,11 +130,19 @@ function palpitar(m: Match) {
       </div>
     </div>
 
+    <!-- Loading / error state -->
+    <div v-if="loading" :style="{ padding: '48px 28px', textAlign: 'center' }">
+      <span class="font-mono" :style="{ fontSize: '11px', letterSpacing: '0.2em', opacity: 0.6 }">CARREGANDO...</span>
+    </div>
+    <div v-else-if="error" :style="{ padding: '48px 28px', textAlign: 'center' }">
+      <span class="font-mono" :style="{ fontSize: '11px', letterSpacing: '0.2em', color: 'var(--coral)' }">{{ error }}</span>
+    </div>
+
     <!-- GROUPS · grid -->
-    <div v-if="phase === 'groups' && !group" :style="{ padding: '22px 28px 30px' }">
+    <div v-else-if="phase === 'groups' && !group" :style="{ padding: '22px 28px 30px' }">
       <div :style="{ minWidth: 0 }">
         <div class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.2em', fontWeight: 700, color: 'var(--magenta)' }">
-          A CLASSIFICAÇÃO · 12 CHAVES
+          A CLASSIFICAÇÃO · {{ groups.length }} CHAVES
         </div>
         <div :style="{ display: 'flex', alignItems: 'baseline', gap: '14px', marginTop: '2px' }">
           <div class="font-display" :style="{ fontSize: '34px', lineHeight: 0.95, textTransform: 'uppercase', whiteSpace: 'nowrap', flexShrink: 0 }">
@@ -104,10 +156,10 @@ function palpitar(m: Match) {
       </div>
       <div :style="{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginTop: '18px' }">
         <DesktopGroupCard
-          v-for="g in ALL_GROUPS_STANDINGS"
+          v-for="g in groups"
           :key="g.g"
           :group="g"
-          @click="group = g.g"
+          @click="selectGroup(g)"
         />
       </div>
     </div>
@@ -160,7 +212,7 @@ function palpitar(m: Match) {
             border: '1.5px solid var(--ink)', boxShadow: '2px 2px 0 var(--magenta)',
             cursor: 'pointer', borderRadius: '3px',
           }"
-          @click="group = null"
+          @click="router.push('/matches')"
         >← GRUPOS</button>
       </div>
 
@@ -171,7 +223,7 @@ function palpitar(m: Match) {
         </div>
         <div :style="{ display: 'flex', alignItems: 'baseline', gap: '14px', marginTop: '2px' }">
           <div class="font-display" :style="{ fontSize: '34px', lineHeight: 0.95, textTransform: 'uppercase', whiteSpace: 'nowrap', flexShrink: 0 }">
-            Jogos pra palpitar
+            Jogos pra palpitar<template v-if="selectedGroupRodada"> · Rodada {{ selectedGroupRodada }}</template>
           </div>
           <div :style="{ flex: 1, height: '3px', background: 'var(--ink)' }" />
         </div>
@@ -193,16 +245,16 @@ function palpitar(m: Match) {
             }"
           >
             <span>{{ statusTitles[status] }}</span>
-            <span>{{ groupByStatus(status).length }}</span>
+            <span>{{ groupByStatus(group!, status).length }}</span>
           </div>
           <div :style="{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }">
             <div
-              v-if="groupByStatus(status).length === 0"
+              v-if="groupByStatus(group!, status).length === 0"
               class="font-mono"
               :style="{ padding: '16px', opacity: 0.5, fontSize: '11px', border: '1.5px dashed var(--ink)', textAlign: 'center' }"
             >nenhum jogo</div>
             <DesktopMatchCard
-              v-for="m in groupByStatus(status)"
+              v-for="m in groupByStatus(group!, status)"
               :key="m.id"
               :match="m"
               :accent="statusAccents[status]"
@@ -214,7 +266,7 @@ function palpitar(m: Match) {
     </div>
 
     <!-- KNOCKOUT -->
-    <div v-else :style="{ padding: '22px 28px 30px' }">
+    <div v-else-if="phase === 'knockout'" :style="{ padding: '22px 28px 30px' }">
       <div>
         <div class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.2em', fontWeight: 700, color: 'var(--magenta)' }">
           ELIMINATÓRIAS · A FORCA
@@ -231,7 +283,7 @@ function palpitar(m: Match) {
       </div>
 
       <div :style="{ display: 'flex', flexDirection: 'column', gap: '26px', marginTop: '20px' }">
-        <div v-for="{ stg, list } in knockoutBlocks" :key="stg.id">
+        <div v-for="stg in KNOCKOUT_STAGES" :key="stg.id">
           <!-- Phase header -->
           <div :style="{
             display: 'flex', alignItems: 'stretch',
@@ -260,18 +312,54 @@ function palpitar(m: Match) {
                   fontSize: '11px', letterSpacing: '0.14em', fontWeight: 700,
                   padding: '5px 12px', background: 'var(--ink)', color: 'var(--paper)', borderRadius: '999px',
                 }"
-              >{{ list.length }} {{ list.length === 1 ? 'JOGO' : 'JOGOS' }}</span>
+              >
+                {{ knockoutMatchesByStage[stg.id].length || 'TBD' }}
+                <template v-if="knockoutMatchesByStage[stg.id].length">
+                  {{ knockoutMatchesByStage[stg.id].length === 1 ? 'JOGO' : 'JOGOS' }}
+                </template>
+              </span>
             </div>
           </div>
 
-          <div :style="{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }">
+          <!-- Real matches -->
+          <div v-if="knockoutMatchesByStage[stg.id].length" :style="{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }">
             <DesktopMatchCard
-              v-for="m in list"
+              v-for="m in knockoutMatchesByStage[stg.id]"
               :key="m.id"
               :match="m"
               :accent="stg.accent"
               @palpitar="palpitar(m)"
             />
+          </div>
+
+          <!-- TBD placeholder -->
+          <div
+            v-else
+            class="perf-bottom"
+            :style="{
+              background: 'var(--paper-2)', border: '1.5px solid var(--ink)',
+              boxShadow: `4px 4px 0 ${toneVar(stg.accent)}, 4px 4px 0 1px var(--ink)`,
+              padding: '24px 20px', display: 'flex', flexDirection: 'column',
+              alignItems: 'center', gap: '10px',
+            }"
+          >
+            <span class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.2em', fontWeight: 700, opacity: 0.45 }">
+              A DEFINIR
+            </span>
+            <div :style="{ display: 'flex', alignItems: 'center', gap: '16px' }">
+              <div :style="{
+                width: '36px', height: '36px', borderRadius: '50%',
+                border: '1.5px dashed var(--ink)', opacity: 0.3,
+              }" />
+              <span class="font-display" :style="{ fontSize: '20px', opacity: 0.3 }">×</span>
+              <div :style="{
+                width: '36px', height: '36px', borderRadius: '50%',
+                border: '1.5px dashed var(--ink)', opacity: 0.3,
+              }" />
+            </div>
+            <span class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.14em', opacity: 0.35 }">
+              PARTIDAS NÃO DEFINIDAS
+            </span>
           </div>
         </div>
       </div>

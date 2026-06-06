@@ -56,8 +56,8 @@ class ActivityReadService
 
         return [
             'id'         => $guess->id,
-            'pool_id'    => $guess->pool_id,
-            'pool_name'  => $guess->pool->name,
+            'pool_id'    => 0,
+            'pool_name'  => '',
             'created_at' => $guess->created_at->toIso8601String(),
             'actor'      => $guess->user->name,
             'is_me'      => $guess->user_id === $userId,

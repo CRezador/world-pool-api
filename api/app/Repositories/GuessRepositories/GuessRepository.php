@@ -5,6 +5,7 @@ namespace App\Repositories\GuessRepositories;
 use App\Http\Enums\GuessPoints;
 use App\Http\Enums\MatchStatus;
 use App\Models\Guess;
+use App\Models\PoolMember;
 use Illuminate\Database\Eloquent\Collection;
 
 class GuessRepository
@@ -41,20 +42,19 @@ class GuessRepository
         return false;
     }
 
-    public function getByUserAndPool(int $userId, int $poolId): Collection
+    public function getByUser(int $userId): Collection
     {
         return Guess::where('user_id', $userId)
-            ->where('pool_id', $poolId)
             ->with('match.homeTeam', 'match.awayTeam')
             ->orderBy('match_id')
             ->get();
     }
 
-    public function getByMatchAndPool(int $matchId, int $poolId): Collection
+    public function getByUserAndMatch(int $userId, int $matchId): ?Guess
     {
-        return Guess::where('match_id', $matchId)
-            ->where('pool_id', $poolId)
-            ->get();
+        return Guess::where('user_id', $userId)
+            ->where('match_id', $matchId)
+            ->first();
     }
 
     public function getByMatch(int $matchId): Collection
@@ -62,18 +62,24 @@ class GuessRepository
         return Guess::where('match_id', $matchId)->get();
     }
 
-    public function getByMemberAndPool(int $userId, int $poolId): Collection
+    public function getByMatchInPool(int $matchId, int $poolId): Collection
     {
-        return Guess::where('user_id', $userId)
-            ->where('pool_id', $poolId)
+        $memberUserIds = PoolMember::where('pool_id', $poolId)->pluck('user_id');
+
+        return Guess::where('match_id', $matchId)
+            ->whereIn('user_id', $memberUserIds)
             ->get();
     }
 
-    public function getLastScoredByUserAndPool(int $userId, int $poolId, int $limit = 3): array
+    public function getByUserInPool(int $userId, int $poolId): Collection
     {
-        return Guess::where('guesses.user_id', $userId)
-            ->where('guesses.pool_id', $poolId)
-            ->whereNotNull('guesses.points')
+        return $this->getByUser($userId);
+    }
+
+    public function getLastScoredByUser(int $userId, int $limit = 3): array
+    {
+        return Guess::where('user_id', $userId)
+            ->whereNotNull('points')
             ->join('matches', 'matches.id', '=', 'guesses.match_id')
             ->orderBy('matches.kickoff_at', 'desc')
             ->limit($limit)
@@ -83,17 +89,21 @@ class GuessRepository
 
     public function recentActivityForPools(array $poolIds, int $limit = 20): Collection
     {
-        return Guess::whereIn('pool_id', $poolIds)
-            ->with(['user', 'pool', 'match.homeTeam', 'match.awayTeam'])
+        $memberUserIds = PoolMember::whereIn('pool_id', $poolIds)
+            ->pluck('user_id')
+            ->unique()
+            ->toArray();
+
+        return Guess::whereIn('user_id', $memberUserIds)
+            ->with(['user', 'match.homeTeam', 'match.awayTeam'])
             ->orderByDesc('created_at')
             ->limit($limit)
             ->get();
     }
 
-    public function aggregateStatsByUserAndPool(int $poolId, int $userId): array
+    public function aggregateStatsByUser(int $userId): array
     {
-        $result = Guess::where('guesses.pool_id', $poolId)
-            ->where('guesses.user_id', $userId)
+        $result = Guess::where('guesses.user_id', $userId)
             ->join('matches', 'matches.id', '=', 'guesses.match_id')
             ->where('matches.status', MatchStatus::FINISHED->value)
             ->selectRaw('

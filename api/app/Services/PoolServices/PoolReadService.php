@@ -47,7 +47,7 @@ class PoolReadService
 
             $pool->my_points    = $entry?->points ?? 0;
             $pool->my_rank      = $entry?->position;
-            $pool->last_results = $this->guessRepository->getLastScoredByUserAndPool($userId, $pool->id);
+            $pool->last_results = $this->guessRepository->getLastScoredByUser($userId);
             $pool->leader       = $this->leaderboardRepository->getLeader($pool->id);
         }
 
