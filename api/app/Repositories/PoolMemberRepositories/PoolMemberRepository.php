@@ -66,6 +66,32 @@ class PoolMemberRepository
         ]);
     }
 
+    public function hasLeft(int $poolId, int $userId): bool
+    {
+        return PoolMember::query()
+            ->where('pool_id', $poolId)
+            ->where('user_id', $userId)
+            ->where('status', PoolMemberStatus::LEFT->value)
+            ->exists();
+    }
+
+    public function rejoin(int $poolId, PoolUserRole $role, int $userId): PoolMember
+    {
+        PoolMember::query()
+            ->where('pool_id', $poolId)
+            ->where('user_id', $userId)
+            ->update([
+                'role' => $role->value,
+                'status' => PoolMemberStatus::ACTIVE->value,
+                'joined_at' => now(),
+            ]);
+
+        return PoolMember::query()
+            ->where('pool_id', $poolId)
+            ->where('user_id', $userId)
+            ->first();
+    }
+
     public function getMemberByUserId(int $poolId, int $userId): ?PoolMember
     {
         return PoolMember::query()
