@@ -13,7 +13,6 @@ class Guess extends Model
     protected $table = 'guesses';
     protected $fillable = [
         'user_id',
-        'pool_id',
         'match_id',
         'home_score',
         'away_score',
@@ -27,11 +26,6 @@ class Guess extends Model
         'updated_at' => 'datetime',
     ];
     protected $connection = 'mysql';
-
-    public function pool(): BelongsTo
-    {
-        return $this->belongsTo(Pool::class, 'pool_id');
-    }
 
     public function user(): BelongsTo
     {

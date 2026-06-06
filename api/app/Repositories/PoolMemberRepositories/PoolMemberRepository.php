@@ -162,6 +162,14 @@ class PoolMemberRepository
         return $member ? $member->role : null;
     }
 
+    public function getPoolIdsByUser(int $userId): array
+    {
+        return PoolMember::where('user_id', $userId)
+            ->where('status', PoolMemberStatus::ACTIVE->value)
+            ->pluck('pool_id')
+            ->toArray();
+    }
+
     public function banMember(int $poolId, int $memberId): void
     {
         PoolMember::query()

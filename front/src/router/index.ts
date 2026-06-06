@@ -46,6 +46,12 @@ const routes: RouteRecordRaw[] = [
     meta: { desktopLayout: true },
   },
   {
+    path: '/matches/:groupId',
+    name: 'matches-group',
+    component: () => import('@/views/MatchesView.vue'),
+    meta: { desktopLayout: true },
+  },
+  {
     path: '/guess/:matchId',
     name: 'guess',
     component: () => import('@/views/GuessView.vue'),
@@ -67,7 +73,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/MeView.vue'),
     meta: { desktopLayout: true },
   },
-  { path: '/:pathMatch(.*)*', redirect: '/' },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: () => import('@/views/NotFoundView.vue'),
+    meta: { hideTabs: true },
+  },
 ];
 
 export const router = createRouter({

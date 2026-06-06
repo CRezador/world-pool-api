@@ -2,6 +2,7 @@
 
 namespace App\Services\GuessServices;
 
+use App\Models\Guess;
 use App\Repositories\GuessRepositories\GuessRepository;
 use App\Repositories\MatchRepositories\MatchRepository;
 use App\Repositories\PoolMemberRepositories\PoolMemberRepository;
@@ -15,9 +16,14 @@ class GuessReadService
         private PoolMemberRepository $poolMemberRepository,
     ) {}
 
-    public function getMyGuesses(int $poolId, int $userId): Collection
+    public function getMyGuesses(int $userId): Collection
     {
-        return $this->guessRepository->getByUserAndPool($userId, $poolId);
+        return $this->guessRepository->getByUser($userId);
+    }
+
+    public function getGuessForMatch(int $userId, int $matchId): ?Guess
+    {
+        return $this->guessRepository->getByUserAndMatch($userId, $matchId);
     }
 
     public function getMatchGuesses(int $matchId, int $poolId): Collection
@@ -27,7 +33,7 @@ class GuessReadService
             throw new \Exception('Partida não encontrada.', 404);
         }
 
-        return $this->guessRepository->getByMatchAndPool($matchId, $poolId);
+        return $this->guessRepository->getByMatchInPool($matchId, $poolId);
     }
 
     public function getMemberGuesses(int $memberId, int $poolId): Collection
@@ -37,6 +43,6 @@ class GuessReadService
             throw new \Exception('Membro não encontrado neste bolão.', 404);
         }
 
-        return $this->guessRepository->getByMemberAndPool($member->user_id, $poolId);
+        return $this->guessRepository->getByUser($member->user_id);
     }
 }

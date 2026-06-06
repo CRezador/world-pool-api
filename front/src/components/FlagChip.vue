@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { TEAMS, toneVar } from '@/data/mock';
+import { toneVar } from '@/utils/tone';
 
 const props = withDefaults(defineProps<{
-  team: string;
+  flagCode?: string;
+  teamName?: string;
+  teamCode?: string;
   size?: number;
   mode?: 'flag' | 'code';
   tone?: string;
@@ -13,12 +15,15 @@ const props = withDefaults(defineProps<{
   tone: 'ink',
 });
 
-const team = computed(() => TEAMS[props.team]);
+const iso = computed(() => props.flagCode);
+const displayCode = computed(() => props.teamCode ?? '?');
+const displayName = computed(() => props.teamName ?? '');
 const shadowColor = computed(() => toneVar(props.tone));
+const visible = computed(() => Boolean(iso.value || props.teamCode));
 </script>
 
 <template>
-  <template v-if="team">
+  <template v-if="visible">
     <div
       v-if="mode === 'code'"
       class="font-display"
@@ -28,7 +33,7 @@ const shadowColor = computed(() => toneVar(props.tone));
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: `${size * 0.42}px`, letterSpacing: '0.05em',
       }"
-    >{{ team.code }}</div>
+    >{{ displayCode }}</div>
     <div
       v-else
       :style="{
@@ -42,9 +47,10 @@ const shadowColor = computed(() => toneVar(props.tone));
       }"
     >
       <img
-        :src="`https://flagcdn.com/w160/${team.iso}.png`"
-        :srcset="`https://flagcdn.com/w160/${team.iso}.png 1x, https://flagcdn.com/w320/${team.iso}.png 2x`"
-        :alt="team.name"
+        v-if="iso"
+        :src="`https://flagcdn.com/w160/${iso}.png`"
+        :srcset="`https://flagcdn.com/w160/${iso}.png 1x, https://flagcdn.com/w320/${iso}.png 2x`"
+        :alt="displayName"
         :style="{
           width: `${size + 8}px`, height: `${size + 8}px`,
           objectFit: 'cover', borderRadius: '50%',

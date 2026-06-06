@@ -65,11 +65,11 @@ Route::middleware('auth:sanctum')->group(
         Route::post('/pools/{poolId}/members/{memberId}/unban', [PoolMemberController::class, 'unban'])->middleware('PoolMemberAdmin');
 
         //Rotas de Palpites
+        Route::get('/guesses', [GuessController::class, 'index']);
+        Route::post('/guesses', [GuessController::class, 'store']);
+        Route::put('/guesses/{guessId}', [GuessController::class, 'update']);
+        Route::delete('/guesses/{guessId}', [GuessController::class, 'destroy']);
         Route::middleware('PoolMember')->group(function () {
-            Route::get('/pools/{poolId}/guesses', [GuessController::class, 'index']);
-            Route::post('/pools/{poolId}/guesses', [GuessController::class, 'store']);
-            Route::put('/pools/{poolId}/guesses/{guessId}', [GuessController::class, 'update']);
-            Route::delete('/pools/{poolId}/guesses/{guessId}', [GuessController::class, 'destroy']);
             Route::get('/pools/{poolId}/matches/{matchId}/guesses', [GuessController::class, 'matchGuesses']);
             Route::get('/pools/{poolId}/members/{memberId}/guesses', [GuessController::class, 'memberGuesses']);
         });

@@ -1,12 +1,12 @@
 import { ref } from 'vue';
-import type { Match } from '@/types';
+import type { ApiMatch } from '@/types';
 
-const match = ref<Match | null>(null);
+const match = ref<ApiMatch | null>(null);
 
 export function useGuessModal() {
   return {
     match,
-    show(m: Match) { match.value = m; },
+    show(m: ApiMatch) { match.value = m; },
     hide() { match.value = null; },
   };
 }

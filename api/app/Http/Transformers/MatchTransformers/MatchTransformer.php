@@ -22,7 +22,7 @@ class MatchTransformer extends BaseTransformer
               ? $match->group->name
               : null,
             'status' => $match->status->name,
-            'kickoff_at' => $match->kickoff_at === null ? null : $match->kickoff_at->format('d/m/Y'),
+            'kickoff_at' => $match->kickoff_at === null ? null : $match->kickoff_at->format('d/m/Y H:i'),
             'home_score' => $match->home_score,
             'away_score' => $match->away_score,
         ];

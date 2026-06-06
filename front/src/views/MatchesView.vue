@@ -1,18 +1,25 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import SectionHead from '@/components/SectionHead.vue';
 import MatchListCard from '@/components/match/MatchListCard.vue';
 import MatchGroupCard from '@/components/match/MatchGroupCard.vue';
 import DesktopMatchesBoard from '@/components/match/DesktopMatchesBoard.vue';
-import {
-  MATCHES, ALL_GROUPS_STANDINGS, KNOCKOUT_STAGES, getGroupMatches, toneVar, toneFg,
-} from '@/data/mock';
+import GuessModal from '@/components/modals/GuessModal.vue';
+import { useMatchesBoard, KNOCKOUT_STAGES } from '@/composables/useMatchesBoard';
+import { useGuessModal } from '@/composables/useGuessModal';
+import { useGuesses } from '@/composables/useGuesses';
 import { useBreakpoint } from '@/composables/useBreakpoint';
-import type { Match } from '@/types';
+import { toneVar } from '@/utils/tone';
+import type { ApiMatch, GroupFull } from '@/types';
 
 const router = useRouter();
+const route = useRoute();
 const { isDesktop } = useBreakpoint();
+
+const guessModal = useGuessModal();
+const { groups, matches, loading, error, load, loadGroupMatches, loadKnockoutMatches, groupByStatus, currentRodada } = useMatchesBoard();
+const { fetchMyGuesses } = useGuesses();
 
 const phase = ref<'groups' | 'knockout'>('groups');
 const group = ref<string | null>(null);
@@ -22,35 +29,80 @@ const phases = [
   { id: 'knockout', label: 'Mata-mata' },
 ] as const;
 
+const selectedGroup = computed(() =>
+  group.value ? groups.value.find(g => g.g === group.value) ?? null : null,
+);
+
+const selectedGroupRodada = computed(() =>
+  group.value ? currentRodada(group.value) : null,
+);
+
+const knockoutMatchesByStage = computed(() => {
+  const map: Record<string, ApiMatch[]> = {};
+  for (const stg of KNOCKOUT_STAGES) {
+    map[stg.id] = matches.value.filter(m => m.stage === stg.id);
+  }
+  return map;
+});
+
+async function initGroup(groupId: string) {
+  await load();
+  const found = groups.value.find(g => String(g.id) === groupId);
+  if (found) {
+    group.value = found.g;
+    loadGroupMatches(found.id);
+  }
+}
+
+function selectGroup(g: GroupFull) {
+  router.push(`/matches/${g.id}`);
+}
+
 function switchPhase(p: 'groups' | 'knockout') {
   phase.value = p;
   group.value = null;
+  router.push('/matches');
+  if (p === 'knockout') loadKnockoutMatches();
 }
 
-const selectedGroup = computed(() =>
-  group.value ? ALL_GROUPS_STANDINGS.find(g => g.g === group.value) ?? null : null,
-);
-const groupMatches = computed(() => (group.value ? getGroupMatches(group.value) : []));
-
-const knockoutBlocks = computed(() =>
-  KNOCKOUT_STAGES
-    .map(stg => ({ stg, list: MATCHES.filter(m => m.stage === stg.id) }))
-    .filter(b => b.list.length > 0),
-);
-
-function goMatch(m: Match) {
-  router.push(m.status === 'SCHEDULED' ? `/guess/${m.id}` : `/match/${m.id}`);
+function goBack() {
+  group.value = null;
+  router.push('/matches');
 }
+
+function palpitar(m: ApiMatch) {
+  guessModal.show(m);
+}
+
+onMounted(async () => {
+  fetchMyGuesses();
+  const groupId = route.params.groupId as string | undefined;
+  if (groupId) {
+    await initGroup(groupId);
+  } else {
+    load();
+  }
+});
+
+watch(() => route.params.groupId, (groupId) => {
+  if (!groupId) {
+    group.value = null;
+    phase.value = 'groups';
+  } else {
+    initGroup(groupId as string);
+  }
+});
 </script>
 
 <template>
   <DesktopMatchesBoard v-if="isDesktop" />
+
   <div v-else :style="{ background: 'var(--paper)', minHeight: '100%' }">
     <div :style="{ padding: '14px 18px 12px', borderBottom: '1.5px solid var(--ink)' }">
       <SectionHead kicker="CALENDÁRIO · COPA 26" title="Tabela de jogos" />
     </div>
 
-    <!-- Phase toggle — Grupos / Mata-mata -->
+    <!-- Phase toggle -->
     <div :style="{ padding: '12px 18px', borderBottom: '1.5px solid var(--ink)' }">
       <div :style="{
         display: 'flex', width: '100%',
@@ -73,27 +125,35 @@ function goMatch(m: Match) {
       </div>
     </div>
 
-    <!-- GROUPS · grid -->
-    <div v-if="phase === 'groups' && !group" :style="{ padding: '14px 18px 20px' }">
+    <!-- Loading / error -->
+    <div v-if="loading" :style="{ padding: '40px 18px', textAlign: 'center' }">
+      <span class="font-mono" :style="{ fontSize: '11px', letterSpacing: '0.2em', opacity: 0.5 }">CARREGANDO...</span>
+    </div>
+    <div v-else-if="error" :style="{ padding: '40px 18px', textAlign: 'center' }">
+      <span class="font-mono" :style="{ fontSize: '11px', letterSpacing: '0.14em', color: 'var(--coral)' }">{{ error }}</span>
+    </div>
+
+    <!-- GRUPOS · lista de grupos -->
+    <div v-else-if="phase === 'groups' && !group" :style="{ padding: '14px 18px 20px' }">
       <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.18em', fontWeight: 700, color: 'var(--magenta)' }">
-        A CLASSIFICAÇÃO · 12 CHAVES
+        A CLASSIFICAÇÃO · {{ groups.length }} CHAVES
       </div>
       <div class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.04em', opacity: 0.7, marginTop: '4px', marginBottom: '14px' }">
         Toque num grupo pra abrir os jogos e palpitar.
       </div>
       <div :style="{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }">
         <MatchGroupCard
-          v-for="g in ALL_GROUPS_STANDINGS"
+          v-for="g in groups"
           :key="g.g"
           :group="g"
-          @click="group = g.g"
+          @click="selectGroup(g)"
         />
       </div>
     </div>
 
-    <!-- GROUPS · games of one group -->
+    <!-- GRUPOS · jogos do grupo selecionado -->
     <div v-else-if="phase === 'groups' && group && selectedGroup">
-      <div :style="{ padding: '14px 18px', borderBottom: '1.5px solid var(--ink)', background: 'var(--paper-2)' }">
+      <div :style="{ padding: '12px 18px', borderBottom: '1.5px solid var(--ink)', background: 'var(--paper-2)' }">
         <button
           class="font-mono press"
           :style="{
@@ -102,7 +162,7 @@ function goMatch(m: Match) {
             border: '1.5px solid var(--ink)', boxShadow: '2px 2px 0 var(--magenta)',
             cursor: 'pointer', borderRadius: '3px', marginBottom: '12px',
           }"
-          @click="group = null"
+          @click="goBack"
         >← GRUPOS</button>
         <div :style="{ display: 'flex', alignItems: 'center', gap: '14px' }">
           <div
@@ -112,6 +172,7 @@ function goMatch(m: Match) {
           <div :style="{ minWidth: 0 }">
             <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.14em', fontWeight: 700, opacity: 0.7 }">
               FASE DE GRUPOS · CHAVE {{ group }}
+              <template v-if="selectedGroupRodada"> · RODADA {{ selectedGroupRodada }}</template>
             </div>
             <div class="font-display" :style="{ fontSize: '26px', textTransform: 'uppercase', lineHeight: 1, marginTop: '2px' }">
               Grupo {{ group }}
@@ -134,55 +195,86 @@ function goMatch(m: Match) {
         </div>
       </div>
 
-      <div :style="{ padding: '14px 18px 6px' }">
+      <div :style="{ padding: '12px 18px 6px' }">
         <span class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.16em', fontWeight: 700 }">
           OS PALPITES · GRUPO {{ group }}
         </span>
       </div>
-      <div :style="{ padding: '8px 18px 18px', display: 'flex', flexDirection: 'column', gap: '14px' }">
+      <div :style="{ padding: '6px 18px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }">
         <MatchListCard
-          v-for="m in groupMatches"
+          v-for="m in groupByStatus(group, 'SCHEDULED').concat(groupByStatus(group, 'IN_PROGRESS')).concat(groupByStatus(group, 'FINISHED'))"
           :key="m.id"
           :match="m"
-          @click="goMatch(m)"
+          @click="palpitar(m)"
         />
       </div>
     </div>
 
-    <!-- KNOCKOUT · stage blocks -->
-    <div v-else :style="{ padding: '14px 18px 18px' }">
+    <!-- MATA-MATA -->
+    <div v-else-if="phase === 'knockout'" :style="{ padding: '14px 18px 20px' }">
       <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.18em', fontWeight: 700, color: 'var(--magenta)' }">
         ELIMINATÓRIAS · A FORCA
       </div>
       <div class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.04em', opacity: 0.7, marginTop: '4px' }">
         Cada fase, um corte. Palpite jogo a jogo.
       </div>
+
       <div
-        v-for="{ stg, list } in knockoutBlocks"
+        v-for="stg in KNOCKOUT_STAGES"
         :key="stg.id"
         :style="{ marginTop: '20px' }"
       >
         <div :style="{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '9px 12px', background: toneVar(stg.accent), color: toneFg(stg.accent),
+          padding: '9px 12px', background: toneVar(stg.accent), color: 'var(--paper)',
           border: '1.5px solid var(--ink)', borderRadius: '3px', boxShadow: '2px 2px 0 var(--ink)',
+          marginBottom: '12px',
         }">
           <span class="font-display" :style="{ fontSize: '21px', textTransform: 'uppercase', letterSpacing: '0.03em' }">
             {{ stg.label }}
           </span>
           <span class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.12em', fontWeight: 700 }">
-            {{ list.length }} {{ list.length === 1 ? 'JOGO' : 'JOGOS' }}
+            {{ knockoutMatchesByStage[stg.id].length || 'TBD' }}
+            <template v-if="knockoutMatchesByStage[stg.id].length">
+              {{ knockoutMatchesByStage[stg.id].length === 1 ? 'JOGO' : 'JOGOS' }}
+            </template>
           </span>
         </div>
-        <div :style="{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }">
+
+        <div v-if="knockoutMatchesByStage[stg.id].length" :style="{ display: 'flex', flexDirection: 'column', gap: '12px' }">
           <MatchListCard
-            v-for="m in list"
+            v-for="m in knockoutMatchesByStage[stg.id]"
             :key="m.id"
             :match="m"
-            @click="goMatch(m)"
+            @click="palpitar(m)"
           />
+        </div>
+
+        <!-- TBD placeholder -->
+        <div
+          v-else
+          class="perf-bottom"
+          :style="{
+            background: 'var(--paper-2)', border: '1.5px dashed var(--ink)',
+            borderRadius: '4px', padding: '18px',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+          }"
+        >
+          <div :style="{ display: 'flex', alignItems: 'center', gap: '12px' }">
+            <div :style="{ width: '28px', height: '28px', borderRadius: '50%', border: '1.5px dashed var(--ink)', opacity: 0.3 }" />
+            <span class="font-display" :style="{ fontSize: '16px', opacity: 0.3 }">×</span>
+            <div :style="{ width: '28px', height: '28px', borderRadius: '50%', border: '1.5px dashed var(--ink)', opacity: 0.3 }" />
+          </div>
+          <span class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.14em', opacity: 0.35 }">PARTIDAS NÃO DEFINIDAS</span>
         </div>
       </div>
     </div>
+
+    <!-- GuessModal (compact) -->
+    <GuessModal
+      :match="guessModal.match.value"
+      variant="compact"
+      @close="guessModal.hide()"
+    />
   </div>
 </template>
