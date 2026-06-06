@@ -1,44 +1,41 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Masthead from '@/components/Masthead.vue';
 import ChipToggle from '@/components/ChipToggle.vue';
-import PrintButton from '@/components/PrintButton.vue';
 import MyPoolCard from '@/components/pool/MyPoolCard.vue';
 import DesktopMyPools from '@/components/pool/DesktopMyPools.vue';
-import { POOLS, toneVar } from '@/data/mock';
+import { toneVar } from '@/data/mock';
 import { useBreakpoint } from '@/composables/useBreakpoint';
 import { useJoinModal } from '@/composables/useJoinModal';
+import { useCreatePoolModal } from '@/composables/useCreatePoolModal';
+import { usePools } from '@/composables/usePools';
+import { useLeaderboard } from '@/composables/useLeaderboard';
 
 const router = useRouter();
 const { isDesktop } = useBreakpoint();
-const join = useJoinModal();
+const join   = useJoinModal();
+const create = useCreatePoolModal();
+const { pools: allPools, fetchMyPools } = usePools();
+const { myStats, fetchMyStats } = useLeaderboard();
+
+onMounted(() => Promise.all([fetchMyPools(), fetchMyStats()]));
 
 const filters = ['TODOS', 'PRIVADOS', 'PÚBLICOS'];
 const filter = ref('TODOS');
 
-const pools = computed(() => POOLS.filter(p => {
+const pools = computed(() => allPools.value.filter(p => {
   if (filter.value === 'PRIVADOS') return !p.isPublic;
   if (filter.value === 'PÚBLICOS') return p.isPublic;
   return true;
 }));
 
-const totalPts = POOLS.reduce((s, p) => s + p.myPoints, 0);
-const totalExacts = 8;
-const bestRank = Math.min(...POOLS.map(p => p.myRank));
-
-const stats = [
-  { l: 'BOLÕES',      v: String(POOLS.length), tone: 'magenta' },
-  { l: 'PTS TOTAIS',  v: String(totalPts),     tone: 'cobalt' },
-  { l: 'CRAVADAS',    v: String(totalExacts),  tone: 'lime' },
-  { l: 'MELHOR POS.', v: bestRank + 'º',       tone: 'coral', small: true },
-];
-
-const activity: Record<string, { result: string; detail: string; tone: string }> = {
-  'pool-resenha': { result: '+3', detail: 'BRA 2×1 CRO · cravou',   tone: 'lime' },
-  'pool-trampo':  { result: '+1', detail: 'BRA 2×1 CRO · vencedor', tone: 'cobalt' },
-  'pool-publico': { result:  '0', detail: 'BRA 2×1 CRO · errou',    tone: 'paper-3' },
-};
+const stats = computed(() => [
+  { l: 'BOLÕES',      v: myStats.value ? String(myStats.value.poolsCount)       : '—', tone: 'magenta' },
+  { l: 'PTS TOTAIS',  v: myStats.value ? String(myStats.value.totalPoints)      : '—', tone: 'cobalt' },
+  { l: 'CRAVADAS',    v: myStats.value ? String(myStats.value.totalExactHits)   : '—', tone: 'lime' },
+  { l: 'MELHOR POS.', v: myStats.value?.bestRank ? myStats.value.bestRank + 'º' : '—', tone: 'coral', small: true },
+]);
 </script>
 
 <template>
@@ -47,7 +44,7 @@ const activity: Record<string, { result: string; detail: string; tone: string }>
     <Masthead
       kicker="EDIÇÃO Nº 04 · MEUS BOLÕES"
       title="MEUS BOLÕES"
-      :sub="`${POOLS.length} ATIVOS`"
+      :sub="`${allPools.length} ATIVOS`"
     />
 
     <div :style="{
@@ -100,12 +97,6 @@ const activity: Record<string, { result: string; detail: string; tone: string }>
         :active="filter === f"
         @click="filter = f"
       >{{ f }}</ChipToggle>
-      <span class="font-mono" :style="{ marginLeft: 'auto' }">
-        <span :style="{
-          fontSize: '9px', letterSpacing: '0.14em', opacity: 0.7, fontWeight: 700,
-          padding: '6px 8px', border: '1.5px solid var(--ink)', borderRadius: '3px',
-        }">ATIVIDADE ▾</span>
-      </span>
     </div>
 
     <div :style="{ padding: '8px 18px 4px', display: 'flex', flexDirection: 'column', gap: '16px' }">
@@ -114,7 +105,6 @@ const activity: Record<string, { result: string; detail: string; tone: string }>
         :key="p.id"
         :pool="p"
         :index="i + 1"
-        :activity="activity[p.id]"
         @click="router.push(`/pool/${p.id}`)"
       />
 
@@ -138,8 +128,26 @@ const activity: Record<string, { result: string; detail: string; tone: string }>
       padding: '14px 18px 8px',
       display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px',
     }">
-      <PrintButton tone="cobalt" @click="join.show()">+ C/ código</PrintButton>
-      <PrintButton tone="lime" @click="router.push('/create')">+ Criar bolão</PrintButton>
+      <button
+        class="font-display press"
+        :style="{
+          padding: '14px 8px', cursor: 'pointer', width: '100%',
+          background: 'var(--cobalt)', color: 'var(--paper)',
+          border: '1.5px solid var(--ink)', boxShadow: '4px 4px 0 var(--ink)',
+          fontSize: '15px', letterSpacing: '0.04em', borderRadius: '4px',
+        }"
+        @click="join.show()"
+      >+ C/ código</button>
+      <button
+        class="font-display press"
+        :style="{
+          padding: '14px 8px', cursor: 'pointer', width: '100%',
+          background: 'var(--lime)', color: 'var(--ink)',
+          border: '1.5px solid var(--ink)', boxShadow: '4px 4px 0 var(--ink)',
+          fontSize: '15px', letterSpacing: '0.04em', borderRadius: '4px',
+        }"
+        @click="create.show()"
+      >+ Criar bolão</button>
     </div>
 
     <div :style="{
@@ -181,5 +189,6 @@ const activity: Record<string, { result: string; detail: string; tone: string }>
         >Explorar públicos →</span>
       </div>
     </div>
+
   </div>
 </template>

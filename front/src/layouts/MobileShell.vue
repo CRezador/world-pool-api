@@ -13,7 +13,7 @@ const showTabs = computed(() => route.meta.hideTabs !== true);
     <main class="screen-scroll no-scrollbar">
       <RouterView v-slot="{ Component }">
         <Transition name="route-fade" mode="out-in">
-          <component :is="Component" />
+          <component :is="Component" :key="$route.path" />
         </Transition>
       </RouterView>
     </main>

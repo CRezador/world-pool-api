@@ -1,17 +1,40 @@
 <script setup lang="ts">
+import { onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import Masthead from '@/components/Masthead.vue';
 import SectionHead from '@/components/SectionHead.vue';
 import PrintButton from '@/components/PrintButton.vue';
 import LiveTicker from '@/components/LiveTicker.vue';
 import PoolCard from '@/components/pool/PoolCard.vue';
-import MatchCarousel from '@/components/match/MatchCarousel.vue';
-import { MATCHES, POOLS } from '@/data/mock';
+import MatchCarouselMobile from '@/components/match/MatchCarouselMobile.vue';
+import { MATCHES } from '@/data/mock';
 import { useJoinModal } from '@/composables/useJoinModal';
+import { useCreatePoolModal } from '@/composables/useCreatePoolModal';
+import { usePools } from '@/composables/usePools';
+import { useMatch } from '@/composables/useMatch';
 
 const router = useRouter();
-const join = useJoinModal();
+const join   = useJoinModal();
+const create = useCreatePoolModal();
 const liveMatch = MATCHES.find(m => m.status === 'IN_PROGRESS');
+
+const { pools, fetchMyPools } = usePools();
+const { upcomingMatches, fetchUpcomingMatches } = useMatch();
+onMounted(() => Promise.all([fetchMyPools(), fetchUpcomingMatches()]));
+
+const poolsKicker = computed(() =>
+  `MEUS BOLÕES · ${pools.value.length} ATIVOS`
+);
+
+const scheduledMatches = computed(() =>
+  [...upcomingMatches.value.filter(m => m.status === 'SCHEDULED')]
+    .sort((a, b) => (a.gameDay ?? 0) - (b.gameDay ?? 0))
+);
+
+const nextMatchKicker = computed(() => {
+  const count = scheduledMatches.value.length;
+  return count ? `PRÓXIMAS RODADAS · ${count} JOGOS NA FILA` : 'PRÓXIMA RODADA';
+});
 </script>
 
 <template>
@@ -20,12 +43,12 @@ const liveMatch = MATCHES.find(m => m.status === 'IN_PROGRESS');
     <LiveTicker v-if="liveMatch" :match="liveMatch" />
 
     <div :style="{ padding: '18px 18px 8px' }">
-      <SectionHead kicker="MEUS BOLÕES · 3 ATIVOS" title="Onde você joga" />
+      <SectionHead :kicker="poolsKicker" title="Onde você joga" />
     </div>
 
     <div :style="{ padding: '6px 18px', display: 'flex', flexDirection: 'column', gap: '18px' }">
       <PoolCard
-        v-for="(p, i) in POOLS"
+        v-for="(p, i) in pools"
         :key="p.id"
         :pool="p"
         :index="i + 1"
@@ -37,12 +60,19 @@ const liveMatch = MATCHES.find(m => m.status === 'IN_PROGRESS');
       <PrintButton tone="cobalt" size="sm" @click="join.show()">
         + Entrar c/ código
       </PrintButton>
-      <PrintButton tone="lime" size="sm" @click="router.push('/create')">
+      <PrintButton tone="lime" size="sm" @click="create.show()">
         + Criar bolão
       </PrintButton>
     </div>
 
-    <MatchCarousel />
+    <template v-if="scheduledMatches.length">
+      <div :style="{ padding: '6px 18px 0' }">
+        <SectionHead :kicker="nextMatchKicker" title="Próxima partida" />
+      </div>
+      <div :style="{ padding: '12px 18px 18px' }">
+        <MatchCarouselMobile :matches="scheduledMatches" />
+      </div>
+    </template>
 
     <div :style="{
       padding: '18px',

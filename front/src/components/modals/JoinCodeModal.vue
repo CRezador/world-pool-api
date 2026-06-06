@@ -2,6 +2,9 @@
 import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import PerfDivider from '@/components/PerfDivider.vue';
 import PrintButton from '@/components/PrintButton.vue';
+import { joinPool } from '@/composables/usePools';
+import { getCurrentInstance } from 'vue';
+import { router } from '@/router';
 
 const props = withDefaults(defineProps<{
   open: boolean;
@@ -12,10 +15,9 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void;
-  (e: 'accept', code: string): void;
 }>();
 
-const code = ref(['B','A','R','R','E','S']);
+const code = ref(['', '', '', '', '', '']);
 const inputs = ref<HTMLInputElement[]>([]);
 
 function setRef(el: Element | any, i: number) {
@@ -38,6 +40,17 @@ function onKeyDown(i: number, e: KeyboardEvent) {
 
 function onKey(e: KeyboardEvent) {
   if (e.key === 'Escape') emit('close');
+  if (e.key === 'Enter') accept();
+  //colar CTRL + V
+  if (e.ctrlKey && e.key === 'v') {
+    navigator.clipboard.readText().then(text => {
+      const clean = text.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6).split('');
+      for (let i = 0; i < 6; i++) {
+        setChar(i, clean[i] || '');
+      }
+      if (clean.length > 0) nextTick(() => inputs.value[Math.min(clean.length, 5)]?.focus());
+    });
+  }
 }
 
 onMounted(() => window.addEventListener('keydown', onKey));
@@ -48,7 +61,14 @@ watch(() => props.open, (v) => {
 });
 
 function accept() {
-  emit('accept', code.value.join(''));
+  const joinCodeRequest = joinPool(code.value.join(''));
+  joinCodeRequest.then((response: any) => {
+    router.push(`/pool/${response.data.pool.data.id}`);
+    emit('close');
+  }).catch((e: any) => {
+    alert(e.response?.data?.message || 'Erro ao entrar no bolão. Verifique o código e tente novamente.');
+  });
+
 }
 </script>
 
@@ -139,15 +159,14 @@ function accept() {
               alignItems: 'center', gap: '8px', flexWrap: 'wrap',
             }"
           >
-            <span>código válido ✓</span>
-            <span :style="{ color: 'var(--cobalt)' }">RESENHA DO BAR · 12 sócios</span>
+            Digite o código de 6 caracteres do bolão que você deseja entrar. Ele deve ter sido fornecido pelo criador do bolão ou por um dos participantes.
           </div>
 
           <PerfDivider />
 
           <div :style="{ display: 'flex', gap: '8px', marginTop: '14px' }">
             <button class="font-display press modal-cancel" @click="$emit('close')">Cancelar</button>
-            <PrintButton tone="cobalt" full @click="accept">Aceitar convite</PrintButton>
+            <PrintButton tone="cobalt" full @click="accept" @keydown="onKey">Aceitar convite</PrintButton>
           </div>
 
           <div :style="{ marginTop: '14px', paddingTop: '12px', borderTop: '1px dashed var(--ink)' }">
@@ -173,7 +192,7 @@ function accept() {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: 300;
   background: rgba(20, 17, 14, 0.6);
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);

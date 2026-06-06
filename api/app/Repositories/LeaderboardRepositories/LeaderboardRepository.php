@@ -19,13 +19,48 @@ class LeaderboardRepository
         return $this->rankedQuery($poolId)->with('user:id,name')->limit($limit)->get();
     }
 
+    public function getLeader(int $poolId): ?Leaderboard
+    {
+        return $this->rankedQuery($poolId)
+            ->with('user:id,name')
+            ->first();
+    }
+
     public function getByUser(int $poolId, int $userId): ?Leaderboard
     {
-        return Leaderboard::where('pool_id', $poolId)
+        $entry = Leaderboard::where('pool_id', $poolId)
             ->where('user_id', $userId)
             ->whereNull('archived_at')
             ->with('user:id,name')
             ->first();
+
+        if ($entry) {
+            $entry->position = $this->computeRank($poolId, $entry);
+        }
+
+        return $entry;
+    }
+
+    private function computeRank(int $poolId, Leaderboard $entry): int
+    {
+        return Leaderboard::where('pool_id', $poolId)
+            ->whereNull('archived_at')
+            ->where(function ($q) use ($entry) {
+                $q->where('points', '>', $entry->points)
+                  ->orWhere(fn($q) => $q
+                      ->where('points', $entry->points)
+                      ->where('exact_hits', '>', $entry->exact_hits))
+                  ->orWhere(fn($q) => $q
+                      ->where('points', $entry->points)
+                      ->where('exact_hits', $entry->exact_hits)
+                      ->where('result_hits', '>', $entry->result_hits))
+                  ->orWhere(fn($q) => $q
+                      ->where('points', $entry->points)
+                      ->where('exact_hits', $entry->exact_hits)
+                      ->where('result_hits', $entry->result_hits)
+                      ->where('guesses_count', '>', $entry->guesses_count));
+            })
+            ->count() + 1;
     }
 
     public function getAllByPool(int $poolId): Collection
@@ -33,33 +68,6 @@ class LeaderboardRepository
         return Leaderboard::where('pool_id', $poolId)
             ->whereNull('archived_at')
             ->get();
-    }
-
-    public function getRankPosition(Leaderboard $entry): int
-    {
-        $above = Leaderboard::where('pool_id', $entry->pool_id)
-            ->whereNull('archived_at')
-            ->where(function (Builder $q) use ($entry) {
-                $q->where('points', '>', $entry->points)
-                    ->orWhere(function (Builder $q) use ($entry) {
-                        $q->where('points', $entry->points)
-                            ->where('exact_hits', '>', $entry->exact_hits);
-                    })
-                    ->orWhere(function (Builder $q) use ($entry) {
-                        $q->where('points', $entry->points)
-                            ->where('exact_hits', $entry->exact_hits)
-                            ->where('result_hits', '>', $entry->result_hits);
-                    })
-                    ->orWhere(function (Builder $q) use ($entry) {
-                        $q->where('points', $entry->points)
-                            ->where('exact_hits', $entry->exact_hits)
-                            ->where('result_hits', $entry->result_hits)
-                            ->where('guesses_count', '>', $entry->guesses_count);
-                    });
-            })
-            ->count();
-
-        return $above + 1;
     }
 
     public function createEntry(int $poolId, int $userId): Leaderboard
@@ -102,16 +110,48 @@ class LeaderboardRepository
             ->update($stats);
     }
 
+    public function updateRanks(int $poolId): void
+    {
+        $entries = $this->rankedQuery($poolId)->get();
+
+        foreach ($entries as $index => $entry) {
+            $entry->update([
+                'previous_position' => $entry->position,
+                'position'          => $index + 1,
+            ]);
+        }
+    }
+
+    public function getStatsByUser(int $userId): object
+    {
+        return Leaderboard::where('user_id', $userId)
+            ->whereNull('archived_at')
+            ->selectRaw('
+                COUNT(*) as pools_count,
+                COALESCE(SUM(points), 0) as total_points,
+                COALESCE(SUM(exact_hits), 0) as total_exact_hits,
+                COALESCE(SUM(result_hits), 0) as total_result_hits,
+                COALESCE(SUM(guesses_count), 0) as total_guesses,
+                MIN(position) as best_rank
+            ')
+            ->first();
+    }
+
     private function rankedQuery(int $poolId): Builder
     {
-        return Leaderboard::where('pool_id', $poolId)
-            ->whereNull('archived_at')
-            ->orderBy('points', 'desc')
-            ->orderBy('exact_hits', 'desc')
-            ->orderBy('result_hits', 'desc')
-            ->orderBy('guesses_count', 'desc')
-            // Tiebreaker estável: garante ordem determinística em empates perfeitos,
-            // mantendo consistência entre o ranking paginado e getRankPosition().
-            ->orderBy('user_id', 'asc');
+        return Leaderboard::where('leaderboard.pool_id', $poolId)
+            ->whereNull('leaderboard.archived_at')
+            ->join('pool_members', function ($join) use ($poolId) {
+                $join->on('pool_members.user_id', '=', 'leaderboard.user_id')
+                     ->where('pool_members.pool_id', '=', $poolId)
+                     ->where('pool_members.status', '=', 'ACTIVE');
+            })
+            ->select('leaderboard.*', 'pool_members.role as member_role')
+            ->orderBy('leaderboard.points', 'desc')
+            ->orderBy('leaderboard.exact_hits', 'desc')
+            ->orderBy('leaderboard.result_hits', 'desc')
+            ->orderBy('leaderboard.guesses_count', 'desc')
+            // Tiebreaker estável: garante ordem determinística em empates perfeitos.
+            ->orderBy('leaderboard.user_id', 'asc');
     }
 }

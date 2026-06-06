@@ -3,6 +3,7 @@
 namespace App\Services\LeaderboardServices;
 
 use App\Models\Leaderboard;
+use App\Repositories\GuessRepositories\GuessRepository;
 use App\Repositories\LeaderboardRepositories\LeaderboardRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Collection;
@@ -12,6 +13,7 @@ class LeaderboardReadService
 {
     public function __construct(
         private LeaderboardRepository $leaderboardRepository,
+        private GuessRepository $guessRepository,
     ) {}
 
     public function ranking(int $poolId): LengthAwarePaginator
@@ -20,7 +22,7 @@ class LeaderboardReadService
         $offset = ($paginator->currentPage() - 1) * $paginator->perPage();
 
         $paginator->getCollection()->each(function ($entry, $index) use ($offset) {
-            $entry->rank = $offset + $index + 1;
+            $entry->position = $offset + $index + 1;
         });
 
         return $paginator;
@@ -31,7 +33,7 @@ class LeaderboardReadService
         $entries = $this->leaderboardRepository->getTop($poolId, $limit);
 
         $entries->each(function ($entry, $index) {
-            $entry->rank = $index + 1;
+            $entry->position = $index + 1;
         });
 
         return $entries;
@@ -41,21 +43,30 @@ class LeaderboardReadService
     {
         $entry = $this->leaderboardRepository->getByUser($poolId, $userId);
 
-        if (!$entry) {
-            return null;
+        if ($entry) {
+            $entry->last_results = $this->guessRepository->getLastScoredByUserAndPool($userId, $poolId);
         }
-
-        $entry->rank = $this->leaderboardRepository->getRankPosition($entry);
 
         return $entry;
     }
 
     public function show(int $poolId, int $userId): Leaderboard
     {
-        $entry = $this->findEntryOrFail($poolId, $userId);
-        $entry->rank = $this->leaderboardRepository->getRankPosition($entry);
+        return $this->findEntryOrFail($poolId, $userId);
+    }
 
-        return $entry;
+    public function myStats(int $userId): array
+    {
+        $row = $this->leaderboardRepository->getStatsByUser($userId);
+
+        return [
+            'pools_count'      => (int) $row->pools_count,
+            'total_points'     => (int) $row->total_points,
+            'total_exact_hits' => (int) $row->total_exact_hits,
+            'total_result_hits' => (int) $row->total_result_hits,
+            'total_guesses'    => (int) $row->total_guesses,
+            'best_rank'        => $row->best_rank !== null ? (int) $row->best_rank : null,
+        ];
     }
 
     private function findEntryOrFail(int $poolId, int $userId): Leaderboard

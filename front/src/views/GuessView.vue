@@ -14,8 +14,8 @@ const route = useRoute();
 const router = useRouter();
 const matchId = computed(() => Number(route.params.matchId));
 const match = computed(() => findMatch(matchId.value));
-const home = computed(() => TEAMS[match.value.home]);
-const away = computed(() => TEAMS[match.value.away]);
+const home = computed(() => TEAMS[match.value.home as string]);
+const away = computed(() => TEAMS[match.value.away as string]);
 
 const homeScore = ref(2);
 const awayScore = ref(0);
@@ -63,7 +63,7 @@ function commit() {
 
           <div :style="{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }">
             <div :style="{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }">
-              <FlagChip :team="match.home" :size="58" tone="magenta" />
+              <FlagChip :team="(match.home as string)" :size="58" tone="magenta" />
               <div class="font-display" :style="{ fontSize: '20px', marginTop: '8px' }">{{ home.code }}</div>
               <ScoreStepper v-model:value="homeScore" accent="magenta" />
             </div>
@@ -72,7 +72,7 @@ function commit() {
               :style="{ fontSize: '36px', opacity: 0.4, transform: 'translateY(-4px)' }"
             >×</div>
             <div :style="{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }">
-              <FlagChip :team="match.away" :size="58" tone="cobalt" />
+              <FlagChip :team="(match.away as string)" :size="58" tone="cobalt" />
               <div class="font-display" :style="{ fontSize: '20px', marginTop: '8px' }">{{ away.code }}</div>
               <ScoreStepper v-model:value="awayScore" accent="cobalt" />
             </div>

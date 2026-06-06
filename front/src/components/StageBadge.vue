@@ -13,6 +13,7 @@ const props = withDefaults(defineProps<{
 
 const STAGE_LABELS: Record<Stage, string> = {
   GROUP_STAGE: 'GRUPO',
+  SECOND_ROUND: '2ª FASE',
   ROUND_OF_16: 'OITAVAS',
   QUARTER_FINALS: 'QUARTAS',
   SEMI_FINALS: 'SEMI',

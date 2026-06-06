@@ -121,6 +121,25 @@ class LeaderboardController extends Controller
         );
     }
 
+    #[OA\Get(
+        path: '/api/me/stats',
+        summary: 'Retorna as estatísticas agregadas do usuário autenticado em todos os seus bolões',
+        security: [['sanctum' => []]],
+        tags: ['Leaderboard'],
+        responses: [
+            new OA\Response(response: 200, description: 'Estatísticas gerais do usuário'),
+        ]
+    )]
+    public function myStats(Request $request): Response
+    {
+        $stats = $this->readService->myStats($request->user()->id);
+
+        return response()->json([
+            'message' => 'Estatísticas carregadas com sucesso',
+            'data'    => $stats,
+        ], 200);
+    }
+
     #[OA\Post(
         path: '/api/pools/{poolId}/leaderboard/recalculate',
         summary: 'Recalcula o ranking completo do bolão a partir dos palpites',

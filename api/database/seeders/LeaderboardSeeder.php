@@ -32,12 +32,13 @@ class LeaderboardSeeder extends Seeder
                 DB::table('leaderboard')->updateOrInsert(
                     ['pool_id' => $pool->id, 'user_id' => $userId],
                     [
-                        'points'        => $total,
-                        'exact_hits'    => $exactHits,
-                        'result_hits'   => $resultHits,
-                        'guesses_count' => $guessesCount,
-                        'created_at'    => now(),
-                        'updated_at'    => now(),
+                        'points'            => $total,
+                        'exact_hits'        => $exactHits,
+                        'result_hits'       => $resultHits,
+                        'guesses_count'     => $guessesCount,
+                        'previous_position' => null,
+                        'created_at'        => now(),
+                        'updated_at'        => now(),
                     ]
                 );
             }

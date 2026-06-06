@@ -31,16 +31,42 @@ function startTimer() {
   }, 5000);
 }
 
+const loading = ref(true);
+
 onMounted(async () => {
-  if (standings.value.length === 0) await fetchStandings();
+  try {
+    if (standings.value.length === 0) await fetchStandings();
+  } finally {
+    loading.value = false;
+  }
   startTimer();
 });
 onUnmounted(() => { if (timer) clearInterval(timer); });
 </script>
 
 <template>
+  <!-- Standings skeleton -->
+  <div v-if="loading">
+    <div :style="{ marginBottom: '14px' }">
+      <div class="skeleton" :style="{ height: '10px', width: '150px', marginBottom: '8px' }" />
+      <div :style="{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }">
+        <div class="skeleton" :style="{ height: '22px', width: '200px' }" />
+        <div :style="{ display: 'flex', gap: '6px' }">
+          <div class="skeleton" :style="{ width: '28px', height: '28px' }" />
+          <div class="skeleton" :style="{ width: '28px', height: '28px' }" />
+        </div>
+      </div>
+    </div>
+    <div :style="{ border: '1.5px solid var(--ink)' }">
+      <div class="skeleton" :style="{ height: '28px', borderRadius: 0 }" />
+      <div v-for="n in 4" :key="n" :style="{ padding: '6px 8px', borderTop: '1px solid var(--ink)' }">
+        <div class="skeleton" :style="{ height: '22px' }" />
+      </div>
+    </div>
+  </div>
+
   <div
-    v-if="group"
+    v-else-if="group"
     @mouseenter="paused = true"
     @mouseleave="paused = false"
   >

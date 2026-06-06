@@ -1,89 +1,179 @@
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import FlagImg from '@/components/FlagImg.vue';
-import StageBadge from '@/components/StageBadge.vue';
-import StatusPill from '@/components/StatusPill.vue';
-import { MATCHES, TEAMS } from '@/data/mock';
-import type { Match } from '@/types';
+import { useGuesses } from '@/composables/useGuesses';
+import type { GuessEntry } from '@/types';
 
-const router = useRouter();
+const props = defineProps<{ poolId: string }>();
 
-function myGuess(m: Match) {
-  return m.id === 1 ? { home: 2, away: 1, points: 3 }
-    : m.id === 2 ? { home: 1, away: 1, points: 0 }
-    : m.id === 3 ? { home: 2, away: 0, points: 1 }
-    : { home: 2, away: 0, points: undefined as number | undefined };
+const router  = useRouter();
+const loading = ref(true);
+const { guesses, fetchMyGuesses } = useGuesses();
+
+onMounted(async () => {
+  try {
+    await fetchMyGuesses(props.poolId);
+  } finally {
+    loading.value = false;
+  }
+});
+
+const scheduled  = computed(() => guesses.value.filter(g => g.match.status === 'SCHEDULED'));
+const inProgress = computed(() => guesses.value.filter(g => g.match.status === 'IN_PROGRESS'));
+const finished   = computed(() => guesses.value.filter(g => g.match.status === 'FINISHED'));
+
+function ptsBg(pts: number | null) {
+  if (pts === null) return 'transparent';
+  if (pts >= 3) return 'var(--lime)';
+  if (pts >= 1) return 'var(--cobalt)';
+  return 'var(--paper-3)';
 }
-
-function goTo(m: Match) {
-  router.push(m.status === 'SCHEDULED' ? `/guess/${m.id}` : `/match/${m.id}`);
+function ptsFg(pts: number | null) {
+  if (pts === null || pts === 0) return 'var(--ink)';
+  if (pts >= 3) return 'var(--ink)';
+  return 'var(--paper)';
+}
+function ptsLabel(pts: number | null) {
+  if (pts === null) return '?';
+  return pts > 0 ? `+${pts}` : '0';
+}
+function ptsBorder(pts: number | null) {
+  return pts === null ? '1.5px dashed var(--ink)' : 'none';
+}
+function stageLabel(g: GuessEntry) {
+  return g.match.stage === 'GROUP_STAGE'
+    ? `GRUPO ${g.match.group ?? ''}`
+    : g.match.stage.replace(/_/g, ' ');
+}
+function goToGuess(g: GuessEntry) {
+  if (g.match.status === 'SCHEDULED') router.push(`/guess/${g.matchId}`);
+  else router.push(`/match/${g.matchId}`);
 }
 </script>
 
 <template>
-  <div
-    class="fade-up"
-    :style="{ padding: '14px 18px 18px', display: 'flex', flexDirection: 'column', gap: '12px' }"
-  >
-    <span
-      class="font-mono"
-      :style="{ fontSize: '10px', letterSpacing: '0.16em', fontWeight: 700 }"
-    >SEUS PALPITES · ÚLTIMOS 4 JOGOS</span>
+  <!-- Skeleton -->
+  <div v-if="loading" :style="{ padding: '14px 18px 18px', display: 'flex', flexDirection: 'column', gap: '12px' }">
+    <div class="skeleton" :style="{ height: '10px', width: '180px' }" />
+    <div v-for="n in 4" :key="n" class="skeleton" :style="{ height: '110px' }" />
+  </div>
 
+  <div v-else class="fade-up" :style="{ padding: '14px 18px 24px', display: 'flex', flexDirection: 'column', gap: '24px' }">
+
+    <!-- Empty state -->
     <div
-      v-for="m in MATCHES.slice(0, 4)"
-      :key="m.id"
+      v-if="guesses.length === 0"
       :style="{
-        background: 'var(--paper-2)', border: '1.5px solid var(--ink)',
-        padding: '12px', borderRadius: '4px', cursor: 'pointer',
-        boxShadow: m.status === 'SCHEDULED' ? '3px 3px 0 var(--ink)' : 'none',
+        padding: '28px', textAlign: 'center',
+        border: '1.5px dashed var(--ink)',
       }"
-      @click="goTo(m)"
     >
-      <div :style="{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }">
-        <StageBadge
-          :stage="m.stage"
-          :group="m.group"
-          :tone="m.status === 'IN_PROGRESS' ? 'coral' : 'cobalt'"
-        />
-        <StatusPill :status="m.status" :points="myGuess(m).points" />
-      </div>
-      <div :style="{ display: 'flex', alignItems: 'center', gap: '10px' }">
-        <FlagImg :team="m.home" :size="20" :radius="2" />
-        <div class="font-display" :style="{ fontSize: '16px', flex: 1 }">
-          {{ TEAMS[m.home].code }} × {{ TEAMS[m.away].code }}
-        </div>
-        <FlagImg :team="m.away" :size="20" :radius="2" />
-      </div>
-      <div :style="{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
-        marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed var(--ink)',
-      }">
-        <div>
-          <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.14em', opacity: 0.7 }">
-            MEU PALPITE
-          </div>
-          <div class="font-display" :style="{ fontSize: '22px' }">
-            {{ myGuess(m).home }} × {{ myGuess(m).away }}
-          </div>
-        </div>
-        <div v-if="m.status !== 'SCHEDULED'" :style="{ textAlign: 'right' }">
-          <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.14em', opacity: 0.7 }">
-            RESULTADO REAL
-          </div>
-          <div class="font-display" :style="{ fontSize: '22px' }">
-            {{ m.homeScore }} × {{ m.awayScore }}
-          </div>
-        </div>
-        <span
-          v-else
-          class="font-mono"
-          :style="{
-            fontSize: '11px', padding: '4px 8px',
-            border: '1.5px solid var(--ink)', borderRadius: '3px', letterSpacing: '0.1em',
-          }"
-        >EDITAR ↗</span>
+      <div class="font-display" :style="{ fontSize: '20px', marginBottom: '6px' }">Sem palpites ainda</div>
+      <div class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.1em', opacity: 0.6 }">
+        ACESSE OS JOGOS E COMECE A PALPITAR
       </div>
     </div>
+
+    <!-- Em andamento -->
+    <section v-if="inProgress.length">
+      <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.18em', fontWeight: 700, color: 'var(--coral)', marginBottom: '8px' }">
+        ● AO VIVO · {{ inProgress.length }} {{ inProgress.length === 1 ? 'JOGO' : 'JOGOS' }}
+      </div>
+      <div :style="{ display: 'flex', flexDirection: 'column', gap: '10px' }">
+        <div
+          v-for="g in inProgress" :key="g.id"
+          class="press"
+          :style="{ background: 'var(--paper-2)', border: '1.5px solid var(--coral)', padding: '12px', cursor: 'pointer', boxShadow: '3px 3px 0 var(--coral)' }"
+          @click="goToGuess(g)"
+        >
+          <template v-if="g.match">
+            <GuessCardContent :g="g" :pts-bg="ptsBg(g.points)" :pts-fg="ptsFg(g.points)" :pts-label="ptsLabel(g.points)" :pts-border="ptsBorder(g.points)" :stage-label="stageLabel(g)" />
+          </template>
+        </div>
+      </div>
+    </section>
+
+    <!-- Agendados -->
+    <section v-if="scheduled.length">
+      <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.18em', fontWeight: 700, opacity: 0.6, marginBottom: '8px' }">
+        PALPITES ABERTOS · {{ scheduled.length }} {{ scheduled.length === 1 ? 'JOGO' : 'JOGOS' }}
+      </div>
+      <div :style="{ display: 'flex', flexDirection: 'column', gap: '10px' }">
+        <div
+          v-for="g in scheduled" :key="g.id"
+          class="press"
+          :style="{ background: 'var(--paper-2)', border: '1.5px solid var(--ink)', padding: '12px', cursor: 'pointer', boxShadow: '3px 3px 0 var(--ink)' }"
+          @click="goToGuess(g)"
+        >
+          <div :style="{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }">
+            <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.14em', fontWeight: 700, opacity: 0.7 }">
+              {{ stageLabel(g) }} · {{ g.match.kickoffAt ?? '—' }}
+            </div>
+            <span class="font-mono" :style="{ fontSize: '10px', padding: '3px 8px', border: '1.5px dashed var(--ink)', borderRadius: '2px', letterSpacing: '0.06em' }">
+              ABERTO
+            </span>
+          </div>
+          <div :style="{ display: 'flex', alignItems: 'center', gap: '8px' }">
+            <img v-if="g.match.homeTeam.flagUrl" :src="g.match.homeTeam.flagUrl" :alt="g.match.homeTeam.code" :style="{ width: '22px', height: '15px', objectFit: 'cover', borderRadius: '2px', border: '1px solid var(--ink)', flexShrink: 0 }" />
+            <div class="font-display" :style="{ fontSize: '18px', flex: 1 }">{{ g.match.homeTeam.code }} × {{ g.match.awayTeam.code }}</div>
+            <img v-if="g.match.awayTeam.flagUrl" :src="g.match.awayTeam.flagUrl" :alt="g.match.awayTeam.code" :style="{ width: '22px', height: '15px', objectFit: 'cover', borderRadius: '2px', border: '1px solid var(--ink)', flexShrink: 0 }" />
+          </div>
+          <div :style="{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed var(--ink)' }">
+            <div>
+              <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.14em', opacity: 0.6 }">MEU PALPITE</div>
+              <div class="font-display" :style="{ fontSize: '24px', lineHeight: 1 }">{{ g.homeScore }} × {{ g.awayScore }}</div>
+            </div>
+            <span class="font-mono" :style="{ fontSize: '10px', padding: '4px 8px', letterSpacing: '0.1em', border: '1.5px solid var(--ink)', borderRadius: '3px' }">EDITAR ↗</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Finalizados -->
+    <section v-if="finished.length">
+      <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.18em', fontWeight: 700, opacity: 0.6, marginBottom: '8px' }">
+        HISTÓRICO · {{ finished.length }} {{ finished.length === 1 ? 'JOGO' : 'JOGOS' }}
+      </div>
+      <div :style="{ display: 'flex', flexDirection: 'column', gap: '10px' }">
+        <div
+          v-for="g in finished" :key="g.id"
+          class="press"
+          :style="{ background: 'var(--paper-2)', border: '1.5px solid var(--ink)', padding: '12px', cursor: 'pointer' }"
+          @click="goToGuess(g)"
+        >
+          <div :style="{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }">
+            <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.14em', fontWeight: 700, opacity: 0.7 }">
+              {{ stageLabel(g) }} · {{ g.match.kickoffAt ?? '—' }}
+            </div>
+            <span
+              class="font-mono"
+              :style="{
+                padding: '3px 8px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.04em',
+                background: ptsBg(g.points), color: ptsFg(g.points),
+                border: ptsBorder(g.points), borderRadius: '2px',
+              }"
+            >{{ ptsLabel(g.points) }}</span>
+          </div>
+          <div :style="{ display: 'flex', alignItems: 'center', gap: '8px' }">
+            <img v-if="g.match.homeTeam.flagUrl" :src="g.match.homeTeam.flagUrl" :alt="g.match.homeTeam.code" :style="{ width: '22px', height: '15px', objectFit: 'cover', borderRadius: '2px', border: '1px solid var(--ink)', flexShrink: 0 }" />
+            <div class="font-display" :style="{ fontSize: '18px', flex: 1 }">{{ g.match.homeTeam.code }} × {{ g.match.awayTeam.code }}</div>
+            <img v-if="g.match.awayTeam.flagUrl" :src="g.match.awayTeam.flagUrl" :alt="g.match.awayTeam.code" :style="{ width: '22px', height: '15px', objectFit: 'cover', borderRadius: '2px', border: '1px solid var(--ink)', flexShrink: 0 }" />
+          </div>
+          <div :style="{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed var(--ink)' }">
+            <div>
+              <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.14em', opacity: 0.6 }">MEU PALPITE</div>
+              <div class="font-display" :style="{ fontSize: '24px', lineHeight: 1 }">{{ g.homeScore }} × {{ g.awayScore }}</div>
+            </div>
+            <div :style="{ textAlign: 'right' }">
+              <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.14em', opacity: 0.6 }">RESULTADO</div>
+              <div class="font-display" :style="{ fontSize: '24px', lineHeight: 1 }">
+                {{ g.match.homeScore !== null ? `${g.match.homeScore} × ${g.match.awayScore}` : '— × —' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
 </template>
