@@ -2,6 +2,7 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { useAuth } from '../composables/useAuth';
 
 const PUBLIC_ROUTES = ['login'];
+const DEFAULT_ROUTE = 'my-pools';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -90,7 +91,14 @@ export const router = createRouter({
 router.beforeEach(async (to) => {
   const { checkAuth, isLoggedIn } = useAuth();
   await checkAuth();
+
+  // Não logado tentando acessar rota protegida → manda pro login
   if (!isLoggedIn.value && !PUBLIC_ROUTES.includes(to.name as string)) {
     return { name: 'login' };
+  }
+
+  // Já em sessão tentando abrir o login → pula direto pra página padrão
+  if (isLoggedIn.value && to.name === 'login') {
+    return { name: DEFAULT_ROUTE };
   }
 });

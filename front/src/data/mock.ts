@@ -4,7 +4,7 @@ import type {
 } from '@/types';
 
 // iso = flagcdn.com country code. Special: gb-eng = England, gb-sct = Scotland.
-export const TEAMS: Record<string, Team> = {
+const RAW_TEAMS: Record<string, { name: string; code: string; iso: string; group: string }> = {
   MEX: { name: 'México', code: 'MEX', iso: 'mx', group: 'A' },
   CAN: { name: 'Canadá', code: 'CAN', iso: 'ca', group: 'A' },
   USA: { name: 'EUA', code: 'USA', iso: 'us', group: 'B' },
@@ -48,6 +48,17 @@ export const TEAMS: Record<string, Team> = {
   PAN: { name: 'Panamá', code: 'PAN', iso: 'pa', group: 'L' },
   EGY: { name: 'Egito', code: 'EGY', iso: 'eg', group: 'L' },
 };
+
+export const TEAMS: Record<string, Team> = Object.fromEntries(
+  Object.entries(RAW_TEAMS).map(([key, t], i) => [key, {
+    id: i + 1,
+    name: t.name,
+    code: t.code,
+    flag_code: t.iso,
+    flag_url: `https://flagcdn.com/40x30/${t.iso}.png`,
+    group: t.group,
+  } satisfies Team]),
+);
 
 export const MEMBERS: Member[] = [
   { id: 1, name: 'Helena Vasques', handle: '@helena', avatar: 'HV', tone: 'magenta', role: 'OWNER' },
@@ -226,6 +237,7 @@ export const POOLS: Pool[] = [
     code: 'BARRES',
     members: 12,
     isPublic: false,
+    isMember: true,
     myRank: 3,
     myPoints: 21,
     leader: 'Helena Vasques',
@@ -239,6 +251,7 @@ export const POOLS: Pool[] = [
     code: 'TRAMPO',
     members: 47,
     isPublic: false,
+    isMember: true,
     myRank: 11,
     myPoints: 15,
     leader: 'Diretoria',
@@ -252,6 +265,7 @@ export const POOLS: Pool[] = [
     code: 'BRASIL',
     members: 8431,
     isPublic: true,
+    isMember: true,
     myRank: 1281,
     myPoints: 18,
     leader: '@neto88',
@@ -320,7 +334,7 @@ export const ME_HISTORY: GuessHistoryEntry[] = [
 ];
 
 // ── Grupos da Copa (tela de Jogos) — 12 chaves A..L com tabela e forma ──
-export const ALL_GROUPS_STANDINGS: GroupFull[] = [
+export const ALL_GROUPS_STANDINGS: GroupFull[] = ([
   { g: 'A', rows: [
     { code: 'MEX', name: 'México',     iso: 'mx', P: 2, V: 2, E: 0, D: 0, GP: 5, GC: 1, pts: 6, form: ['W','W','-'] },
     { code: 'ECU', name: 'Equador',    iso: 'ec', P: 2, V: 1, E: 1, D: 0, GP: 3, GC: 2, pts: 4, form: ['W','D','-'] },
@@ -393,7 +407,7 @@ export const ALL_GROUPS_STANDINGS: GroupFull[] = [
     { code: 'PAN', name: 'Panamá',     iso: 'pa', P: 2, V: 0, E: 1, D: 1, GP: 1, GC: 3, pts: 1, form: ['D','L','-'] },
     { code: 'EGY', name: 'Egito',      iso: 'eg', P: 2, V: 0, E: 0, D: 2, GP: 1, GC: 4, pts: 0, form: ['L','L','-'] },
   ]},
-];
+] as Omit<GroupFull, 'id'>[]).map((grp, i) => ({ id: i + 1, ...grp }));
 
 // Fases do mata-mata (tela de Jogos) — ordem da segunda fase até a final.
 export const KNOCKOUT_STAGES: KnockoutStage[] = [

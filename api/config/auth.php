@@ -20,6 +20,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | "Lembrar de mim" — Duração
+    |--------------------------------------------------------------------------
+    |
+    | Quanto tempo (em minutos) o cookie de "remember me" continua válido
+    | após a sessão curta (SESSION_LIFETIME) expirar. Padrão: 30 dias.
+    |
+    */
+
+    'remember_lifetime' => (int) env('AUTH_REMEMBER_LIFETIME', 60 * 24 * 30),
+
+    /*
+    |--------------------------------------------------------------------------
     | Authentication Guards
     |--------------------------------------------------------------------------
     |
