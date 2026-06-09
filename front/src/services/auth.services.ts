@@ -7,9 +7,9 @@ async function fetchCsrfCookie() {
     await axios.get("/sanctum/csrf-cookie", { withCredentials: true });
 }
 
-export const login = async (email: string, password: string): Promise<void> => {
+export const login = async (email: string, password: string, remember = false): Promise<void> => {
     await fetchCsrfCookie();
-    await api.post("/login", { email, password });
+    await api.post("/login", { email, password, remember });
 };
 
 export const logout = async (): Promise<void> => {

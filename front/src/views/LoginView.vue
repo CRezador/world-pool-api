@@ -19,6 +19,7 @@ const email = ref('');
 const password = ref('');
 const name = ref('');
 const showPassword = ref(false);
+const remember = ref(true);
 const loading = ref(false);
 const error = ref('');
 
@@ -27,7 +28,7 @@ async function enter() {
   loading.value = true;
   try {
     if (mode.value === 'login') {
-      await login(email.value, password.value);
+      await login(email.value, password.value, remember.value);
       clearUser();
       await checkAuth();
       router.replace('/pools');
@@ -188,8 +189,8 @@ const stats = [
 
         <!-- remember + stamp -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px;">
-          <label style="display: flex; align-items: center; gap: 8px; cursor: default;">
-            <div style="width: 18px; height: 18px; border: 1.5px solid var(--ink); background: var(--ink); color: var(--lime); display: flex; align-items: center; justify-content: center; font-size: 13px;">✓</div>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;" @click="remember = !remember">
+            <div :style="{ width: '18px', height: '18px', border: '1.5px solid var(--ink)', background: remember ? 'var(--ink)' : 'transparent', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px' }">{{ remember ? '✓' : '' }}</div>
             <span class="font-mono" style="font-size: 11px; letter-spacing: 0.12em;">LEMBRAR DE MIM</span>
           </label>
         </div>
@@ -282,6 +283,10 @@ const stats = [
               }"
             />
           </div>
+          <label :style="{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '14px' }" @click="remember = !remember">
+            <div :style="{ width: '18px', height: '18px', border: '1.5px solid var(--ink)', background: remember ? 'var(--ink)' : 'transparent', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px' }">{{ remember ? '✓' : '' }}</div>
+            <span class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.12em' }">LEMBRAR DE MIM</span>
+          </label>
           <div v-if="error" class="font-mono" :style="{ fontSize: '10px', color: 'var(--coral)', letterSpacing: '0.08em', marginBottom: '10px' }">
             ⚠ {{ error }}
           </div>

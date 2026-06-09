@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 import { useGuesses } from '@/composables/useGuesses';
 import type { GuessEntry } from '@/types';
 
-const props = defineProps<{ poolId: string }>();
+defineProps<{ poolId: string }>();
 
 const router  = useRouter();
 const loading = ref(true);
@@ -12,7 +12,7 @@ const { guesses, fetchMyGuesses } = useGuesses();
 
 onMounted(async () => {
   try {
-    await fetchMyGuesses(props.poolId);
+    await fetchMyGuesses();
   } finally {
     loading.value = false;
   }

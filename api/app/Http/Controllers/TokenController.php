@@ -21,6 +21,7 @@ class TokenController extends Controller
                 properties: [
                     new OA\Property(property: 'email', type: 'string', format: 'email', example: 'user@example.com'),
                     new OA\Property(property: 'password', type: 'string', format: 'password', example: 'secret'),
+                    new OA\Property(property: 'remember', type: 'boolean', example: true),
                 ]
             )
         ),
@@ -33,7 +34,12 @@ class TokenController extends Controller
     {
         $credentials = $request->validated();
 
-        if (!Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']])) {
+        Auth::guard('web')->setRememberDuration((int) config('auth.remember_lifetime'));
+
+        if (!Auth::attempt(
+            ['email' => $credentials['email'], 'password' => $credentials['password']],
+            $request->boolean('remember')
+        )) {
             return response()->json(['message' => 'Credenciais inválidas.'], 401);
         }
 
