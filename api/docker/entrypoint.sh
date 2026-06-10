@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-# Railway injeta a porta via $PORT; localmente usamos 80 como padrao.
+# Porta interna do container; atras do Caddy usamos 80 como padrao.
 # So substituimos ${PORT} para preservar as variaveis do nginx ($uri, $fastcgi_*, ...).
 export PORT="${PORT:-80}"
 echo "==> Gerando config do nginx na porta ${PORT}..."
