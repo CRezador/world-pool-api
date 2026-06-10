@@ -10,6 +10,7 @@ use App\Http\Transformers\UserTransformers\UserTransformer;
 use App\Services\UserServices\UserReadService;
 use App\Services\UserServices\UserWriteService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -72,6 +73,9 @@ class UserController extends Controller
                 'message' => 'Erro inesperado ao criar usuário.',
             ], 500);
         }
+
+        Auth::guard('web')->login($user);
+        $request->session()->regenerate();
 
         return response()->json(
             $this->userTransformer->item($user, 'Usuário criado'),

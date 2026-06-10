@@ -13,18 +13,6 @@
   --shadow: rgba(22, 17, 15, 0.08);
 }
 
-.theme-dark {
-  --ink: #F2E9D2;
-  --paper: #0D1330;
-  --paper-2: #161B3A;
-  --paper-3: #232851;
-  --magenta: #FF3A82;
-  --cobalt: #5B85FF;
-  --lime: #DDED4A;
-  --coral: #FF8A55;
-  --shadow: rgba(0, 0, 0, 0.4);
-}
-
 html, body { margin: 0; padding: 0; }
 body {
   font-family: 'DM Sans', system-ui, sans-serif;
@@ -76,7 +64,6 @@ button { font-family: inherit; color: inherit; }
   opacity: 0.18;
   pointer-events: none;
 }
-.theme-dark .grain::after { mix-blend-mode: screen; opacity: 0.12; }
 
 /* perforated ticket edge — top/bottom dotted cut */
 .perf-top, .perf-bottom {

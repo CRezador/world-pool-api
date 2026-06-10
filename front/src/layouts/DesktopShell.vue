@@ -37,7 +37,6 @@ const nav = [
   ]},
   { label: 'Jogos',   path: '/matches'   },
   { label: 'Tabela',  path: '/standings' },
-  { label: 'Admin',   path: '/'          },
 ];
 
 const toneVar: Record<string, string> = {

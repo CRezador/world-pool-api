@@ -3,7 +3,6 @@ import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import MobileShell from '@/layouts/MobileShell.vue';
 import DesktopShell from '@/layouts/DesktopShell.vue';
-import TweaksPanel from '@/components/TweaksPanel.vue';
 import JoinCodeModal from '@/components/modals/JoinCodeModal.vue';
 import GuessModal from '@/components/modals/GuessModal.vue';
 import CreatePoolModal from '@/components/modals/CreatePoolModal.vue';
@@ -31,7 +30,6 @@ const modalVariant = computed<'compact' | 'desktop'>(() => isDesktop.value ? 'de
     <RouterView />
   </div>
   <MobileShell v-else />
-  <TweaksPanel />
 
   <JoinCodeModal
     :open="join.open.value"

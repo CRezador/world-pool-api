@@ -9,7 +9,6 @@ const showTabs = computed(() => route.meta.hideTabs !== true);
 
 <template>
   <div class="grain mobile-shell">
-    <div class="status-spacer" />
     <main class="screen-scroll no-scrollbar">
       <RouterView v-slot="{ Component }">
         <Transition name="route-fade" mode="out-in">
@@ -35,14 +34,6 @@ const showTabs = computed(() => route.meta.hideTabs !== true);
   position: relative;
   overflow: hidden;
   box-shadow: 0 0 0 1px rgba(0,0,0,0.04);
-}
-
-.status-spacer {
-  height: 50px;
-  flex-shrink: 0;
-  background: var(--paper);
-  position: relative;
-  z-index: 2;
 }
 
 .screen-scroll {
