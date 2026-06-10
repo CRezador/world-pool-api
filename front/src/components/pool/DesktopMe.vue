@@ -1,29 +1,41 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import FlagImg from '@/components/FlagImg.vue';
-import { ME, ME_HISTORY, POOLS, TEAMS, toneVar, toneFg } from '@/data/mock';
+import type { GuessHistoryEntry } from '@/types';
+import { TEAMS, toneVar, toneFg } from '@/data/mock';
+import { useMe } from '@/composables/useMe';
+import { usePools } from '@/composables/usePools';
 
 const router = useRouter();
-const me = ME;
-const history = ME_HISTORY;
+const { profile: me, history, resultCount, loading, loadMe } = useMe();
+const { pools, fetchMyPools } = usePools();
 
-const heroStats = [
-  { v: me.seasonPoints, l: 'PTS · TEMPORADA', tone: 'magenta' },
-  { v: me.hitRate + '%', l: 'APROVEITAMENTO', tone: 'cobalt' },
-  { v: me.streak, l: 'SEQUÊNCIA', tone: 'lime' },
-  { v: me.bestRank + 'º', l: 'MELHOR POS.', tone: 'coral' },
-];
+onMounted(() => {
+  loadMe();
+  fetchMyPools().catch(() => {});
+});
 
-const resultCount = 8;
-const breakdown = [
-  { l: 'CRAVADOS', v: me.exactCount, tone: 'lime', note: '+3 cada' },
-  { l: 'RESULTADO', v: resultCount, tone: 'cobalt', note: '+1 cada' },
-  { l: 'ERROS', v: me.totalGuesses - me.exactCount - resultCount, tone: 'coral', note: '0 pts' },
-];
-const breakdownTotal = breakdown.reduce((s, b) => s + b.v, 0);
+const heroStats = computed(() => [
+  { v: me.value.seasonPoints, l: 'PTS · TEMPORADA', tone: 'magenta' },
+  { v: me.value.hitRate + '%', l: 'APROVEITAMENTO', tone: 'cobalt' },
+  { v: me.value.streak, l: 'SEQUÊNCIA', tone: 'lime' },
+  { v: me.value.bestRank ? me.value.bestRank + 'º' : '—', l: 'MELHOR POS.', tone: 'coral' },
+]);
 
-function rowMeta(g: typeof history[number]) {
+const breakdown = computed(() => {
+  const exact = me.value.exactCount;
+  const result = resultCount.value;
+  const errors = Math.max(0, me.value.totalGuesses - exact - result);
+  return [
+    { l: 'CRAVADOS', v: exact, tone: 'lime', note: '+3 cada' },
+    { l: 'RESULTADO', v: result, tone: 'cobalt', note: '+1 cada' },
+    { l: 'ERROS', v: errors, tone: 'coral', note: '0 pts' },
+  ];
+});
+const breakdownTotal = computed(() => breakdown.value.reduce((s, b) => s + b.v, 0));
+
+function rowMeta(g: GuessHistoryEntry) {
   const pending = g.status === 'pending';
   const tone = pending ? 'cobalt' : g.pts === 3 ? 'lime' : g.pts === 1 ? 'cobalt' : 'coral';
   const verdict = pending ? 'EM JOGO' : g.pts === 3 ? 'CRAVOU' : g.pts === 1 ? 'ACERTOU' : 'ERROU';
@@ -60,9 +72,9 @@ const cols = '1.3fr 1.6fr 0.7fr 0.7fr 0.9fr';
           <div
             class="font-display misprint-magenta"
             :style="{ fontSize: '86px', lineHeight: 0.88, marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.005em' }"
-          >Você</div>
+          >{{ me.name }}</div>
           <div class="font-mono" :style="{ fontSize: '12px', letterSpacing: '0.14em', marginTop: '12px', opacity: 0.85 }">
-            {{ me.exactCount }} PLACARES CRAVADOS · {{ me.totalGuesses }} PALPITES · {{ POOLS.length }} BOLÕES
+            {{ me.exactCount }} PLACARES CRAVADOS · {{ me.totalGuesses }} PALPITES · {{ pools.length }} {{ pools.length === 1 ? 'BOLÃO' : 'BOLÕES' }}
           </div>
         </div>
       </div>
@@ -170,6 +182,11 @@ const cols = '1.3fr 1.6fr 0.7fr 0.7fr 0.9fr';
               <span :style="{ fontSize: '8px', letterSpacing: '0.1em', fontWeight: 700, opacity: 0.7 }">{{ rowMeta(g).verdict }}</span>
             </div>
           </div>
+          <div
+            v-if="!loading && !history.length"
+            class="font-mono"
+            :style="{ padding: '24px 14px', textAlign: 'center', fontSize: '12px', letterSpacing: '0.08em', opacity: 0.6 }"
+          >Nenhum palpite ainda. Bora cravar o primeiro!</div>
         </div>
       </div>
 
@@ -185,7 +202,7 @@ const cols = '1.3fr 1.6fr 0.7fr 0.7fr 0.9fr';
             v-for="(b, i) in breakdown"
             :key="b.l"
             :style="{
-              width: `${(b.v / breakdownTotal) * 100}%`,
+              width: `${breakdownTotal ? (b.v / breakdownTotal) * 100 : 0}%`,
               background: toneVar(b.tone),
               borderRight: i < breakdown.length - 1 ? '1.5px solid var(--ink)' : 'none',
             }"
@@ -216,7 +233,12 @@ const cols = '1.3fr 1.6fr 0.7fr 0.7fr 0.9fr';
         </div>
         <div :style="{ display: 'flex', flexDirection: 'column', gap: '10px' }">
           <div
-            v-for="p in POOLS"
+            v-if="!loading && !pools.length"
+            class="font-mono"
+            :style="{ padding: '14px 12px', textAlign: 'center', fontSize: '11px', letterSpacing: '0.08em', opacity: 0.6, background: 'var(--paper)', border: '1.5px dashed var(--ink)', borderRadius: '4px' }"
+          >Você ainda não está em nenhum bolão.</div>
+          <div
+            v-for="p in pools"
             :key="p.id"
             :style="{
               display: 'flex', alignItems: 'center', gap: '12px',

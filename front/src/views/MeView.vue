@@ -1,28 +1,29 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Masthead from '@/components/Masthead.vue';
 import SectionHead from '@/components/SectionHead.vue';
 import GuessHistoryRow from '@/components/pool/GuessHistoryRow.vue';
 import DesktopMe from '@/components/pool/DesktopMe.vue';
-import { ME, ME_HISTORY, toneVar, toneFg } from '@/data/mock';
+import { toneVar, toneFg } from '@/data/mock';
 import { useBreakpoint } from '@/composables/useBreakpoint';
 import { useAuth } from '@/composables/useAuth';
+import { useMe } from '@/composables/useMe';
 import { logout } from '@/services/auth.services';
 
 const router = useRouter();
 const { isDesktop } = useBreakpoint();
 const { clearUser } = useAuth();
+const { profile: me, history, poolsCount, loading, loadMe } = useMe();
 
-const me = ME;
-const history = ME_HISTORY;
+onMounted(loadMe);
 
-const stats = [
-  { label: 'PONTOS · TEMPORADA', value: me.seasonPoints, tone: 'magenta', sub: 'somados em 3 bolões' },
-  { label: 'APROVEITAMENTO', value: me.hitRate + '%', tone: 'cobalt', sub: 'palpites que pontuaram' },
-  { label: 'SEQUÊNCIA ATUAL', value: me.streak, tone: 'lime', sub: 'palpites seguidos no alvo' },
-  { label: 'MELHOR POSIÇÃO', value: me.bestRank + 'º', tone: 'coral', sub: me.bestPool },
-];
+const stats = computed(() => [
+  { label: 'PONTOS · TEMPORADA', value: me.value.seasonPoints, tone: 'magenta', sub: poolsCount.value === 1 ? 'somados em 1 bolão' : `somados em ${poolsCount.value} bolões` },
+  { label: 'APROVEITAMENTO', value: me.value.hitRate + '%', tone: 'cobalt', sub: 'palpites que pontuaram' },
+  { label: 'SEQUÊNCIA ATUAL', value: me.value.streak, tone: 'lime', sub: 'palpites seguidos no alvo' },
+  { label: 'MELHOR POSIÇÃO', value: me.value.bestRank ? me.value.bestRank + 'º' : '—', tone: 'coral', sub: 'entre seus bolões' },
+]);
 
 function openMatch(matchId: number) {
   if (matchId) router.push(`/match/${matchId}`);
@@ -123,6 +124,15 @@ async function handleLogout() {
         :g="g"
         @click="openMatch(g.matchId)"
       />
+      <div
+        v-if="!loading && !history.length"
+        class="font-mono"
+        :style="{
+          padding: '18px 16px', textAlign: 'center', fontSize: '12px',
+          letterSpacing: '0.08em', opacity: 0.6,
+          background: 'var(--paper-2)', border: '1.5px dashed var(--ink)', borderRadius: '6px',
+        }"
+      >Nenhum palpite ainda. Bora cravar o primeiro!</div>
     </div>
 
     <!-- Scoring rule footer -->
