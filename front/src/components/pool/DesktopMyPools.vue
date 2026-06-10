@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import ChipToggle from '@/components/ChipToggle.vue';
 import DesktopHero from '@/components/DesktopHero.vue';
@@ -16,10 +16,10 @@ const router = useRouter();
 const join = useJoinModal();
 const create = useCreatePoolModal();
 
-const { pools: allPools, fetchMyPools } = usePools();
-const { myStats, fetchMyStats } = useLeaderboard();
-
-onMounted(() => Promise.all([fetchMyPools(), fetchMyStats()]).catch(() => {}));
+// Os dados (pools + stats) são carregados pelo pai MyPoolsView no onMounted;
+// aqui só lemos os refs compartilhados do composable para evitar fetch duplicado.
+const { pools: allPools } = usePools();
+const { myStats } = useLeaderboard();
 
 const filters = ['TODOS', 'PRIVADOS', 'PÚBLICOS', 'ATIVOS HOJE'];
 const filter = ref('TODOS');

@@ -3,6 +3,9 @@ import { useAuth } from '../composables/useAuth';
 
 const PUBLIC_ROUTES = ['login'];
 const DEFAULT_ROUTE = 'my-pools';
+const DESKTOP_MIN = 1024;
+
+const isDesktop = () => window.innerWidth >= DESKTOP_MIN;
 
 const routes: RouteRecordRaw[] = [
   {
@@ -99,6 +102,11 @@ router.beforeEach(async (to) => {
 
   // Já em sessão tentando abrir o login → pula direto pra página padrão
   if (isLoggedIn.value && to.name === 'login') {
+    return { name: DEFAULT_ROUTE };
+  }
+
+  // Desktop não tem home ('/') → manda pros bolões
+  if (to.name === 'home' && isDesktop()) {
     return { name: DEFAULT_ROUTE };
   }
 });

@@ -13,7 +13,7 @@ const router = useRouter();
 const route = useRoute();
 
 const guess = useGuessModal();
-const { groups, matches, loading, error, load, loadGroupMatches, loadKnockoutMatches, groupByStatus, currentRodada } = useMatchesBoard();
+const { groups, matches, loading, error, load, loadGroup, loadGroupMatches, loadKnockoutMatches, groupByStatus, currentRodada } = useMatchesBoard();
 const { fetchMyGuesses } = useGuesses();
 
 const knockoutMatchesByStage = computed(() => {
@@ -29,8 +29,7 @@ const group = ref<string | null>(null);
 
 async function initGroup(groupId: string | undefined) {
   if (!groupId) return;
-  await load();
-  const found = groups.value.find(g => String(g.id) === groupId);
+  const found = await loadGroup(groupId);
   if (found) {
     group.value = found.g;
     loadGroupMatches(found.id);
@@ -51,6 +50,7 @@ watch(() => route.params.groupId, (groupId) => {
   if (!groupId) {
     group.value = null;
     phase.value = 'groups';
+    load(); // a lista de grupos precisa de todos os grupos, não só do último aberto
   } else {
     initGroup(groupId as string);
   }
