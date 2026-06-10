@@ -1,0 +1,10 @@
+# Caddy faz o TLS (Let's Encrypt automático) e encaminha tudo para o front,
+# que serve o SPA e já faz o proxy interno de /api e /sanctum para a API.
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy front:80
+}

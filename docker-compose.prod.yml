@@ -1,0 +1,81 @@
+# Stack de produção para deploy em VPS (Debian 11).
+# Uso:
+#   docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+#
+# Topologia:
+#   Internet → Caddy (80/443, TLS automático) → front (estático + proxy /api,/sanctum)
+#                                                   → api (nginx + php-fpm) → mysql
+# Apenas o Caddy publica portas no host; os demais serviços ficam na rede interna.
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+    # Injeta APP_KEY, APP_URL, DB_*, SANCTUM_*, etc. (ver .env.prod.example)
+    env_file:
+      - .env.prod
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - internal
+
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+    environment:
+      # Alvo do proxy_pass do nginx do front; resolve o serviço "api" na rede interna.
+      API_URL: http://api
+    depends_on:
+      - api
+    networks:
+      - internal
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - front
+    networks:
+      - internal
+
+networks:
+  internal:
+
+volumes:
+  mysql_data:
+  caddy_data:
+  caddy_config:
