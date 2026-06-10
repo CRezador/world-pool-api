@@ -43,7 +43,9 @@ class ImportMatchesCommand extends Command
             return Command::FAILURE;
         }
 
-        $teams  = Team::all()->keyBy('code');
+        $allTeams    = Team::all();
+        $teamsByTla  = $allTeams->filter(fn($t) => $t->tla)->keyBy('tla');
+        $teamsByCode = $allTeams->keyBy('code');
         $groups = Group::all()->keyBy('name');
 
         $matches   = $response->json('matches', []);
@@ -54,8 +56,8 @@ class ImportMatchesCommand extends Command
             $homeTla = $match['homeTeam']['tla'] ?? null;
             $awayTla = $match['awayTeam']['tla'] ?? null;
 
-            $homeTeam = $homeTla ? $teams->get($homeTla) : null;
-            $awayTeam = $awayTla ? $teams->get($awayTla) : null;
+            $homeTeam = $homeTla ? ($teamsByTla->get($homeTla) ?? $teamsByCode->get($homeTla)) : null;
+            $awayTeam = $awayTla ? ($teamsByTla->get($awayTla) ?? $teamsByCode->get($awayTla)) : null;
 
             if (!$homeTeam || !$awayTeam) {
                 $skipped++;
