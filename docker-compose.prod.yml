@@ -2,9 +2,10 @@
 # Uso:
 #   docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
 #
-# Topologia:
-#   Internet → Caddy (80/443, TLS automático) → front (estático + proxy /api,/sanctum)
-#                                                   → api (nginx + php-fpm) → mysql
+# Topologia (dois domínios, mesma origem para o SPA):
+#   bolao.* → Caddy → front (SPA estático; proxy interno de /api,/sanctum → api)
+#   api.*   → Caddy → api   (acesso direto à API)
+#                            front/api → mysql
 # Apenas o Caddy publica portas no host; os demais serviços ficam na rede interna.
 
 services:
@@ -61,7 +62,8 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      DOMAIN: ${DOMAIN}
+      FRONT_DOMAIN: ${FRONT_DOMAIN}
+      API_DOMAIN: ${API_DOMAIN}
       ACME_EMAIL: ${ACME_EMAIL}
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro

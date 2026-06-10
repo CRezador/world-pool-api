@@ -1,10 +1,18 @@
-# Caddy faz o TLS (Let's Encrypt automático) e encaminha tudo para o front,
-# que serve o SPA e já faz o proxy interno de /api e /sanctum para a API.
+# Caddy faz o TLS (Let's Encrypt automático) e roteia por domínio:
+#   - FRONT_DOMAIN  -> front  (SPA estático; ele já faz proxy interno de /api e /sanctum)
+#   - API_DOMAIN    -> api    (acesso direto à API: Postman, integrações, etc.)
+# O SPA continua chamando /api na MESMA origem do front (sem CORS); o domínio da
+# API é publicado em paralelo para consumo direto.
 {
 	email {$ACME_EMAIL}
 }
 
-{$DOMAIN} {
+{$FRONT_DOMAIN} {
 	encode zstd gzip
 	reverse_proxy front:80
+}
+
+{$API_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy api:80
 }

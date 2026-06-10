@@ -13,6 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Em produção a API só é acessível através do Caddy/front (rede interna
+        // do Docker, sem portas publicadas). Confiar nos proxies garante que o
+        // Laravel respeite X-Forwarded-Proto/For e trate as requisições como https.
+        $middleware->trustProxies(at: '*');
+
         $middleware->api();
         $middleware->statefulApi();
         $middleware->alias([
