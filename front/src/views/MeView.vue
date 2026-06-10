@@ -7,9 +7,12 @@ import GuessHistoryRow from '@/components/pool/GuessHistoryRow.vue';
 import DesktopMe from '@/components/pool/DesktopMe.vue';
 import { ME, ME_HISTORY, toneVar, toneFg } from '@/data/mock';
 import { useBreakpoint } from '@/composables/useBreakpoint';
+import { useAuth } from '@/composables/useAuth';
+import { logout } from '@/services/auth.services';
 
 const router = useRouter();
 const { isDesktop } = useBreakpoint();
+const { clearUser } = useAuth();
 
 const me = ME;
 const history = ME_HISTORY;
@@ -23,6 +26,12 @@ const stats = [
 
 function openMatch(matchId: number) {
   if (matchId) router.push(`/match/${matchId}`);
+}
+
+async function handleLogout() {
+  try { await logout(); } catch {}
+  clearUser();
+  router.push('/login');
 }
 </script>
 
@@ -129,6 +138,22 @@ function openMatch(matchId: number) {
       <div :style="{ fontSize: '13px', lineHeight: 1.5 }">
         Placar cravado <b>+3</b> · vencedor/empate <b>+1</b> · errou <b>0</b>.
       </div>
+    </div>
+
+    <!-- Logout -->
+    <div :style="{ padding: '0 18px 28px' }">
+      <button
+        class="font-display press"
+        :style="{
+          width: '100%', padding: '13px 16px',
+          background: 'var(--paper-2)', color: 'var(--ink)',
+          border: '1.5px solid var(--ink)',
+          boxShadow: '4px 4px 0 var(--coral), 4px 4px 0 1px var(--ink)',
+          borderRadius: '6px', cursor: 'pointer',
+          fontSize: '15px', letterSpacing: '0.06em', textTransform: 'uppercase',
+        }"
+        @click="handleLogout"
+      >Sair da conta →</button>
     </div>
   </div>
 </template>

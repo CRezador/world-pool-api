@@ -118,8 +118,8 @@ docker compose version    # confirma o plugin compose
 
 ```bash
 sudo apt install -y git
-git clone https://github.com/CRezador/bolao-copa.git
-cd bolao-copa
+git clone https://github.com/CRezador/world-pool-api.git
+cd world-pool-api
 ```
 
 > Se o repositório for **privado**, o `git` vai pedir usuário e senha. Use seu
@@ -195,7 +195,7 @@ As migrations rodam sozinhas quando a API sobe (ver `api/docker/entrypoint.sh`).
 
 ## Operação do dia a dia
 
-Sempre rode os comandos dentro da pasta `bolao-copa`. Para encurtar, você pode
+Sempre rode os comandos dentro da pasta `world-pool-api`. Para encurtar, você pode
 criar um atalho (opcional):
 
 ```bash
@@ -217,10 +217,21 @@ Com o atalho `dcp`:
 ### Atualizar para uma nova versão do código
 
 ```bash
-cd ~/bolao-copa
+cd ~/world-pool-api
 git pull
 dcp up -d --build
 ```
+
+> **Variáveis novas:** `git pull` nunca altera o `.env.prod` (ele não é
+> versionado). Se a nova versão introduzir variáveis de ambiente, adicione-as no
+> `.env.prod` **antes** de subir. Para descobrir o que falta, compare com o
+> exemplo:
+>
+> ```bash
+> diff <(grep -oE '^[A-Z_]+=' .env.prod.example | sort) <(grep -oE '^[A-Z_]+=' .env.prod | sort)
+> ```
+>
+> O que aparecer só do lado do `.env.prod.example` é variável nova a preencher.
 
 ### Rodar um comando artisan (ex.: limpar cache)
 

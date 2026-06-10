@@ -36,7 +36,7 @@ async function enter() {
       await register(name.value, email.value, password.value);
       clearUser();
       await checkAuth();
-      router.replace('/');
+      router.replace('/pools');
     }
   } catch (e: any) {
     error.value = e?.response?.data?.message ?? 'Erro ao entrar. Verifique seus dados.';
@@ -266,7 +266,12 @@ const stats = [
     <div :style="{ padding: '20px 22px 0' }">
       <TicketCard accent="magenta">
         <div :style="{ padding: '18px' }">
-          <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.2em', fontWeight: 700, marginBottom: '14px' }">ENTRADA · ADMITIR UM</div>
+          <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.2em', fontWeight: 700, marginBottom: '14px' }">
+            {{ mode === 'login' ? 'ENTRADA · ADMITIR UM' : 'NOVO CADASTRO · SÓCIO' }}
+          </div>
+          <div v-if="mode === 'register'" :style="{ marginBottom: '12px' }">
+            <FormField label="NOME COMPLETO" v-model="name" />
+          </div>
           <div :style="{ marginBottom: '12px' }">
             <FormField label="E-MAIL" v-model="email" />
           </div>
@@ -282,8 +287,11 @@ const stats = [
                 color: 'var(--ink)', outline: 'none', fontFamily: 'JetBrains Mono, monospace',
               }"
             />
+            <div v-if="mode === 'register'" class="font-mono" :style="{ fontSize: '10px', opacity: 0.6, marginTop: '6px', letterSpacing: '0.06em' }">
+              mínimo 8 caracteres · com 1 número
+            </div>
           </div>
-          <label :style="{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '14px' }" @click="remember = !remember">
+          <label v-if="mode === 'login'" :style="{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '14px' }" @click="remember = !remember">
             <div :style="{ width: '18px', height: '18px', border: '1.5px solid var(--ink)', background: remember ? 'var(--ink)' : 'transparent', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px' }">{{ remember ? '✓' : '' }}</div>
             <span class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.12em' }">LEMBRAR DE MIM</span>
           </label>
@@ -291,11 +299,16 @@ const stats = [
             ⚠ {{ error }}
           </div>
           <PrintButton tone="magenta" full :disabled="loading" @click="enter">
-            {{ loading ? 'AGUARDE...' : 'Entrar no estádio' }}
+            {{ loading ? 'AGUARDE...' : (mode === 'login' ? 'Entrar no estádio' : 'Apitar meu cadastro') }}
           </PrintButton>
           <div :style="{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px' }">
-            <span class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.12em' }">Esqueceu a senha?</span>
-            <span class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.12em', textDecoration: 'underline', cursor: 'pointer' }">Cadastrar →</span>
+            <span v-if="mode === 'login'" class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.12em' }">Esqueceu a senha?</span>
+            <span v-else class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.12em', opacity: 0.6 }">Já é sócio?</span>
+            <span
+              class="font-mono"
+              :style="{ fontSize: '10px', letterSpacing: '0.12em', textDecoration: 'underline', cursor: 'pointer' }"
+              @click="mode = mode === 'login' ? 'register' : 'login'"
+            >{{ mode === 'login' ? 'Cadastrar →' : 'Entrar →' }}</span>
           </div>
         </div>
       </TicketCard>
