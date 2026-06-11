@@ -34,7 +34,7 @@ defineEmits<{ (e: 'click'): void }>();
         }"
       >
         <img
-          :src="`https://flagcdn.com/40x30/${row.iso}.png`"
+          :src="`https://flagcdn.com/${row.iso}.svg`"
           alt=""
           :style="{
             width: '18px', height: '12px', border: '1px solid var(--ink)',

@@ -8,6 +8,14 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
+
+function open() {
+  if (props.match.groupId != null) {
+    router.push(`/matches/${props.match.groupId}`);
+  } else {
+    router.push({ path: '/matches', query: { phase: 'knockout' } });
+  }
+}
 </script>
 
 <template>
@@ -19,7 +27,7 @@ const router = useRouter();
       border: '1px dashed rgba(242, 233, 210, 0.3)',
       cursor: 'pointer',
     }"
-    @click="router.push(`/guess/${match.id}`)"
+    @click="open()"
   >
     <span
       class="font-mono"

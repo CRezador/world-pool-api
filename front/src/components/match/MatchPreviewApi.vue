@@ -6,6 +6,14 @@ import type { ApiMatch } from '@/types';
 const props = defineProps<{ match: ApiMatch }>();
 const router = useRouter();
 
+function open() {
+  if (props.match.groupId != null) {
+    router.push(`/matches/${props.match.groupId}`);
+  } else {
+    router.push({ path: '/matches', query: { phase: 'knockout' } });
+  }
+}
+
 function parseKickoff(raw: string | null): { day: string; time: string } {
   if (!raw) return { day: '—', time: '—' };
   const d = new Date(raw);
@@ -45,7 +53,7 @@ const groupLabel = computed(() => {
       boxShadow: '4px 4px 0 var(--cobalt), 4px 4px 0 1px var(--ink)',
       borderRadius: '6px', padding: '14px 16px',
     }"
-    @click="router.push(`/guess/${match.id}`)"
+    @click="open()"
   >
     <!-- Top: group pill + date -->
     <div :style="{

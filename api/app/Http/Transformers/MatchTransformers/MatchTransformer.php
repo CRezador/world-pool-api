@@ -21,6 +21,9 @@ class MatchTransformer extends BaseTransformer
             'group' => $match->stage->name === 'GROUP_STAGE'
               ? $match->group->name
               : null,
+            'group_id' => $match->stage->name === 'GROUP_STAGE'
+              ? $match->group->id
+              : null,
             'status' => $match->status->name,
             'kickoff_at' => $match->kickoff_at === null ? null : $match->kickoff_at->format('d/m/Y H:i'),
             'home_score' => $match->home_score,

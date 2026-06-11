@@ -57,6 +57,7 @@ export interface ApiMatch {
   kickoff: string | null;
   stage: Stage;
   group: string | null;
+  groupId: number | null;
   status: MatchStatus;
   home: Team;
   away: Team;
