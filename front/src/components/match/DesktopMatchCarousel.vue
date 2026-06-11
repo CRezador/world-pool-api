@@ -24,6 +24,15 @@ function go(delta: number) {
   idx.value = (idx.value + delta + total.value) % total.value;
 }
 
+function open() {
+  if (!slide.value) return;
+  if (slide.value.groupId != null) {
+    router.push(`/matches/${slide.value.groupId}`);
+  } else {
+    router.push({ path: '/matches', query: { phase: 'knockout' } });
+  }
+}
+
 let intervalId: ReturnType<typeof setInterval> | null = null;
 
 const loading = ref(true);
@@ -190,7 +199,7 @@ onUnmounted(() => {
           <span
             class="font-display"
             :style="{ fontSize: '14px', color: 'var(--magenta)', cursor: 'pointer' }"
-            @click="router.push(`/guess/${slide.id}`)"
+            @click="open()"
           >✎ APITAR PALPITE →</span>
         </div>
       </div>
