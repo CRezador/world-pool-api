@@ -36,24 +36,37 @@ async function initGroup(groupId: string | undefined) {
   }
 }
 
+function applyPhaseFromQuery() {
+  group.value = null;
+  if (route.query.phase === 'knockout') {
+    phase.value = 'knockout';
+    loadKnockoutMatches();
+  } else {
+    phase.value = 'groups';
+    load(); // a lista de grupos precisa de todos os grupos, não só do último aberto
+  }
+}
+
 onMounted(async () => {
   fetchMyGuesses();
   const groupId = route.params.groupId as string | undefined;
   if (groupId) {
     await initGroup(groupId);
   } else {
-    load();
+    applyPhaseFromQuery();
   }
 });
 
 watch(() => route.params.groupId, (groupId) => {
   if (!groupId) {
-    group.value = null;
-    phase.value = 'groups';
-    load(); // a lista de grupos precisa de todos os grupos, não só do último aberto
+    applyPhaseFromQuery();
   } else {
     initGroup(groupId as string);
   }
+});
+
+watch(() => route.query.phase, () => {
+  if (!route.params.groupId) applyPhaseFromQuery();
 });
 
 const phases = [
@@ -195,9 +208,9 @@ function palpitar(m: ApiMatch) {
               :style="{ display: 'flex', alignItems: 'center', gap: '8px' }"
             >
               <img
-                :src="`https://flagcdn.com/40x30/${row.iso}.png`"
+                :src="`https://flagcdn.com/${row.iso}.svg`"
                 alt=""
-                :style="{ width: '24px', height: '16px', border: '1px solid var(--ink)', borderRadius: '2px', objectFit: 'cover' }"
+                :style="{ width: '24px', height: '16px', border: '1px solid var(--ink)', borderRadius: '2px', objectFit: 'cover', flexShrink: 0 }"
               />
               <span class="font-display" :style="{ fontSize: '16px' }">{{ row.code }}</span>
             </div>

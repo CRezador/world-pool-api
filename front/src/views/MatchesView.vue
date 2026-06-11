@@ -73,13 +73,24 @@ function palpitar(m: ApiMatch) {
   guessModal.show(m);
 }
 
+function applyPhaseFromQuery() {
+  group.value = null;
+  if (route.query.phase === 'knockout') {
+    phase.value = 'knockout';
+    loadKnockoutMatches();
+  } else {
+    phase.value = 'groups';
+    load(); // a lista de grupos precisa de todos os grupos, não só do último aberto
+  }
+}
+
 function loadForRoute() {
   fetchMyGuesses();
   const groupId = route.params.groupId as string | undefined;
   if (groupId) {
     initGroup(groupId);
   } else {
-    load();
+    applyPhaseFromQuery();
   }
 }
 
@@ -98,12 +109,15 @@ watch(isDesktop, (desk) => {
 watch(() => route.params.groupId, (groupId) => {
   if (isDesktop.value) return; // no desktop, o DesktopMatchesBoard trata a navegação
   if (!groupId) {
-    group.value = null;
-    phase.value = 'groups';
-    load(); // a lista de grupos precisa de todos os grupos, não só do último aberto
+    applyPhaseFromQuery();
   } else {
     initGroup(groupId as string);
   }
+});
+
+watch(() => route.query.phase, () => {
+  if (isDesktop.value) return;
+  if (!route.params.groupId) applyPhaseFromQuery();
 });
 </script>
 

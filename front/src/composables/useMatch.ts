@@ -14,6 +14,7 @@ export function useMatch() {
             kickoff: m.kickoff_at ?? null,
             stage: m.stage,
             group: m.group ?? null,
+            groupId: m.group_id ?? null,
             status: m.status,
             home: {
                 id: m.home_team.id,
