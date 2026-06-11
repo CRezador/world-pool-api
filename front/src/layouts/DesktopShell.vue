@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import FlagImg from '@/components/FlagImg.vue';
 import Avatar from '@/components/Avatar.vue';
-import { MATCHES, MEMBERS } from '@/data/mock';
+import TodayMatchesCarousel from '@/components/match/TodayMatchesCarousel.vue';
+import { MEMBERS } from '@/data/mock';
 import { useJoinModal } from '@/composables/useJoinModal';
 import { useCreatePoolModal } from '@/composables/useCreatePoolModal';
 import { useAuth } from '@/composables/useAuth';
@@ -13,9 +13,6 @@ const route = useRoute();
 const router = useRouter();
 const join = useJoinModal();
 const create = useCreatePoolModal();
-
-const liveMatch = MATCHES.find(m => m.status === 'IN_PROGRESS');
-const nextMatch = MATCHES.find(m => m.status === 'SCHEDULED');
 
 type MenuItem = { divider: true } | {
   divider?: false;
@@ -225,39 +222,7 @@ const isMeActive = computed(() => route.name === 'me');
       </div>
     </header>
 
-    <div v-if="liveMatch" class="live-ticker">
-      <span
-        class="font-mono"
-        :style="{ fontSize: '10px', letterSpacing: '0.18em', color: 'var(--coral)' }"
-      >
-        <span
-          class="live-dot"
-          :style="{
-            display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%',
-            background: 'var(--coral)', marginRight: '6px',
-          }"
-        />AO VIVO
-      </span>
-      <span
-        class="font-display"
-        :style="{ fontSize: '16px', display: 'inline-flex', alignItems: 'center', gap: '8px' }"
-      >
-        <FlagImg :team="String(liveMatch.home)" :size="16" :radius="2" />
-        {{ liveMatch.home }} {{ liveMatch.homeScore }} × {{ liveMatch.awayScore }} {{ liveMatch.away }}
-        <FlagImg :team="String(liveMatch.away)" :size="16" :radius="2" />
-      </span>
-      <span class="font-mono" :style="{ fontSize: '11px', opacity: 0.7 }">
-        {{ liveMatch.kickoff }} · MetLife
-      </span>
-      <span :style="{ marginLeft: '18px', opacity: 0.6 }">·</span>
-      <span v-if="nextMatch" class="font-mono" :style="{ fontSize: '11px', opacity: 0.7 }">
-        PRÓX · {{ nextMatch.home }} × {{ nextMatch.away }} {{ nextMatch.day.toLowerCase() }} {{ nextMatch.kickoff }}
-      </span>
-      <span
-        class="font-mono"
-        :style="{ marginLeft: 'auto', fontSize: '10px', letterSpacing: '0.16em' }"
-      >MEUS BOLÕES ATIVOS · 3</span>
-    </div>
+    <TodayMatchesCarousel />
 
     <main class="desktop-main">
       <RouterView v-slot="{ Component }">
@@ -286,15 +251,6 @@ const isMeActive = computed(() => route.name === 'me');
   padding: 14px 28px;
   border-bottom: 2px solid var(--ink);
   background: var(--paper);
-}
-
-.live-ticker {
-  background: var(--ink);
-  color: var(--paper);
-  padding: 8px 28px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
 }
 
 .desktop-main {

@@ -36,12 +36,11 @@ const finishedStyle = computed(() => ({
     }"
   >
     <span
-      class="live-dot"
       :style="{
         width: '6px', height: '6px', borderRadius: '50%', background: 'var(--paper)',
       }"
     />
-    AO VIVO
+    EM PROGRESSO
   </span>
   <span
     v-else-if="status === 'FINISHED'"

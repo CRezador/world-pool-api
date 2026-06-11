@@ -26,12 +26,11 @@ const away = TEAMS[props.match.away as string];
       :style="{ fontSize: '10px', letterSpacing: '0.16em', fontWeight: 700, color: 'var(--coral)' }"
     >
       <span
-        class="live-dot"
         :style="{
           display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%',
           background: 'var(--coral)', marginRight: '6px',
         }"
-      />AO VIVO
+      />EM PROGRESSO
     </span>
     <FlagImg :team="(match.home as string)" :size="20" :radius="2" />
     <span class="font-display" :style="{ fontSize: '18px' }">

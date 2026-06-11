@@ -86,7 +86,7 @@ function selectGroup(g: GroupFull) {
 
 const statusCols: MatchStatus[] = ['SCHEDULED', 'IN_PROGRESS', 'FINISHED'];
 const statusTitles: Record<MatchStatus, string> = {
-  SCHEDULED: 'A PALPITAR', IN_PROGRESS: 'AO VIVO', FINISHED: 'ENCERRADAS',
+  SCHEDULED: 'A PALPITAR', IN_PROGRESS: 'EM PROGRESSO', FINISHED: 'ENCERRADAS',
 };
 const statusAccents: Record<MatchStatus, string> = {
   SCHEDULED: 'magenta', IN_PROGRESS: 'coral', FINISHED: 'cobalt',

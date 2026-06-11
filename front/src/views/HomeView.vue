@@ -4,10 +4,9 @@ import { useRouter } from 'vue-router';
 import Masthead from '@/components/Masthead.vue';
 import SectionHead from '@/components/SectionHead.vue';
 import PrintButton from '@/components/PrintButton.vue';
-import LiveTicker from '@/components/LiveTicker.vue';
+import TodayMatchesCarousel from '@/components/match/TodayMatchesCarousel.vue';
 import PoolCard from '@/components/pool/PoolCard.vue';
 import MatchCarouselMobile from '@/components/match/MatchCarouselMobile.vue';
-import { MATCHES } from '@/data/mock';
 import { useJoinModal } from '@/composables/useJoinModal';
 import { useCreatePoolModal } from '@/composables/useCreatePoolModal';
 import { usePools } from '@/composables/usePools';
@@ -16,7 +15,6 @@ import { useMatch } from '@/composables/useMatch';
 const router = useRouter();
 const join   = useJoinModal();
 const create = useCreatePoolModal();
-const liveMatch = MATCHES.find(m => m.status === 'IN_PROGRESS');
 
 const { pools, fetchMyPools } = usePools();
 const { upcomingMatches, fetchUpcomingMatches } = useMatch();
@@ -40,7 +38,7 @@ const nextMatchKicker = computed(() => {
 <template>
   <div class="page-narrow" :style="{ background: 'var(--paper)', minHeight: '100%' }">
     <Masthead />
-    <LiveTicker v-if="liveMatch" :match="liveMatch" />
+    <TodayMatchesCarousel />
 
     <div :style="{ padding: '18px 18px 8px' }">
       <SectionHead :kicker="poolsKicker" title="Onde você joga" />

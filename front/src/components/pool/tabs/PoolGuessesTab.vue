@@ -77,7 +77,7 @@ function goToGuess(g: GuessEntry) {
     <!-- Em andamento -->
     <section v-if="inProgress.length">
       <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.18em', fontWeight: 700, color: 'var(--coral)', marginBottom: '8px' }">
-        ● AO VIVO · {{ inProgress.length }} {{ inProgress.length === 1 ? 'JOGO' : 'JOGOS' }}
+        ● EM PROGRESSO · {{ inProgress.length }} {{ inProgress.length === 1 ? 'JOGO' : 'JOGOS' }}
       </div>
       <div :style="{ display: 'flex', flexDirection: 'column', gap: '10px' }">
         <div

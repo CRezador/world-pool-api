@@ -40,7 +40,7 @@ const guesses = computed(() => {
   <div :style="{ background: 'var(--paper)', minHeight: '100%' }">
     <div :style="{ padding: '14px 18px 8px' }">
       <BackBar
-        :title="isLive ? 'AO VIVO' : 'Encerrada'"
+        :title="isLive ? 'EM PROGRESSO' : 'Encerrada'"
         kicker="DETALHE DO JOGO"
         fallback="/matches"
       />
