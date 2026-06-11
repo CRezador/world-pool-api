@@ -37,6 +37,7 @@ Route::middleware('auth:sanctum')->group(
 
         //Rotas de partidas
         Route::get('/matches/upcoming', [MatchController::class, 'upcomingMatches']);
+        Route::get('/matches/today', [MatchController::class, 'todayMatches']);
         Route::get('/matches/{id}', [MatchController::class, 'show']);
         Route::get('/matches', [MatchController::class, 'index']);
         Route::get('/group/{id}/matches', [MatchController::class, 'matchByGroup']);

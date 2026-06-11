@@ -86,6 +86,25 @@ class MatchController extends Controller
     }
 
     #[OA\Get(
+        path: '/api/matches/today',
+        summary: 'Lista as partidas de hoje (qualquer status), em horário de Brasília',
+        security: [['sanctum' => []]],
+        tags: ['Matches'],
+        responses: [
+            new OA\Response(response: 200, description: 'Partidas de hoje'),
+        ]
+    )]
+    public function todayMatches(): Response
+    {
+        $matches = $this->matchRepository->findTodayMatches();
+
+        return response()->json(
+            $this->matchTransformer->collection($matches, 'Partidas de hoje'),
+            200
+        );
+    }
+
+    #[OA\Get(
         path: '/api/stages/matches',
         summary: 'Lista partidas de uma fase específica',
         security: [['sanctum' => []]],
