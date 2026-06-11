@@ -18,6 +18,7 @@ function mapApiMatch(m: any): ApiMatch {
     kickoff: m.kickoff_at ?? null,
     stage: m.stage,
     group: m.group ?? null,
+    groupId: m.group_id ?? null,
     status: m.status as MatchStatus,
     home: {
       id: m.home_team.id,
