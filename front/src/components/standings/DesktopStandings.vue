@@ -4,12 +4,13 @@ import Stamp from '@/components/Stamp.vue';
 import { toneVar } from '@/data/mock';
 import { useStandings } from '@/composables/useStandings';
 
-const { standings, fetchStandings } = useStandings();
+// Os dados são carregados pelo pai StandingsView; aqui só lemos o ref
+// compartilhado (singleton do composable) para evitar fetch duplicado.
+const { standings } = useStandings();
 
 const focus = ref('');
 
-onMounted(async () => {
-  await fetchStandings();
+onMounted(() => {
   if (standings.value.length && !focus.value) {
     focus.value = standings.value[0].group;
   }

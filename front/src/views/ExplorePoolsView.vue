@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import BackBar from '@/components/BackBar.vue';
 import DesktopExplore from '@/components/pool/DesktopExplore.vue';
 import JoinPublicPoolModal from '@/components/modals/JoinPublicPoolModal.vue';
@@ -27,7 +27,17 @@ async function goPage(p: number) {
   loading.value = false;
 }
 
-onMounted(() => goPage(1));
+onMounted(() => {
+  // No desktop quem carrega é o DesktopExplore (paginação própria); o pai só
+  // busca no layout mobile para não duplicar a chamada de pools públicos.
+  if (!isDesktop.value) goPage(1);
+});
+
+// Ao redimensionar de volta para o layout mobile, recarrega para preencher a
+// paginação local do pai (que não é compartilhada com o componente desktop).
+watch(isDesktop, (desk) => {
+  if (!desk) goPage(page.value);
+});
 
 const fmt = new Intl.NumberFormat('pt-BR');
 

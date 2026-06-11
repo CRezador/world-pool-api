@@ -16,7 +16,12 @@ const { isDesktop } = useBreakpoint();
 const { clearUser } = useAuth();
 const { profile: me, history, poolsCount, loading, loadMe } = useMe();
 
-onMounted(loadMe);
+// No desktop quem carrega é o DesktopMe (que também busca pools e tem loading
+// próprio); o pai só dispara loadMe no layout mobile, evitando stats/guesses
+// duplicados. Os dados são singletons compartilhados, então o resize cobre o resto.
+onMounted(() => {
+  if (!isDesktop.value) loadMe();
+});
 
 const stats = computed(() => [
   { label: 'PONTOS · TEMPORADA', value: me.value.seasonPoints, tone: 'magenta', sub: poolsCount.value === 1 ? 'somados em 1 bolão' : `somados em ${poolsCount.value} bolões` },

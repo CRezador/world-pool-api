@@ -10,7 +10,7 @@ const MAX_VISIBLE  = 7;
 const INTERVAL_MS  = 3000;
 const ANIM_MS      = 620;
 
-const { activity } = useActivity();
+const { activity, fetchActivity } = useActivity();
 
 const offset    = ref(0);
 const animating = ref(false);
@@ -19,6 +19,7 @@ const paused    = ref(false);
 let timerId: ReturnType<typeof setInterval> | null = null;
 
 onMounted(() => {
+  fetchActivity().catch(() => {});
   timerId = setInterval(() => {
     if (paused.value || activity.value.length <= MAX_VISIBLE) return;
     animating.value = true;

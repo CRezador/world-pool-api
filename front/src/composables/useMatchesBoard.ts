@@ -40,6 +40,19 @@ function mapApiMatch(m: any): ApiMatch {
   };
 }
 
+function mapGroup(g: any): GroupFull {
+  return {
+    id: g.id,
+    g: g.name,
+    rows: (g.teams ?? []).map((t: any) => ({
+      code: t.code,
+      name: t.name,
+      iso: t.flag_code ?? '',
+      P: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, pts: 0, form: [],
+    })),
+  };
+}
+
 export function useMatchesBoard() {
   const groups = ref<GroupFull[]>([]);
   const matches = ref<ApiMatch[]>([]);
@@ -52,18 +65,30 @@ export function useMatchesBoard() {
     try {
       const res = await api.get('groups');
       const raw = res.data.data ?? res.data;
-      groups.value = raw.map((g: any): GroupFull => ({
-        id: g.id,
-        g: g.name,
-        rows: (g.teams ?? []).map((t: any) => ({
-          code: t.code,
-          name: t.name,
-          iso: t.flag_code ?? '',
-          P: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, pts: 0, form: [],
-        })),
-      }));
+      groups.value = raw.map(mapGroup);
     } catch (e: any) {
       error.value = e?.message ?? 'Erro ao carregar grupos';
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  // Carrega apenas o grupo do id informado (rota /matches/:id), sem buscar todos
+  // os grupos. Mescla em `groups.value` para os computeds que dependem do array.
+  async function loadGroup(groupId: number | string): Promise<GroupFull | null> {
+    loading.value = true;
+    error.value = null;
+    try {
+      const res = await api.get(`groups/${groupId}`);
+      const raw = res.data.data ?? res.data;
+      const group = mapGroup(raw);
+      const idx = groups.value.findIndex(g => g.id === group.id);
+      if (idx >= 0) groups.value[idx] = group;
+      else groups.value = [...groups.value, group];
+      return group;
+    } catch (e: any) {
+      error.value = e?.message ?? 'Erro ao carregar grupo';
+      return null;
     } finally {
       loading.value = false;
     }
@@ -125,7 +150,7 @@ export function useMatchesBoard() {
 
   return {
     groups, matches, loading, error,
-    load, loadGroupMatches, loadKnockoutMatches,
+    load, loadGroup, loadGroupMatches, loadKnockoutMatches,
     knockoutBlocks, getGroupMatches, groupByStatus, currentRodada,
   };
 }

@@ -18,7 +18,7 @@ const route = useRoute();
 const { isDesktop } = useBreakpoint();
 
 const guessModal = useGuessModal();
-const { groups, matches, loading, error, load, loadGroupMatches, loadKnockoutMatches, groupByStatus, currentRodada } = useMatchesBoard();
+const { groups, matches, loading, error, load, loadGroup, loadGroupMatches, loadKnockoutMatches, groupByStatus, currentRodada } = useMatchesBoard();
 const { fetchMyGuesses } = useGuesses();
 
 const phase = ref<'groups' | 'knockout'>('groups');
@@ -46,8 +46,7 @@ const knockoutMatchesByStage = computed(() => {
 });
 
 async function initGroup(groupId: string) {
-  await load();
-  const found = groups.value.find(g => String(g.id) === groupId);
+  const found = await loadGroup(groupId);
   if (found) {
     group.value = found.g;
     loadGroupMatches(found.id);
@@ -74,20 +73,34 @@ function palpitar(m: ApiMatch) {
   guessModal.show(m);
 }
 
-onMounted(async () => {
+function loadForRoute() {
   fetchMyGuesses();
   const groupId = route.params.groupId as string | undefined;
   if (groupId) {
-    await initGroup(groupId);
+    initGroup(groupId);
   } else {
     load();
   }
+}
+
+onMounted(() => {
+  // No desktop quem carrega os dados é o DesktopMatchesBoard (que tem estado
+  // próprio); o pai só busca quando está renderizando o layout mobile, evitando
+  // a chamada duplicada de groups/guesses.
+  if (!isDesktop.value) loadForRoute();
+});
+
+// Ao redimensionar de volta para o layout mobile sem dados, carrega.
+watch(isDesktop, (desk) => {
+  if (!desk && !groups.value.length) loadForRoute();
 });
 
 watch(() => route.params.groupId, (groupId) => {
+  if (isDesktop.value) return; // no desktop, o DesktopMatchesBoard trata a navegação
   if (!groupId) {
     group.value = null;
     phase.value = 'groups';
+    load(); // a lista de grupos precisa de todos os grupos, não só do último aberto
   } else {
     initGroup(groupId as string);
   }

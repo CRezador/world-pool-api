@@ -59,13 +59,15 @@ function onRefresh() {
 
 <template>
   <!-- Desktop -->
-  <DesktopPoolDashboard v-if="isDesktop && pool" :pool="pool" :my-role="myRole" :joined-at="joinedAt" />
+  <!-- :key força o remount ao trocar de pool (/pool/1 → /pool/2), já que a view
+       é reaproveitada; assim os filhos que buscam no onMounted recarregam. -->
+  <DesktopPoolDashboard v-if="isDesktop && pool" :key="pool.id" :pool="pool" :my-role="myRole" :joined-at="joinedAt" />
 
   <!-- Mobile skeleton -->
   <PoolLoadingSkeleton v-else-if="loading" />
 
   <!-- Mobile -->
-  <div v-else-if="pool" :style="{ background: 'var(--paper)', minHeight: '100%' }">
+  <div v-else-if="pool" :key="pool.id" :style="{ background: 'var(--paper)', minHeight: '100%' }">
     <PoolHeader :pool="pool" />
 
     <div :style="{
