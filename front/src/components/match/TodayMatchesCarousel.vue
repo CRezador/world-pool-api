@@ -11,7 +11,7 @@ const router = useRouter();
 const { todayMatches, fetchTodayMatches, upcomingMatches, fetchUpcomingMatches } = useMatch();
 
 const STATUS_META: Record<MatchStatus, { label: string; tone: string }> = {
-  SCHEDULED: { label: 'A PALPITAR', tone: 'magenta' },
+  SCHEDULED: { label: 'PRÓXIMOS JOGOS', tone: 'magenta' },
   IN_PROGRESS: { label: 'EM PROGRESSO', tone: 'coral' },
   FINISHED: { label: 'ENCERRADO', tone: 'cobalt' },
 };
@@ -29,10 +29,6 @@ const slide = computed<ApiMatch | undefined>(() => slides.value[idx.value]);
 
 const meta = computed(() => (slide.value ? STATUS_META[slide.value.status] : null));
 const hasScore = computed(() => slide.value?.status !== 'SCHEDULED');
-
-const kicker = computed(() =>
-  isFallback.value ? 'PRÓXIMO JOGO' : `JOGOS DE HOJE · ${idx.value + 1}/${total.value}`,
-);
 
 function kickoffTime(raw: string | null): string {
   if (!raw) return '—';
@@ -115,7 +111,7 @@ onUnmounted(() => {
     </span>
 
     <span class="font-mono today-ticker__time">
-      {{ hasScore ? kicker : kickoffTime(slide.kickoff) }}
+      {{ kickoffTime(slide.kickoff) }}
     </span>
 
     <div v-if="total > 1" class="today-ticker__dots">
