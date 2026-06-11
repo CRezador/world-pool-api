@@ -23,7 +23,7 @@ class GuessTransformer extends BaseTransformer
                 'stage'      => $m->stage->name,
                 'group'      => $m->stage->name === 'GROUP_STAGE' ? $m->group?->name : null,
                 'status'     => $m->status->name,
-                'kickoff_at' => $m->kickoff_at?->format('d/m/Y H:i'),
+                'kickoff_at' => $m->kickoff_at?->copy()->setTimezone(config('app.display_timezone'))->format('d/m/Y H:i'),
                 'home_score' => $m->home_score,
                 'away_score' => $m->away_score,
                 'home_team'  => [

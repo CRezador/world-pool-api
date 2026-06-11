@@ -22,7 +22,11 @@ class MatchWriteService
 
     private function kickoffFormat(?string $kickoff_at): ?string
     {
-        return $kickoff_at === null ? null : Carbon::createFromFormat('d/m/Y H:i', $kickoff_at)->format('Y-m-d H:i:s');
+        return $kickoff_at === null
+            ? null
+            : Carbon::createFromFormat('d/m/Y H:i', $kickoff_at, config('app.display_timezone'))
+                ->setTimezone('UTC')
+                ->format('Y-m-d H:i:s');
     }
 
     public function createMatch(array $match): Matches

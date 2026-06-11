@@ -25,7 +25,7 @@ class MatchTransformer extends BaseTransformer
               ? $match->group->id
               : null,
             'status' => $match->status->name,
-            'kickoff_at' => $match->kickoff_at === null ? null : $match->kickoff_at->format('d/m/Y H:i'),
+            'kickoff_at' => $match->kickoff_at === null ? null : $match->kickoff_at->copy()->setTimezone(config('app.display_timezone'))->format('d/m/Y H:i'),
             'home_score' => $match->home_score,
             'away_score' => $match->away_score,
         ];
