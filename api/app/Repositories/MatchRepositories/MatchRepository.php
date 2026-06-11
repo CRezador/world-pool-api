@@ -138,8 +138,14 @@ class MatchRepository
 
     public function assertScheduled(int $matchId): void
     {
-        if ($this->getStatusById($matchId) !== MatchStatus::SCHEDULED) {
-            throw new \Exception('Não é possível realizar esta ação em uma partida que não está agendada.', 400);
+        $match = $this->findById($matchId);
+
+        if (!$match || $match->status !== MatchStatus::SCHEDULED) {
+            throw new \Exception('Esta partida não está mais aberta para palpites.', 400);
+        }
+
+        if ($match->kickoff_at !== null && now()->gte($match->kickoff_at)) {
+            throw new \Exception('Os palpites para esta partida já foram encerrados.', 400);
         }
     }
 
