@@ -7,6 +7,7 @@ use App\Http\Enums\MatchStatus;
 use App\Models\Group;
 use App\Models\Matches;
 use App\Models\Team;
+use App\Services\GuessServices\GuessScoringService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 
@@ -14,6 +15,12 @@ class ImportMatchesCommand extends Command
 {
     protected $signature = 'matches:import';
     protected $description = 'Importa/atualiza partidas da Copa do Mundo a partir da API football-data.org';
+
+    public function __construct(
+        private GuessScoringService $guessScoringService,
+    ) {
+        parent::__construct();
+    }
 
     private const STAGE_MAP = [
         'GROUP_STAGE'    => MatchStage::GROUP_STAGE,
@@ -48,9 +55,14 @@ class ImportMatchesCommand extends Command
         $teamsByCode = $allTeams->keyBy('code');
         $groups = Group::all()->keyBy('name');
 
+        $previousStatusByExternal = Matches::query()
+            ->whereNotNull('external_id')
+            ->pluck('status', 'external_id');
+
         $matches   = $response->json('matches', []);
         $imported  = 0;
         $skipped   = 0;
+        $toScore   = [];
 
         foreach ($matches as $match) {
             $homeTla = $match['homeTeam']['tla'] ?? null;
@@ -77,7 +89,9 @@ class ImportMatchesCommand extends Command
 
             $score = $match['score']['fullTime'] ?? [];
 
-            Matches::updateOrCreate(
+            $previousStatus = $previousStatusByExternal->get($match['id']);
+
+            $matchModel = Matches::updateOrCreate(
                 ['external_id' => $match['id']],
                 [
                     'kickoff_at'   => $match['utcDate'],
@@ -92,6 +106,10 @@ class ImportMatchesCommand extends Command
                 ]
             );
 
+            if ($status === MatchStatus::FINISHED && $previousStatus !== MatchStatus::FINISHED) {
+                $toScore[] = $matchModel->id;
+            }
+
             $imported++;
         }
 
@@ -99,6 +117,14 @@ class ImportMatchesCommand extends Command
 
         if ($skipped > 0) {
             $this->warn("  {$skipped} partidas ignoradas (times ainda não definidos ou fase desconhecida).");
+        }
+
+        foreach ($toScore as $matchId) {
+            $this->guessScoringService->scoreGuessesForMatch($matchId);
+        }
+
+        if (\count($toScore) > 0) {
+            $this->info('✓ ' . \count($toScore) . ' partida(s) finalizada(s): palpites pontuados e leaderboard atualizado.');
         }
 
         return Command::SUCCESS;
