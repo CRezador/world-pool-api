@@ -59,11 +59,19 @@ class GuessScoringService
 
             $userIds = $guesses->pluck('user_id')->unique();
 
+            $affectedPools = [];
             foreach ($userIds as $userId) {
                 $poolIds = $this->poolMemberRepository->getPoolIdsByUser($userId);
                 foreach ($poolIds as $poolId) {
                     $this->leaderboardWriteService->syncUser($poolId, $userId);
+                    $affectedPools[$poolId] = true;
                 }
+            }
+
+            // Re-rankeia cada pool afetado para registrar previous_position/position;
+            // sem isso o trend (▲/▼) do ranking nunca muda após a pontuação.
+            foreach (array_keys($affectedPools) as $poolId) {
+                $this->leaderboardWriteService->syncRanks($poolId);
             }
         });
     }

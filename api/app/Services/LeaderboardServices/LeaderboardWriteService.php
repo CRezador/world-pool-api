@@ -39,6 +39,11 @@ class LeaderboardWriteService
         $this->leaderboardRepository->updateStats($poolId, $userId, $stats);
     }
 
+    public function syncRanks(int $poolId): void
+    {
+        $this->leaderboardRepository->updateRanks($poolId);
+    }
+
     public function rebuild(int $poolId): void
     {
         $entries = $this->leaderboardRepository->getAllByPool($poolId);
@@ -47,7 +52,7 @@ class LeaderboardWriteService
             foreach ($entries as $entry) {
                 $this->syncUser($poolId, $entry->user_id);
             }
-            $this->leaderboardRepository->updateRanks($poolId);
+            $this->syncRanks($poolId);
         });
     }
 }

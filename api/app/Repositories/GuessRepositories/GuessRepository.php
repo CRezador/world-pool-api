@@ -78,9 +78,9 @@ class GuessRepository
 
     public function getLastScoredByUser(int $userId, int $limit = 3): array
     {
-        return Guess::where('user_id', $userId)
-            ->whereNotNull('points')
+        return Guess::where('guesses.user_id', $userId)
             ->join('matches', 'matches.id', '=', 'guesses.match_id')
+            ->where('matches.status', MatchStatus::FINISHED->value)
             ->orderBy('matches.kickoff_at', 'desc')
             ->limit($limit)
             ->pluck('guesses.points')
