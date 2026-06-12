@@ -22,12 +22,19 @@ class PoolReadService
         return $this->poolRepository->getPublicPools($perPage, $userId);
     }
 
-    public function showPool(int $id): ?Pool
+    public function showPool(int $id, ?int $userId = null): ?Pool
     {
         $pool = $this->poolRepository->getPool($id);
 
         if ($pool) {
             $pool->leader = $this->leaderboardRepository->getLeader($pool->id);
+
+            if ($userId !== null) {
+                $entry = $this->leaderboardRepository->getByUser($pool->id, $userId);
+                $pool->my_points    = $entry?->points ?? 0;
+                $pool->my_rank      = $entry?->position;
+                $pool->last_results = $this->guessRepository->getLastScoredByUser($userId);
+            }
         }
 
         return $pool;

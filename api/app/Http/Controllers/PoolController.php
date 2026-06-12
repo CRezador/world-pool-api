@@ -123,9 +123,9 @@ class PoolController extends Controller
             new OA\Response(response: 404, description: 'Bolão não encontrado'),
         ]
     )]
-    public function show(int $id): Response
+    public function show(int $id, Request $request): Response
     {
-        $pool = $this->poolReadService->showPool($id);
+        $pool = $this->poolReadService->showPool($id, $request->user()->id);
 
         if (!$pool) {
             return response()->json(['message' => 'Bolão não encontrado'], 404);
