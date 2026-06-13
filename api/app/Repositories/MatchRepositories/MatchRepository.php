@@ -4,6 +4,7 @@ namespace App\Repositories\MatchRepositories;
 
 use App\Http\Enums\MatchStatus;
 use App\Models\Matches;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
 class MatchRepository
@@ -126,6 +127,37 @@ class MatchRepository
             ])
             ->where('game_day', $nextGameDay)
             ->where('status', MatchStatus::SCHEDULED->value)
+            ->orderBy('kickoff_at')
+            ->get();
+    }
+
+    public function findTodayMatches(): Collection
+    {
+        $timezone = config('app.display_timezone');
+        $start = Carbon::today($timezone)->startOfDay()->utc();
+        $end = Carbon::today($timezone)->endOfDay()->utc();
+
+        return Matches::query()
+            ->select([
+                'matches.id',
+                'matches.game_day',
+                'matches.kickoff_at',
+                'matches.stage',
+                'matches.group_id',
+                'matches.home_team_id',
+                'matches.away_team_id',
+                'matches.status',
+                'matches.home_score',
+                'matches.away_score',
+            ])
+            ->with([
+                'homeTeam:id,name,code,flag_code,group_id',
+                'homeTeam.group:id,name',
+                'awayTeam:id,name,code,flag_code,group_id',
+                'awayTeam.group:id,name',
+                'group:id,name',
+            ])
+            ->whereBetween('kickoff_at', [$start, $end])
             ->orderBy('kickoff_at')
             ->get();
     }

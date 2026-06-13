@@ -16,7 +16,7 @@ const accentVar = computed(() => toneVar(props.accent));
 const myGuess = computed(() => guesses.value.find(g => g.matchId === props.match.id) ?? null);
 
 const myGuessLabel = computed(() => {
-  if (props.match.status === 'IN_PROGRESS') return 'AO VIVO';
+  if (props.match.status === 'IN_PROGRESS') return 'EM PROGRESSO';
   if (props.match.status === 'FINISHED') return 'ENCERRADO';
   if (myGuess.value) return `MEU PALPITE: ${myGuess.value.homeScore} × ${myGuess.value.awayScore}`;
   return 'SEM PALPITE AINDA';
