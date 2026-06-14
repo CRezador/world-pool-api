@@ -33,4 +33,9 @@ class UserRepository
         $user->update(['role' => $role]);
         return $user->fresh();
     }
+
+    public function delete(User $user): void
+    {
+        $user->delete();
+    }
 }

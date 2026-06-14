@@ -41,4 +41,9 @@ class UserWriteService
     {
         return $this->userRepository->updateRole($user, $role);
     }
+
+    public function delete(User $user): void
+    {
+        $this->userRepository->delete($user);
+    }
 }
