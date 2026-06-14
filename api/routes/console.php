@@ -13,3 +13,8 @@ Artisan::command('inspire', function () {
 Schedule::command('matches:import')
     ->everyFiveMinutes()
     ->withoutOverlapping();
+
+// A classificação só muda quando partidas terminam, então uma vez por dia basta.
+Schedule::command('standings:refresh')
+    ->daily()
+    ->withoutOverlapping();
