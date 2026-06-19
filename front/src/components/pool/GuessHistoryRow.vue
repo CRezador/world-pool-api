@@ -2,19 +2,16 @@
 import { computed } from 'vue';
 import FlagImg from '@/components/FlagImg.vue';
 import { TEAMS, toneVar, toneFg } from '@/data/mock';
+import { guessVerdict, verdictTone } from '@/utils/guess';
 import type { GuessHistoryEntry } from '@/types';
 
 const props = defineProps<{ g: GuessHistoryEntry }>();
 defineEmits<{ (e: 'click'): void }>();
 
 const pending = computed(() => props.g.status === 'pending');
-const tone = computed(() =>
-  pending.value ? 'cobalt' : props.g.pts === 3 ? 'lime' : props.g.pts === 1 ? 'cobalt' : 'coral'
-);
+const verdict = computed(() => guessVerdict(props.g));
+const tone = computed(() => verdictTone(verdict.value));
 const ptsLabel = computed(() => (pending.value ? '—' : `+${props.g.pts}`));
-const verdict = computed(() =>
-  pending.value ? 'EM JOGO' : props.g.pts === 3 ? 'CRAVOU' : props.g.pts === 1 ? 'ACERTOU' : 'ERROU'
-);
 const homeCode = computed(() => TEAMS[props.g.home]?.code ?? props.g.home);
 const awayCode = computed(() => TEAMS[props.g.away]?.code ?? props.g.away);
 </script>

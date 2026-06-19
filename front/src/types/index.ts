@@ -213,6 +213,28 @@ export interface GuessHistoryEntry {
   date: string;
 }
 
+export interface AdversaryPool {
+  id: number;
+  name: string;
+}
+
+export interface AdversaryGuess {
+  id: number;
+  homeScore: number;
+  awayScore: number;
+  points: number;
+  user: { id: number; name: string; initials: string };
+  pools: AdversaryPool[];
+  match: {
+    id: number;
+    status: MatchStatus;
+    homeScore: number | null;
+    awayScore: number | null;
+    homeCode: string;
+    awayCode: string;
+  };
+}
+
 export type ActivityAction = 'cravou' | 'acertou' | 'errou' | 'palpitou';
 
 export interface ActivityItem {

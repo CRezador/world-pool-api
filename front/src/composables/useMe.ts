@@ -55,7 +55,10 @@ export function useMe() {
     [...guesses.value]
       .sort((a, b) => b.matchId - a.matchId)
       .map((g) => {
-        const scored = g.points !== null;
+        // Um palpite só conta como pontuado quando a partida terminou. A coluna
+        // `points` tem default 0 no banco, então `points !== null` é sempre true:
+        // palpites de jogos não realizados apareceriam como ERROU em vez de pendentes.
+        const scored = g.match.status === 'FINISHED';
         return {
           matchId:  g.matchId,
           home:     g.match.homeTeam.code,

@@ -2,6 +2,7 @@
 
 namespace App\Services\GuessServices;
 
+use App\Http\Enums\MatchStatus;
 use App\Models\Guess;
 use App\Repositories\GuessRepositories\GuessRepository;
 use App\Repositories\MatchRepositories\MatchRepository;
@@ -34,6 +35,54 @@ class GuessReadService
         }
 
         return $this->guessRepository->getByMatchInPool($matchId, $poolId);
+    }
+
+    /**
+     * Palpites dos adversários para uma partida: membros de qualquer bolão que o
+     * usuário participa (exceto ele mesmo). Cada palpite é anotado com os bolões
+     * compartilhados, permitindo o filtro por bolão no front.
+     *
+     * Privacidade: só revela quando a partida começou (IN_PROGRESS/FINISHED).
+     */
+    public function getAdversaryGuessesForMatch(int $userId, int $matchId): Collection
+    {
+        $match = $this->matchRepository->findById($matchId);
+        if (!$match) {
+            throw new \Exception('Partida não encontrada.', 404);
+        }
+
+        if ($match->status === MatchStatus::SCHEDULED) {
+            throw new \Exception('Palpites liberados quando a partida começar.', 403);
+        }
+
+        $poolIds = $this->poolMemberRepository->getPoolIdsByUser($userId);
+        if (empty($poolIds)) {
+            return new Collection();
+        }
+
+        // Mapa user_id => [ {id, name} dos bolões compartilhados ], excluindo eu.
+        $sharedPools = [];
+        foreach ($this->poolMemberRepository->getActiveMembersByPoolIds($poolIds) as $member) {
+            if ($member->user_id === $userId || !$member->pool) {
+                continue;
+            }
+            $sharedPools[$member->user_id][$member->pool->id] = [
+                'id'   => $member->pool->id,
+                'name' => $member->pool->name,
+            ];
+        }
+
+        if (empty($sharedPools)) {
+            return new Collection();
+        }
+
+        $guesses = $this->guessRepository->getByMatchForUsers($matchId, array_keys($sharedPools));
+
+        foreach ($guesses as $guess) {
+            $guess->shared_pools = array_values($sharedPools[$guess->user_id] ?? []);
+        }
+
+        return $guesses;
     }
 
     public function getMemberGuesses(int $memberId, int $poolId): Collection

@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import FlagImg from '@/components/FlagImg.vue';
+import ChipToggle from '@/components/ChipToggle.vue';
 import type { GuessHistoryEntry } from '@/types';
 import { TEAMS, toneVar, toneFg } from '@/data/mock';
+import { guessVerdict, verdictTone, type GuessVerdict } from '@/utils/guess';
 import { useMe } from '@/composables/useMe';
 import { usePools } from '@/composables/usePools';
+import { useAdversaryModal } from '@/composables/useAdversaryModal';
 
 const router = useRouter();
 const { profile: me, history, resultCount, loading, loadMe } = useMe();
 const { pools, fetchMyPools } = usePools();
+const adversaries = useAdversaryModal();
 
 onMounted(() => {
   loadMe();
@@ -36,11 +40,18 @@ const breakdown = computed(() => {
 const breakdownTotal = computed(() => breakdown.value.reduce((s, b) => s + b.v, 0));
 
 function rowMeta(g: GuessHistoryEntry) {
-  const pending = g.status === 'pending';
-  const tone = pending ? 'cobalt' : g.pts === 3 ? 'lime' : g.pts === 1 ? 'cobalt' : 'coral';
-  const verdict = pending ? 'EM JOGO' : g.pts === 3 ? 'CRAVOU' : g.pts === 1 ? 'ACERTOU' : 'ERROU';
-  return { pending, tone, verdict };
+  const verdict = guessVerdict(g);
+  return { pending: g.status === 'pending', tone: verdictTone(verdict), verdict };
 }
+
+const FILTERS = ['TODOS', 'EM JOGO', 'CRAVOU', 'ACERTOU', 'ERROU'] as const;
+const filter = ref<(typeof FILTERS)[number]>('TODOS');
+
+const filteredHistory = computed(() =>
+  filter.value === 'TODOS'
+    ? history.value
+    : history.value.filter((g) => guessVerdict(g) === (filter.value as GuessVerdict))
+);
 
 const code = (key: string) => TEAMS[key]?.code ?? key;
 const cols = '1.3fr 1.6fr 0.7fr 0.7fr 0.9fr';
@@ -114,6 +125,16 @@ const cols = '1.3fr 1.6fr 0.7fr 0.7fr 0.9fr';
           </span>
         </div>
 
+        <!-- Filtros por veredito -->
+        <div :style="{ display: 'flex', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' }">
+          <ChipToggle
+            v-for="f in FILTERS"
+            :key="f"
+            :active="filter === f"
+            @click="filter = f"
+          >{{ f }}</ChipToggle>
+        </div>
+
         <!-- Table header -->
         <div
           class="font-mono"
@@ -133,7 +154,7 @@ const cols = '1.3fr 1.6fr 0.7fr 0.7fr 0.9fr';
 
         <div :style="{ display: 'flex', flexDirection: 'column' }">
           <div
-            v-for="(g, i) in history"
+            v-for="(g, i) in filteredHistory"
             :key="i"
             class="font-mono"
             :style="{
@@ -142,7 +163,7 @@ const cols = '1.3fr 1.6fr 0.7fr 0.7fr 0.9fr';
               borderBottom: '1px dashed var(--ink)',
               cursor: g.matchId ? 'pointer' : 'default',
             }"
-            @click="g.matchId && router.push(`/match/${g.matchId}`)"
+            @click="g.matchId && adversaries.show(g)"
           >
             <!-- pool + date -->
             <div :style="{ minWidth: 0 }">
@@ -183,10 +204,10 @@ const cols = '1.3fr 1.6fr 0.7fr 0.7fr 0.9fr';
             </div>
           </div>
           <div
-            v-if="!loading && !history.length"
+            v-if="!loading && !filteredHistory.length"
             class="font-mono"
             :style="{ padding: '24px 14px', textAlign: 'center', fontSize: '12px', letterSpacing: '0.08em', opacity: 0.6 }"
-          >Nenhum palpite ainda. Bora cravar o primeiro!</div>
+          >{{ history.length ? 'Nenhum palpite nesse filtro.' : 'Nenhum palpite ainda. Bora cravar o primeiro!' }}</div>
         </div>
       </div>
 
