@@ -170,6 +170,18 @@ class PoolMemberRepository
             ->toArray();
     }
 
+    /**
+     * Membros ativos de um conjunto de bolões, com o bolão carregado.
+     * Usado para descobrir os adversários (e em quais bolões eles estão).
+     */
+    public function getActiveMembersByPoolIds(array $poolIds): Collection
+    {
+        return PoolMember::whereIn('pool_id', $poolIds)
+            ->where('status', PoolMemberStatus::ACTIVE->value)
+            ->with('pool:id,name')
+            ->get(['id', 'pool_id', 'user_id']);
+    }
+
     public function banMember(int $poolId, int $memberId): void
     {
         PoolMember::query()

@@ -1,20 +1,25 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Masthead from '@/components/Masthead.vue';
 import SectionHead from '@/components/SectionHead.vue';
+import ChipToggle from '@/components/ChipToggle.vue';
 import GuessHistoryRow from '@/components/pool/GuessHistoryRow.vue';
 import DesktopMe from '@/components/pool/DesktopMe.vue';
+import { guessVerdict, type GuessVerdict } from '@/utils/guess';
 import { toneVar, toneFg } from '@/data/mock';
 import { useBreakpoint } from '@/composables/useBreakpoint';
 import { useAuth } from '@/composables/useAuth';
 import { useMe } from '@/composables/useMe';
+import { useAdversaryModal } from '@/composables/useAdversaryModal';
 import { logout } from '@/services/auth.services';
+import type { GuessHistoryEntry } from '@/types';
 
 const router = useRouter();
 const { isDesktop } = useBreakpoint();
 const { clearUser } = useAuth();
 const { profile: me, history, poolsCount, loading, loadMe } = useMe();
+const adversaries = useAdversaryModal();
 
 // No desktop quem carrega é o DesktopMe (que também busca pools e tem loading
 // próprio); o pai só dispara loadMe no layout mobile, evitando stats/guesses
@@ -30,8 +35,17 @@ const stats = computed(() => [
   { label: 'MELHOR POSIÇÃO', value: me.value.bestRank ? me.value.bestRank + 'º' : '—', tone: 'coral', sub: 'entre seus bolões' },
 ]);
 
-function openMatch(matchId: number) {
-  if (matchId) router.push(`/match/${matchId}`);
+const FILTERS = ['TODOS', 'EM JOGO', 'CRAVOU', 'ACERTOU', 'ERROU'] as const;
+const filter = ref<(typeof FILTERS)[number]>('TODOS');
+
+const filteredHistory = computed(() =>
+  filter.value === 'TODOS'
+    ? history.value
+    : history.value.filter((g) => guessVerdict(g) === (filter.value as GuessVerdict))
+);
+
+function openAdversaries(g: GuessHistoryEntry) {
+  if (g.matchId) adversaries.show(g);
 }
 
 async function handleLogout() {
@@ -85,8 +99,8 @@ async function handleLogout() {
       </div>
     </div>
 
-    <!-- Aggregate stats grid -->
-    <div :style="{ padding: '14px 18px 6px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }">
+    <!-- Aggregate stats grid · grid centralizado (gutters iguais dos dois lados) -->
+    <div :style="{ padding: '14px 18px 6px', display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px', maxWidth: '340px', margin: '0 auto', justifyContent: 'center' }">
       <div
         v-for="s in stats"
         :key="s.label"
@@ -122,22 +136,30 @@ async function handleLogout() {
     <div :style="{ padding: '16px 18px 6px' }">
       <SectionHead :kicker="`EXTRATO · ${history.length} ÚLTIMOS`" title="Seus palpites" />
     </div>
+    <div :style="{ display: 'flex', gap: '6px', padding: '4px 18px 4px', overflowX: 'auto', alignItems: 'center' }">
+      <ChipToggle
+        v-for="f in FILTERS"
+        :key="f"
+        :active="filter === f"
+        @click="filter = f"
+      >{{ f }}</ChipToggle>
+    </div>
     <div :style="{ padding: '8px 18px 4px', display: 'flex', flexDirection: 'column', gap: '10px' }">
       <GuessHistoryRow
-        v-for="(g, i) in history"
+        v-for="(g, i) in filteredHistory"
         :key="i"
         :g="g"
-        @click="openMatch(g.matchId)"
+        @click="openAdversaries(g)"
       />
       <div
-        v-if="!loading && !history.length"
+        v-if="!loading && !filteredHistory.length"
         class="font-mono"
         :style="{
           padding: '18px 16px', textAlign: 'center', fontSize: '12px',
           letterSpacing: '0.08em', opacity: 0.6,
           background: 'var(--paper-2)', border: '1.5px dashed var(--ink)', borderRadius: '6px',
         }"
-      >Nenhum palpite ainda. Bora cravar o primeiro!</div>
+      >{{ history.length ? 'Nenhum palpite nesse filtro.' : 'Nenhum palpite ainda. Bora cravar o primeiro!' }}</div>
     </div>
 
     <!-- Scoring rule footer -->

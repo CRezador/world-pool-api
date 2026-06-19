@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Guess\StoreGuessRequest;
 use App\Http\Requests\Guess\UpdateGuessRequest;
+use App\Http\Transformers\GuessTransformers\AdversaryGuessTransformer;
 use App\Http\Transformers\GuessTransformers\GuessTransformer;
 use App\Services\GuessServices\GuessReadService;
 use App\Services\GuessServices\GuessWriteService;
@@ -16,6 +17,7 @@ class GuessController extends Controller
         private GuessWriteService $guessWriteService,
         private GuessReadService $guessReadService,
         private GuessTransformer $guessTransformer,
+        private AdversaryGuessTransformer $adversaryGuessTransformer,
     ) {}
 
     public function index(Request $request): Response
@@ -106,6 +108,20 @@ class GuessController extends Controller
 
         return response()->json(
             $this->guessTransformer->collection($guesses, 'Palpites da partida listados com sucesso'),
+            200
+        );
+    }
+
+    public function adversaryGuesses(Request $request, int $matchId): Response
+    {
+        try {
+            $guesses = $this->guessReadService->getAdversaryGuessesForMatch($request->user()->id, $matchId);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
+        }
+
+        return response()->json(
+            $this->adversaryGuessTransformer->collection($guesses, 'Palpites dos adversários listados com sucesso'),
             200
         );
     }

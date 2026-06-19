@@ -70,6 +70,7 @@ Route::middleware('auth:sanctum')->group(
         Route::post('/guesses', [GuessController::class, 'store']);
         Route::put('/guesses/{guessId}', [GuessController::class, 'update']);
         Route::delete('/guesses/{guessId}', [GuessController::class, 'destroy']);
+        Route::get('/matches/{matchId}/guesses/adversaries', [GuessController::class, 'adversaryGuesses']);
         Route::middleware('PoolMember')->group(function () {
             Route::get('/pools/{poolId}/matches/{matchId}/guesses', [GuessController::class, 'matchGuesses']);
             Route::get('/pools/{poolId}/members/{memberId}/guesses', [GuessController::class, 'memberGuesses']);

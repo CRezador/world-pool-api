@@ -71,6 +71,14 @@ class GuessRepository
             ->get();
     }
 
+    public function getByMatchForUsers(int $matchId, array $userIds): Collection
+    {
+        return Guess::where('match_id', $matchId)
+            ->whereIn('user_id', $userIds)
+            ->with(['user:id,name', 'match.homeTeam', 'match.awayTeam'])
+            ->get();
+    }
+
     public function getByUserInPool(int $userId, int $poolId): Collection
     {
         return $this->getByUser($userId);
