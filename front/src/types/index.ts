@@ -209,6 +209,7 @@ export interface GuessHistoryEntry {
   realAway: number;
   pts: number;
   status: 'scored' | 'pending';
+  matchStatus: MatchStatus;
   pool: string;
   date: string;
 }
