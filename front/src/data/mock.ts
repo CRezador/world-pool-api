@@ -1,6 +1,6 @@
 import type {
   Tone, Team, Match, Member, Pool, StandingRow, ActivityItem,
-  PlayerProfile, GuessHistoryEntry, GroupFull, KnockoutStage,
+  PlayerProfile, GroupFull, KnockoutStage,
 } from '@/types';
 
 // iso = flagcdn.com country code. Special: gb-eng = England, gb-sct = Scotland.
@@ -320,18 +320,6 @@ export const ME: PlayerProfile = {
   totalGuesses: 22,
   exactCount: 7,      // placares cravados
 };
-
-// Extrato de palpites — mais recente primeiro. pts: 3 = placar exato, 1 = resultado, 0 = errou.
-// status 'pending' = jogo ainda em andamento / não pontuado.
-export const ME_HISTORY: GuessHistoryEntry[] = [
-  { matchId: 3, home: 'BRA', away: 'CRO', myHome: 2, myAway: 0, realHome: 2, realAway: 1, pts: 0, status: 'pending', pool: 'Geral Brasil', date: 'HOJE · AO VIVO' },
-  { matchId: 2, home: 'USA', away: 'ENG', myHome: 0, myAway: 1, realHome: 0, realAway: 2, pts: 1, status: 'scored', pool: 'Trampo FC',     date: '12/JUN' },
-  { matchId: 1, home: 'MEX', away: 'CAN', myHome: 2, myAway: 1, realHome: 2, realAway: 1, pts: 3, status: 'scored', pool: 'Resenha do Bar', date: '11/JUN' },
-  { matchId: 0, home: 'ARG', away: 'KSA', myHome: 2, myAway: 0, realHome: 1, realAway: 2, pts: 0, status: 'scored', pool: 'Resenha do Bar', date: '10/JUN' },
-  { matchId: 0, home: 'GER', away: 'JPN', myHome: 1, myAway: 1, realHome: 1, realAway: 2, pts: 1, status: 'scored', pool: 'Trampo FC',     date: '09/JUN' },
-  { matchId: 0, home: 'ESP', away: 'CRC', myHome: 3, myAway: 0, realHome: 3, realAway: 0, pts: 3, status: 'scored', pool: 'Geral Brasil', date: '08/JUN' },
-  { matchId: 0, home: 'FRA', away: 'AUS', myHome: 2, myAway: 1, realHome: 4, realAway: 1, pts: 1, status: 'scored', pool: 'Resenha do Bar', date: '07/JUN' },
-];
 
 // ── Grupos da Copa (tela de Jogos) — 12 chaves A..L com tabela e forma ──
 export const ALL_GROUPS_STANDINGS: GroupFull[] = ([
