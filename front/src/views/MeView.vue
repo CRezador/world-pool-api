@@ -35,14 +35,15 @@ const stats = computed(() => [
   { label: 'MELHOR POSIÇÃO', value: me.value.bestRank ? me.value.bestRank + 'º' : '—', tone: 'coral', sub: 'entre seus bolões' },
 ]);
 
-const FILTERS = ['TODOS', 'EM JOGO', 'CRAVOU', 'ACERTOU', 'ERROU'] as const;
+const FILTERS = ['TODOS', 'EM JOGO', 'EM PROGRESSO', 'CRAVOU', 'ACERTOU', 'ERROU'] as const;
 const filter = ref<(typeof FILTERS)[number]>('TODOS');
 
-const filteredHistory = computed(() =>
-  filter.value === 'TODOS'
-    ? history.value
-    : history.value.filter((g) => guessVerdict(g) === (filter.value as GuessVerdict))
-);
+const filteredHistory = computed(() => {
+  if (filter.value === 'TODOS') return history.value;
+  // EM PROGRESSO = partida acontecendo agora (status no momento que o painel carregou).
+  if (filter.value === 'EM PROGRESSO') return history.value.filter((g) => g.matchStatus === 'IN_PROGRESS');
+  return history.value.filter((g) => guessVerdict(g) === (filter.value as GuessVerdict));
+});
 
 function openAdversaries(g: GuessHistoryEntry) {
   if (g.matchId) adversaries.show(g);

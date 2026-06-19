@@ -69,6 +69,7 @@ export function useMe() {
           realAway: g.match.awayScore ?? 0,
           pts:      g.points ?? 0,
           status:   scored ? 'scored' : 'pending',
+          matchStatus: g.match.status,
           pool:     stageLabel(g.match.stage, g.match.group),
           date:     shortDate(g.match.kickoffAt),
         } satisfies GuessHistoryEntry;

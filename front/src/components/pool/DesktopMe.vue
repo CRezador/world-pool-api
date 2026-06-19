@@ -44,14 +44,15 @@ function rowMeta(g: GuessHistoryEntry) {
   return { pending: g.status === 'pending', tone: verdictTone(verdict), verdict };
 }
 
-const FILTERS = ['TODOS', 'EM JOGO', 'CRAVOU', 'ACERTOU', 'ERROU'] as const;
+const FILTERS = ['TODOS', 'EM JOGO', 'EM PROGRESSO', 'CRAVOU', 'ACERTOU', 'ERROU'] as const;
 const filter = ref<(typeof FILTERS)[number]>('TODOS');
 
-const filteredHistory = computed(() =>
-  filter.value === 'TODOS'
-    ? history.value
-    : history.value.filter((g) => guessVerdict(g) === (filter.value as GuessVerdict))
-);
+const filteredHistory = computed(() => {
+  if (filter.value === 'TODOS') return history.value;
+  // EM PROGRESSO = partida acontecendo agora (status no momento que o painel carregou).
+  if (filter.value === 'EM PROGRESSO') return history.value.filter((g) => g.matchStatus === 'IN_PROGRESS');
+  return history.value.filter((g) => guessVerdict(g) === (filter.value as GuessVerdict));
+});
 
 const code = (key: string) => TEAMS[key]?.code ?? key;
 const cols = '1.3fr 1.6fr 0.7fr 0.7fr 0.9fr';
