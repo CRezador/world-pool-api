@@ -14,7 +14,9 @@ Schedule::command('matches:import')
     ->everyFiveMinutes()
     ->withoutOverlapping();
 
-// A classificação só muda quando partidas terminam, então uma vez por dia basta.
+// A classificação é atualizada em tempo real pelo matches:import sempre que uma
+// partida finaliza. Este agendamento diário é só um backstop barato para o caso de
+// um "finished" ter sido perdido (ex: deploy/restart durante o fim de um jogo).
 Schedule::command('standings:refresh')
     ->daily()
     ->withoutOverlapping();

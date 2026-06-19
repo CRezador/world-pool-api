@@ -8,6 +8,7 @@ use App\Models\Group;
 use App\Models\Matches;
 use App\Models\Team;
 use App\Services\GuessServices\GuessScoringService;
+use App\Services\StandingsServices\StandingsWriteService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 
@@ -18,6 +19,7 @@ class ImportMatchesCommand extends Command
 
     public function __construct(
         private GuessScoringService $guessScoringService,
+        private StandingsWriteService $standingsWriteService,
     ) {
         parent::__construct();
     }
@@ -125,6 +127,16 @@ class ImportMatchesCommand extends Command
 
         if (\count($toScore) > 0) {
             $this->info('✓ ' . \count($toScore) . ' partida(s) finalizada(s): palpites pontuados e leaderboard atualizado.');
+
+            // Uma partida finalizada muda a classificação, então refrescamos aqui mesmo
+            // (em vez de esperar o standings:refresh diário). Falha na API externa não
+            // pode derrubar a importação/pontuação, então tratamos a exceção localmente.
+            try {
+                $this->standingsWriteService->refresh();
+                $this->info('✓ Classificação atualizada.');
+            } catch (\Exception $e) {
+                $this->warn("  Não foi possível atualizar a classificação: {$e->getMessage()}");
+            }
         }
 
         return Command::SUCCESS;
