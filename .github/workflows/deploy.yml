@@ -1,0 +1,69 @@
+name: Deploy (produção)
+
+# Gatilho manual: GitHub → aba Actions → "Deploy (produção)" → Run workflow.
+# Sobe sempre o estado atual da branch escolhida (padrão: main) na VPS.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch ou tag a publicar'
+        required: true
+        default: 'main'
+
+concurrency:
+  # Evita dois deploys simultâneos pisando um no outro.
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Atualizar VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          # Aborta no primeiro erro; mostra cada comando executado.
+          script: |
+            set -euo pipefail
+            cd ~/world-pool-api
+
+            dcp() { docker compose --env-file .env.prod -f docker-compose.prod.yml "$@"; }
+
+            echo "==> Atualizando código para ${{ github.event.inputs.ref }}"
+            git fetch --all --prune
+            git checkout "${{ github.event.inputs.ref }}"
+            git pull --ff-only origin "${{ github.event.inputs.ref }}"
+
+            echo "==> Conferindo variáveis novas no .env.prod"
+            missing=$(comm -23 \
+              <(grep -oE '^[A-Z_]+=' .env.prod.example | sort -u) \
+              <(grep -oE '^[A-Z_]+=' .env.prod | sort -u) || true)
+            if [ -n "$missing" ]; then
+              echo "ERRO: variáveis presentes no .env.prod.example e ausentes no .env.prod:"
+              echo "$missing"
+              echo "Preencha-as na VPS antes de subir. Deploy abortado."
+              exit 1
+            fi
+
+            echo "==> Build e subida dos containers"
+            dcp up -d --build
+
+            echo "==> Limpando containers/imagens antigas"
+            docker image prune -f
+
+            echo "==> Health check"
+            for i in $(seq 1 20); do
+              if dcp exec -T api php artisan inspire >/dev/null 2>&1; then
+                echo "API respondeu. Deploy OK."
+                exit 0
+              fi
+              echo "Aguardando API subir... ($i/20)"
+              sleep 3
+            done
+            echo "ERRO: API não respondeu a tempo. Veja 'dcp logs api' na VPS."
+            exit 1
