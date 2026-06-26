@@ -24,6 +24,12 @@ const knockoutMatchesByStage = computed(() => {
   return map;
 });
 
+// Cada fase do mata-mata é um accordion — começa fechada para a tela não ficar cheia.
+const openStages = ref<Record<string, boolean>>({});
+function toggleStage(id: string) {
+  openStages.value[id] = !openStages.value[id];
+}
+
 const phase = ref<'groups' | 'knockout'>('groups');
 const group = ref<string | null>(null);
 
@@ -297,12 +303,16 @@ function palpitar(m: ApiMatch) {
 
       <div :style="{ display: 'flex', flexDirection: 'column', gap: '26px', marginTop: '20px' }">
         <div v-for="stg in KNOCKOUT_STAGES" :key="stg.id">
-          <!-- Phase header -->
-          <div :style="{
-            display: 'flex', alignItems: 'stretch',
-            border: '1.5px solid var(--ink)', boxShadow: '3px 3px 0 var(--ink)',
-            borderRadius: '3px', overflow: 'hidden', marginBottom: '16px',
-          }">
+          <!-- Phase header (accordion) -->
+          <div
+            :style="{
+              display: 'flex', alignItems: 'stretch', cursor: 'pointer',
+              border: '1.5px solid var(--ink)', boxShadow: '3px 3px 0 var(--ink)',
+              borderRadius: '3px', overflow: 'hidden',
+              marginBottom: openStages[stg.id] ? '16px' : '0',
+            }"
+            @click="toggleStage(stg.id)"
+          >
             <div :style="{
               background: toneVar(stg.accent), color: toneFg(stg.accent),
               padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '14px',
@@ -319,23 +329,33 @@ function palpitar(m: ApiMatch) {
               <span class="font-mono" :style="{ fontSize: '11px', letterSpacing: '0.16em', fontWeight: 700, opacity: 0.75 }">
                 {{ stg.note }}
               </span>
-              <span
-                class="font-mono"
-                :style="{
-                  fontSize: '11px', letterSpacing: '0.14em', fontWeight: 700,
-                  padding: '5px 12px', background: 'var(--ink)', color: 'var(--paper)', borderRadius: '999px',
-                }"
-              >
-                {{ knockoutMatchesByStage[stg.id].length || 'TBD' }}
-                <template v-if="knockoutMatchesByStage[stg.id].length">
-                  {{ knockoutMatchesByStage[stg.id].length === 1 ? 'JOGO' : 'JOGOS' }}
-                </template>
-              </span>
+              <div :style="{ display: 'flex', alignItems: 'center', gap: '14px' }">
+                <span
+                  class="font-mono"
+                  :style="{
+                    fontSize: '11px', letterSpacing: '0.14em', fontWeight: 700,
+                    padding: '5px 12px', background: 'var(--ink)', color: 'var(--paper)', borderRadius: '999px',
+                  }"
+                >
+                  {{ knockoutMatchesByStage[stg.id].length || 'TBD' }}
+                  <template v-if="knockoutMatchesByStage[stg.id].length">
+                    {{ knockoutMatchesByStage[stg.id].length === 1 ? 'JOGO' : 'JOGOS' }}
+                  </template>
+                </span>
+                <span
+                  class="font-display"
+                  :style="{
+                    fontSize: '20px', lineHeight: 1,
+                    transition: 'transform 0.18s ease',
+                    transform: openStages[stg.id] ? 'rotate(90deg)' : 'rotate(0deg)',
+                  }"
+                >›</span>
+              </div>
             </div>
           </div>
 
-          <!-- Real matches -->
-          <div v-if="knockoutMatchesByStage[stg.id].length" :style="{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }">
+          <!-- Jogos (expandidos) -->
+          <div v-show="openStages[stg.id]" :style="{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }">
             <DesktopMatchCard
               v-for="m in knockoutMatchesByStage[stg.id]"
               :key="m.id"
@@ -343,36 +363,6 @@ function palpitar(m: ApiMatch) {
               :accent="stg.accent"
               @palpitar="palpitar(m)"
             />
-          </div>
-
-          <!-- TBD placeholder -->
-          <div
-            v-else
-            class="perf-bottom"
-            :style="{
-              background: 'var(--paper-2)', border: '1.5px solid var(--ink)',
-              boxShadow: `4px 4px 0 ${toneVar(stg.accent)}, 4px 4px 0 1px var(--ink)`,
-              padding: '24px 20px', display: 'flex', flexDirection: 'column',
-              alignItems: 'center', gap: '10px',
-            }"
-          >
-            <span class="font-mono" :style="{ fontSize: '10px', letterSpacing: '0.2em', fontWeight: 700, opacity: 0.45 }">
-              A DEFINIR
-            </span>
-            <div :style="{ display: 'flex', alignItems: 'center', gap: '16px' }">
-              <div :style="{
-                width: '36px', height: '36px', borderRadius: '50%',
-                border: '1.5px dashed var(--ink)', opacity: 0.3,
-              }" />
-              <span class="font-display" :style="{ fontSize: '20px', opacity: 0.3 }">×</span>
-              <div :style="{
-                width: '36px', height: '36px', borderRadius: '50%',
-                border: '1.5px dashed var(--ink)', opacity: 0.3,
-              }" />
-            </div>
-            <span class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.14em', opacity: 0.35 }">
-              PARTIDAS NÃO DEFINIDAS
-            </span>
           </div>
         </div>
       </div>

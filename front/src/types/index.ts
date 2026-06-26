@@ -11,6 +11,9 @@ export type Stage =
 
 export type MatchStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'FINISHED';
 
+/** Código do time sentinela: vaga de mata-mata ainda sem seleção definida. */
+export const TBD_TEAM_CODE = 'TBD';
+
 export type MemberRole = 'OWNER' | 'ADMIN' | 'MEMBER';
 
 export interface User {

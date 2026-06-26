@@ -31,6 +31,7 @@ class GuessWriteService
 
     public function createGuess(array $data): Guess
     {
+        $this->matchRepository->assertTeamsDefined($data['match_id']);
         $this->matchRepository->assertScheduled($data['match_id']);
         return $this->guessRepository->create($data);
     }
@@ -39,6 +40,7 @@ class GuessWriteService
     {
         $guess = $this->findGuessOrFail($id);
         $this->assertOwnership($guess, $userId);
+        $this->matchRepository->assertTeamsDefined($guess->match_id);
         $this->matchRepository->assertScheduled($guess->match_id);
         return $this->guessRepository->updateById($id, $data);
     }

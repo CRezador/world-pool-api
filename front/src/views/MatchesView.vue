@@ -45,6 +45,12 @@ const knockoutMatchesByStage = computed(() => {
   return map;
 });
 
+// Cada fase do mata-mata é um accordion — começa fechada para a tela não ficar cheia.
+const openStages = ref<Record<string, boolean>>({});
+function toggleStage(id: string) {
+  openStages.value[id] = !openStages.value[id];
+}
+
 async function initGroup(groupId: string) {
   const found = await loadGroup(groupId);
   if (found) {
@@ -251,48 +257,43 @@ watch(() => route.query.phase, () => {
         :key="stg.id"
         :style="{ marginTop: '20px' }"
       >
-        <div :style="{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '9px 12px', background: toneVar(stg.accent), color: 'var(--paper)',
-          border: '1.5px solid var(--ink)', borderRadius: '3px', boxShadow: '2px 2px 0 var(--ink)',
-          marginBottom: '12px',
-        }">
+        <div
+          :style="{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer',
+            padding: '9px 12px', background: toneVar(stg.accent), color: 'var(--paper)',
+            border: '1.5px solid var(--ink)', borderRadius: '3px', boxShadow: '2px 2px 0 var(--ink)',
+            marginBottom: openStages[stg.id] ? '12px' : '0',
+          }"
+          @click="toggleStage(stg.id)"
+        >
           <span class="font-display" :style="{ fontSize: '21px', textTransform: 'uppercase', letterSpacing: '0.03em' }">
             {{ stg.label }}
           </span>
-          <span class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.12em', fontWeight: 700 }">
-            {{ knockoutMatchesByStage[stg.id].length || 'TBD' }}
-            <template v-if="knockoutMatchesByStage[stg.id].length">
-              {{ knockoutMatchesByStage[stg.id].length === 1 ? 'JOGO' : 'JOGOS' }}
-            </template>
-          </span>
+          <div :style="{ display: 'flex', alignItems: 'center', gap: '10px' }">
+            <span class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.12em', fontWeight: 700 }">
+              {{ knockoutMatchesByStage[stg.id].length || 'TBD' }}
+              <template v-if="knockoutMatchesByStage[stg.id].length">
+                {{ knockoutMatchesByStage[stg.id].length === 1 ? 'JOGO' : 'JOGOS' }}
+              </template>
+            </span>
+            <span
+              class="font-display"
+              :style="{
+                fontSize: '18px', lineHeight: 1,
+                transition: 'transform 0.18s ease',
+                transform: openStages[stg.id] ? 'rotate(90deg)' : 'rotate(0deg)',
+              }"
+            >›</span>
+          </div>
         </div>
 
-        <div v-if="knockoutMatchesByStage[stg.id].length" :style="{ display: 'flex', flexDirection: 'column', gap: '12px' }">
+        <div v-show="openStages[stg.id]" :style="{ display: 'flex', flexDirection: 'column', gap: '12px' }">
           <MatchListCard
             v-for="m in knockoutMatchesByStage[stg.id]"
             :key="m.id"
             :match="m"
             @click="palpitar(m)"
           />
-        </div>
-
-        <!-- TBD placeholder -->
-        <div
-          v-else
-          class="perf-bottom"
-          :style="{
-            background: 'var(--paper-2)', border: '1.5px dashed var(--ink)',
-            borderRadius: '4px', padding: '18px',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
-          }"
-        >
-          <div :style="{ display: 'flex', alignItems: 'center', gap: '12px' }">
-            <div :style="{ width: '28px', height: '28px', borderRadius: '50%', border: '1.5px dashed var(--ink)', opacity: 0.3 }" />
-            <span class="font-display" :style="{ fontSize: '16px', opacity: 0.3 }">×</span>
-            <div :style="{ width: '28px', height: '28px', borderRadius: '50%', border: '1.5px dashed var(--ink)', opacity: 0.3 }" />
-          </div>
-          <span class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.14em', opacity: 0.35 }">PARTIDAS NÃO DEFINIDAS</span>
         </div>
       </div>
     </div>

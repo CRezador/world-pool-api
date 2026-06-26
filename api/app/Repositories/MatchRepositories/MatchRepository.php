@@ -4,6 +4,7 @@ namespace App\Repositories\MatchRepositories;
 
 use App\Http\Enums\MatchStatus;
 use App\Models\Matches;
+use App\Models\Team;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -178,6 +179,15 @@ class MatchRepository
 
         if ($match->kickoff_at !== null && now()->gte($match->kickoff_at)) {
             throw new \Exception('Os palpites para esta partida já foram encerrados.', 400);
+        }
+    }
+
+    public function assertTeamsDefined(int $matchId): void
+    {
+        $match = $this->findById($matchId);
+
+        if (!$match || $match->homeTeam?->code === Team::TBD_CODE || $match->awayTeam?->code === Team::TBD_CODE) {
+            throw new \Exception('As seleções desta partida ainda não foram definidas.', 400);
         }
     }
 

@@ -4,7 +4,7 @@ import FlagImg from '@/components/FlagImg.vue';
 import StageBadge from '@/components/StageBadge.vue';
 import { toneVar } from '@/utils/tone';
 import { useGuesses } from '@/composables/useGuesses';
-import type { ApiMatch } from '@/types';
+import { TBD_TEAM_CODE, type ApiMatch } from '@/types';
 
 const props = defineProps<{ match: ApiMatch; accent: string }>();
 defineEmits<{ (e: 'palpitar'): void }>();
@@ -12,6 +12,11 @@ defineEmits<{ (e: 'palpitar'): void }>();
 const { guesses } = useGuesses();
 
 const accentVar = computed(() => toneVar(props.accent));
+
+const homeTbd = computed(() => props.match.home?.code === TBD_TEAM_CODE);
+const awayTbd = computed(() => props.match.away?.code === TBD_TEAM_CODE);
+// Enquanto qualquer lado não estiver definido, a partida não aceita palpite.
+const isTbd = computed(() => homeTbd.value || awayTbd.value);
 
 const myGuess = computed(() => guesses.value.find(g => g.matchId === props.match.id) ?? null);
 
@@ -41,23 +46,37 @@ const myGuessLabel = computed(() => {
       <StageBadge :stage="match.stage" :group="match.group ?? undefined" :tone="accent" />
     </div>
     <div :style="{ padding: '12px' }">
+      <!-- Mandante -->
       <div :style="{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }">
-        <FlagImg :flagCode="match.home.flag_code" :teamName="match.home.name" :size="20" :radius="2" />
-        <span class="font-display" :style="{ fontSize: '16px', flex: 1 }">{{ match.home.name }}</span>
-        <span
-          v-if="match.status !== 'SCHEDULED'"
-          class="font-display"
-          :style="{ fontSize: '22px' }"
-        >{{ match.homeScore ?? 0 }}</span>
+        <template v-if="homeTbd">
+          <div :style="{ width: '20px', height: '20px', borderRadius: '50%', border: '1.5px dashed var(--ink)', opacity: 0.35 }" />
+          <span class="font-display" :style="{ fontSize: '16px', flex: 1, opacity: 0.4 }">A definir</span>
+        </template>
+        <template v-else>
+          <FlagImg :flagCode="match.home.flag_code" :teamName="match.home.name" :size="20" :radius="2" />
+          <span class="font-display" :style="{ fontSize: '16px', flex: 1 }">{{ match.home.name }}</span>
+          <span
+            v-if="match.status !== 'SCHEDULED'"
+            class="font-display"
+            :style="{ fontSize: '22px' }"
+          >{{ match.homeScore ?? 0 }}</span>
+        </template>
       </div>
+      <!-- Visitante -->
       <div :style="{ display: 'flex', alignItems: 'center', gap: '10px' }">
-        <FlagImg :flagCode="match.away.flag_code" :teamName="match.away.name" :size="20" :radius="2" />
-        <span class="font-display" :style="{ fontSize: '16px', flex: 1 }">{{ match.away.name }}</span>
-        <span
-          v-if="match.status !== 'SCHEDULED'"
-          class="font-display"
-          :style="{ fontSize: '22px' }"
-        >{{ match.awayScore ?? 0 }}</span>
+        <template v-if="awayTbd">
+          <div :style="{ width: '20px', height: '20px', borderRadius: '50%', border: '1.5px dashed var(--ink)', opacity: 0.35 }" />
+          <span class="font-display" :style="{ fontSize: '16px', flex: 1, opacity: 0.4 }">A definir</span>
+        </template>
+        <template v-else>
+          <FlagImg :flagCode="match.away.flag_code" :teamName="match.away.name" :size="20" :radius="2" />
+          <span class="font-display" :style="{ fontSize: '16px', flex: 1 }">{{ match.away.name }}</span>
+          <span
+            v-if="match.status !== 'SCHEDULED'"
+            class="font-display"
+            :style="{ fontSize: '22px' }"
+          >{{ match.awayScore ?? 0 }}</span>
+        </template>
       </div>
     </div>
     <div :style="{
@@ -66,10 +85,15 @@ const myGuessLabel = computed(() => {
     }">
       <span
         class="font-mono"
-        :style="{ fontSize: '10px', letterSpacing: '0.1em', opacity: match.status === 'SCHEDULED' ? 0.7 : 1 }"
-      >{{ myGuessLabel }}</span>
+        :style="{ fontSize: '10px', letterSpacing: '0.1em', opacity: isTbd ? 0.5 : (match.status === 'SCHEDULED' ? 0.7 : 1) }"
+      >{{ isTbd ? 'AGUARDANDO CLASSIFICADOS' : myGuessLabel }}</span>
+      <span
+        v-if="isTbd"
+        class="font-mono"
+        :style="{ fontSize: '10px', letterSpacing: '0.1em', fontWeight: 700, opacity: 0.5 }"
+      >TBD</span>
       <button
-        v-if="match.status === 'SCHEDULED'"
+        v-else-if="match.status === 'SCHEDULED'"
         class="font-display press"
         :style="{
           background: myGuess ? 'var(--paper-2)' : 'var(--magenta)',

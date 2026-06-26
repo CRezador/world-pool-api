@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMatch } from '@/composables/useMatch';
+import { parseApiDate } from '@/utils/date';
 import { toneVar } from '@/data/mock';
 import type { ApiMatch, MatchStatus } from '@/types';
 
@@ -32,7 +33,8 @@ const hasScore = computed(() => slide.value?.status !== 'SCHEDULED');
 
 function kickoffTime(raw: string | null): string {
   if (!raw) return '—';
-  const d = new Date(raw);
+  // A API entrega "DD/MM/YYYY HH:MM"; parseApiDate cuida desse formato.
+  const d = parseApiDate(raw);
   if (isNaN(d.getTime())) return raw;
   return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
@@ -151,6 +153,8 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .today-ticker__time {
   font-size: 11px;

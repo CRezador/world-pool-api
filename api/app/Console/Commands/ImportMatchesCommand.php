@@ -26,6 +26,7 @@ class ImportMatchesCommand extends Command
 
     private const STAGE_MAP = [
         'GROUP_STAGE'    => MatchStage::GROUP_STAGE,
+        'LAST_32'        => MatchStage::SECOND_ROUND,
         'LAST_16'        => MatchStage::ROUND_OF_16,
         'QUARTER_FINALS' => MatchStage::QUARTER_FINALS,
         'SEMI_FINALS'    => MatchStage::SEMI_FINALS,
@@ -57,6 +58,9 @@ class ImportMatchesCommand extends Command
         $teamsByCode = $allTeams->keyBy('code');
         $groups = Group::all()->keyBy('name');
 
+        // Time sentinela usado quando a vaga ainda não tem seleção definida (TBD do mata-mata).
+        $tbdTeam = $teamsByCode->get(Team::TBD_CODE);
+
         $previousStatusByExternal = Matches::query()
             ->whereNotNull('external_id')
             ->pluck('status', 'external_id');
@@ -70,14 +74,6 @@ class ImportMatchesCommand extends Command
             $homeTla = $match['homeTeam']['tla'] ?? null;
             $awayTla = $match['awayTeam']['tla'] ?? null;
 
-            $homeTeam = $homeTla ? ($teamsByTla->get($homeTla) ?? $teamsByCode->get($homeTla)) : null;
-            $awayTeam = $awayTla ? ($teamsByTla->get($awayTla) ?? $teamsByCode->get($awayTla)) : null;
-
-            if (!$homeTeam || !$awayTeam) {
-                $skipped++;
-                continue;
-            }
-
             $stage  = self::STAGE_MAP[$match['stage']] ?? null;
             $status = self::STATUS_MAP[$match['status']] ?? MatchStatus::SCHEDULED;
 
@@ -85,6 +81,11 @@ class ImportMatchesCommand extends Command
                 $skipped++;
                 continue;
             }
+
+            // Vagas ainda sem seleção definida (ex.: mata-mata antes da fase de grupos terminar)
+            // apontam para o time sentinela TBD, então o jogo é importado mesmo assim.
+            $homeTeam = ($homeTla ? ($teamsByTla->get($homeTla) ?? $teamsByCode->get($homeTla)) : null) ?? $tbdTeam;
+            $awayTeam = ($awayTla ? ($teamsByTla->get($awayTla) ?? $teamsByCode->get($awayTla)) : null) ?? $tbdTeam;
 
             preg_match('/([A-L])$/', (string) ($match['group'] ?? ''), $m);
             $group = isset($m[1]) ? $groups->get($m[1]) : null;
