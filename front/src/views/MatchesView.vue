@@ -5,9 +5,8 @@ import SectionHead from '@/components/SectionHead.vue';
 import MatchListCard from '@/components/match/MatchListCard.vue';
 import MatchGroupCard from '@/components/match/MatchGroupCard.vue';
 import DesktopMatchesBoard from '@/components/match/DesktopMatchesBoard.vue';
-import GuessModal from '@/components/modals/GuessModal.vue';
 import { useMatchesBoard, KNOCKOUT_STAGES } from '@/composables/useMatchesBoard';
-import { useGuessModal } from '@/composables/useGuessModal';
+import { useMatchModal } from '@/composables/useMatchModal';
 import { useGuesses } from '@/composables/useGuesses';
 import { useBreakpoint } from '@/composables/useBreakpoint';
 import { toneVar } from '@/utils/tone';
@@ -17,7 +16,7 @@ const router = useRouter();
 const route = useRoute();
 const { isDesktop } = useBreakpoint();
 
-const guessModal = useGuessModal();
+const matchModal = useMatchModal();
 const { groups, matches, loading, error, load, loadGroup, loadGroupMatches, loadKnockoutMatches, groupByStatus, currentRodada } = useMatchesBoard();
 const { fetchMyGuesses } = useGuesses();
 
@@ -76,7 +75,7 @@ function goBack() {
 }
 
 function palpitar(m: ApiMatch) {
-  guessModal.show(m);
+  matchModal.open(m);
 }
 
 function applyPhaseFromQuery() {
@@ -297,12 +296,6 @@ watch(() => route.query.phase, () => {
         </div>
       </div>
     </div>
-
-    <!-- GuessModal (compact) -->
-    <GuessModal
-      :match="guessModal.match.value"
-      variant="compact"
-      @close="guessModal.hide()"
-    />
+    <!-- GuessModal e AdversaryGuessesModal são globais (App.vue) -->
   </div>
 </template>

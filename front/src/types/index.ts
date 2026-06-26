@@ -208,6 +208,8 @@ export interface GuessHistoryEntry {
   away: string;
   myHome: number;
   myAway: number;
+  // Opcional: quando false, o cabeçalho do modal omite "SEU PALPITE" (o jogador não palpitou).
+  hasMyGuess?: boolean;
   realHome: number;
   realAway: number;
   pts: number;
