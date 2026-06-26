@@ -53,6 +53,9 @@ function toggleStage(id: string) {
 }
 
 async function initGroup(groupId: string) {
+  // Uma rota /matches/:id é sempre contexto de grupos — força a fase mesmo
+  // quando o padrão de /matches é o mata-mata.
+  phase.value = 'groups';
   const found = await loadGroup(groupId);
   if (found) {
     group.value = found.g;
