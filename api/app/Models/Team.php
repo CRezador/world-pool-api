@@ -10,6 +10,9 @@ class Team extends Model
 {
     use HasFactory;
 
+    /** Código do time sentinela que representa uma vaga ainda não definida (mata-mata). */
+    public const TBD_CODE = 'TBD';
+
     protected $table = 'teams';
     protected $fillable = ['name', 'code', 'tla', 'group_id'];
     protected $casts = [

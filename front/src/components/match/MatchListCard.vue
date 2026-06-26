@@ -5,14 +5,17 @@ import StageBadge from '@/components/StageBadge.vue';
 import { toneVar } from '@/utils/tone';
 import { formatKickoffShort } from '@/utils/date';
 import { useGuesses } from '@/composables/useGuesses';
-import type { ApiMatch } from '@/types';
+import { TBD_TEAM_CODE, type ApiMatch } from '@/types';
 
 const props = defineProps<{ match: ApiMatch }>();
 defineEmits<{ (e: 'click'): void }>();
 
 const { guesses } = useGuesses();
 
-const isTbd = computed(() => !props.match.home?.code || !props.match.away?.code);
+const homeTbd = computed(() => props.match.home?.code === TBD_TEAM_CODE);
+const awayTbd = computed(() => props.match.away?.code === TBD_TEAM_CODE);
+// Enquanto qualquer lado não estiver definido, a partida não aceita palpite.
+const isTbd = computed(() => homeTbd.value || awayTbd.value);
 
 const accent = computed(() =>
   props.match.status === 'IN_PROGRESS' ? 'coral' :
@@ -32,49 +35,18 @@ const guessLabel = computed(() => {
 </script>
 
 <template>
-  <!-- TBD — times não definidos -->
   <div
-    v-if="isTbd"
     class="perf-bottom"
     :style="{
-      background: 'var(--paper-2)', border: '1.5px dashed var(--ink)',
-      boxShadow: '3px 3px 0 rgba(0,0,0,0.1), 3px 3px 0 1px var(--ink)', borderRadius: '4px',
-    }"
-  >
-    <div :style="{
-      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      padding: '8px 12px', background: 'var(--ink)', color: 'var(--paper)',
-    }">
-      <span class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.16em', fontWeight: 700 }">
-        {{ kickoffLabel }}
-      </span>
-      <StageBadge :stage="match.stage" :group="match.group ?? undefined" tone="cobalt" />
-    </div>
-    <div :style="{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }">
-      <div :style="{ width: '32px', height: '32px', borderRadius: '50%', border: '1.5px dashed var(--ink)', opacity: 0.3 }" />
-      <span class="font-display" :style="{ fontSize: '18px', opacity: 0.3 }">×</span>
-      <div :style="{ width: '32px', height: '32px', borderRadius: '50%', border: '1.5px dashed var(--ink)', opacity: 0.3 }" />
-    </div>
-    <div :style="{
-      padding: '7px 12px', borderTop: '1px dashed var(--ink)',
-      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    }">
-      <span class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.1em', opacity: 0.55 }">AGUARDANDO CLASSIFICADOS</span>
-      <span class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.1em', fontWeight: 700 }">TBD</span>
-    </div>
-  </div>
-
-  <!-- Partida normal -->
-  <div
-    v-else
-    class="perf-bottom"
-    :style="{
-      cursor: 'pointer', background: 'var(--paper-2)',
-      border: '1.5px solid var(--ink)',
-      boxShadow: `4px 4px 0 ${accentVar}, 4px 4px 0 1px var(--ink)`,
+      cursor: isTbd ? 'default' : 'pointer',
+      background: 'var(--paper-2)',
+      border: isTbd ? '1.5px dashed var(--ink)' : '1.5px solid var(--ink)',
+      boxShadow: isTbd
+        ? '3px 3px 0 rgba(0,0,0,0.1), 3px 3px 0 1px var(--ink)'
+        : `4px 4px 0 ${accentVar}, 4px 4px 0 1px var(--ink)`,
       borderRadius: '4px',
     }"
-    @click="$emit('click')"
+    @click="isTbd ? undefined : $emit('click')"
   >
     <div :style="{
       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -83,20 +55,29 @@ const guessLabel = computed(() => {
       <span class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.16em', fontWeight: 700 }">
         {{ kickoffLabel }}
       </span>
-      <StageBadge :stage="match.stage" :group="match.group ?? undefined" :tone="accent" />
+      <StageBadge :stage="match.stage" :group="match.group ?? undefined" :tone="isTbd ? 'cobalt' : accent" />
     </div>
 
     <div :style="{ padding: '12px 14px' }">
       <div :style="{ display: 'flex', alignItems: 'center', gap: '10px' }">
         <!-- Home -->
         <div :style="{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }">
-          <FlagChip :flagCode="match.home.flag_code" :teamName="match.home.name" :teamCode="match.home.code" :size="36" :tone="accent" />
-          <div>
-            <div class="font-display" :style="{ fontSize: '17px', lineHeight: 1 }">{{ match.home.code }}</div>
-            <div class="font-mono" :style="{ fontSize: '9px', opacity: 0.6, letterSpacing: '0.06em' }">
-              {{ match.home.name.toUpperCase() }}
+          <template v-if="homeTbd">
+            <div :style="{ width: '36px', height: '36px', borderRadius: '50%', border: '1.5px dashed var(--ink)', opacity: 0.35, flexShrink: 0 }" />
+            <div :style="{ opacity: 0.45 }">
+              <div class="font-display" :style="{ fontSize: '17px', lineHeight: 1 }">A definir</div>
+              <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.06em' }">AGUARDANDO</div>
             </div>
-          </div>
+          </template>
+          <template v-else>
+            <FlagChip :flagCode="match.home.flag_code" :teamName="match.home.name" :teamCode="match.home.code" :size="36" :tone="accent" />
+            <div>
+              <div class="font-display" :style="{ fontSize: '17px', lineHeight: 1 }">{{ match.home.code }}</div>
+              <div class="font-mono" :style="{ fontSize: '9px', opacity: 0.6, letterSpacing: '0.06em' }">
+                {{ match.home.name.toUpperCase() }}
+              </div>
+            </div>
+          </template>
         </div>
 
         <!-- Placar / VS -->
@@ -111,13 +92,22 @@ const guessLabel = computed(() => {
 
         <!-- Away -->
         <div :style="{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }">
-          <div :style="{ textAlign: 'right' }">
-            <div class="font-display" :style="{ fontSize: '17px', lineHeight: 1 }">{{ match.away.code }}</div>
-            <div class="font-mono" :style="{ fontSize: '9px', opacity: 0.6, letterSpacing: '0.06em' }">
-              {{ match.away.name.toUpperCase() }}
+          <template v-if="awayTbd">
+            <div :style="{ textAlign: 'right', opacity: 0.45 }">
+              <div class="font-display" :style="{ fontSize: '17px', lineHeight: 1 }">A definir</div>
+              <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.06em' }">AGUARDANDO</div>
             </div>
-          </div>
-          <FlagChip :flagCode="match.away.flag_code" :teamName="match.away.name" :teamCode="match.away.code" :size="36" :tone="accent" />
+            <div :style="{ width: '36px', height: '36px', borderRadius: '50%', border: '1.5px dashed var(--ink)', opacity: 0.35, flexShrink: 0 }" />
+          </template>
+          <template v-else>
+            <div :style="{ textAlign: 'right' }">
+              <div class="font-display" :style="{ fontSize: '17px', lineHeight: 1 }">{{ match.away.code }}</div>
+              <div class="font-mono" :style="{ fontSize: '9px', opacity: 0.6, letterSpacing: '0.06em' }">
+                {{ match.away.name.toUpperCase() }}
+              </div>
+            </div>
+            <FlagChip :flagCode="match.away.flag_code" :teamName="match.away.name" :teamCode="match.away.code" :size="36" :tone="accent" />
+          </template>
         </div>
       </div>
     </div>
@@ -131,11 +121,16 @@ const guessLabel = computed(() => {
         class="font-mono"
         :style="{
           fontSize: '10px', letterSpacing: '0.1em',
-          color: myGuess && match.status === 'SCHEDULED' ? accentVar : 'inherit',
-          opacity: myGuess ? 1 : 0.55,
+          color: !isTbd && myGuess && match.status === 'SCHEDULED' ? accentVar : 'inherit',
+          opacity: isTbd ? 0.55 : (myGuess ? 1 : 0.55),
         }"
-      >{{ guessLabel }}</span>
-      <span class="font-display" :style="{ fontSize: '11px', color: accentVar }">
+      >{{ isTbd ? 'AGUARDANDO CLASSIFICADOS' : guessLabel }}</span>
+      <span
+        v-if="isTbd"
+        class="font-mono"
+        :style="{ fontSize: '9px', letterSpacing: '0.1em', fontWeight: 700, opacity: 0.55 }"
+      >TBD</span>
+      <span v-else class="font-display" :style="{ fontSize: '11px', color: accentVar }">
         {{ match.status === 'SCHEDULED' ? (myGuess ? 'EDITAR →' : 'PALPITAR →') : 'VER →' }}
       </span>
     </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { parseApiDate } from '@/utils/date';
 import type { ApiMatch } from '@/types';
 
 const props = defineProps<{ match: ApiMatch }>();
@@ -16,7 +17,8 @@ function open() {
 
 function parseKickoff(raw: string | null): { day: string; time: string } {
   if (!raw) return { day: '—', time: '—' };
-  const d = new Date(raw);
+  // A API entrega "DD/MM/YYYY HH:MM"; parseApiDate cuida desse formato.
+  const d = parseApiDate(raw);
   if (isNaN(d.getTime())) return { day: '', time: raw };
   const today = new Date();
   const tomorrow = new Date(today);
