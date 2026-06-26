@@ -73,8 +73,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
               >{{ context.home }} <span :style="{ opacity: 0.4 }">×</span> {{ context.away }}</div>
               <div class="font-mono" :style="{ fontSize: '11px', letterSpacing: '0.1em', opacity: 0.7, marginTop: '6px' }">
                 PLACAR {{ context.realHome }}-{{ context.realAway }}
-                <span :style="{ opacity: 0.4, margin: '0 6px' }">·</span>
-                SEU PALPITE {{ context.myHome }}-{{ context.myAway }}
+                <template v-if="context.hasMyGuess !== false">
+                  <span :style="{ opacity: 0.4, margin: '0 6px' }">·</span>
+                  SEU PALPITE {{ context.myHome }}-{{ context.myAway }}
+                </template>
               </div>
             </div>
             <button aria-label="Fechar" class="font-display press adv-close" @click="$emit('close')">✕</button>

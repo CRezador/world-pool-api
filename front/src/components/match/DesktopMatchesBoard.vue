@@ -4,7 +4,7 @@ import { useRouter, useRoute } from 'vue-router';
 import DesktopGroupCard from '@/components/match/DesktopGroupCard.vue';
 import DesktopMatchCard from '@/components/match/DesktopMatchCard.vue';
 import { useMatchesBoard, KNOCKOUT_STAGES } from '@/composables/useMatchesBoard';
-import { useGuessModal } from '@/composables/useGuessModal';
+import { useMatchModal } from '@/composables/useMatchModal';
 import { useGuesses } from '@/composables/useGuesses';
 import { toneVar, toneFg } from '@/utils/tone';
 import type { ApiMatch, GroupFull, MatchStatus } from '@/types';
@@ -12,7 +12,7 @@ import type { ApiMatch, GroupFull, MatchStatus } from '@/types';
 const router = useRouter();
 const route = useRoute();
 
-const guess = useGuessModal();
+const matchModal = useMatchModal();
 const { groups, matches, loading, error, load, loadGroup, loadGroupMatches, loadKnockoutMatches, groupByStatus, currentRodada } = useMatchesBoard();
 const { fetchMyGuesses } = useGuesses();
 
@@ -107,7 +107,7 @@ const selectedGroupRodada = computed(() =>
 );
 
 function palpitar(m: ApiMatch) {
-  guess.show(m);
+  matchModal.open(m);
 }
 </script>
 

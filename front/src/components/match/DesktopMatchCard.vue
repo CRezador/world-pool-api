@@ -18,13 +18,14 @@ const awayTbd = computed(() => props.match.away?.code === TBD_TEAM_CODE);
 // Enquanto qualquer lado não estiver definido, a partida não aceita palpite.
 const isTbd = computed(() => homeTbd.value || awayTbd.value);
 
+// Jogo já começou/encerrou: o card abre os palpites dos adversários ao clicar.
+const isStarted = computed(() => props.match.status !== 'SCHEDULED');
+
 const myGuess = computed(() => guesses.value.find(g => g.matchId === props.match.id) ?? null);
 
 const myGuessLabel = computed(() => {
-  if (props.match.status === 'IN_PROGRESS') return 'EM PROGRESSO';
-  if (props.match.status === 'FINISHED') return 'ENCERRADO';
   if (myGuess.value) return `MEU PALPITE: ${myGuess.value.homeScore} × ${myGuess.value.awayScore}`;
-  return 'SEM PALPITE AINDA';
+  return props.match.status === 'SCHEDULED' ? 'SEM PALPITE AINDA' : 'SEM PALPITE';
 });
 </script>
 
@@ -34,7 +35,9 @@ const myGuessLabel = computed(() => {
     :style="{
       background: 'var(--paper-2)', border: '1.5px solid var(--ink)',
       boxShadow: `4px 4px 0 ${accentVar}, 4px 4px 0 1px var(--ink)`,
+      cursor: !isTbd && isStarted ? 'pointer' : 'default',
     }"
+    @click="!isTbd && isStarted ? $emit('palpitar') : undefined"
   >
     <div :style="{
       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -112,7 +115,7 @@ const myGuessLabel = computed(() => {
         v-else
         class="font-display"
         :style="{ fontSize: '12px', color: accentVar }"
-      >→</span>
+      >VER →</span>
     </div>
   </div>
 </template>
