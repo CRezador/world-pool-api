@@ -20,7 +20,9 @@ const matchModal = useMatchModal();
 const { groups, matches, loading, error, load, loadGroup, loadGroupMatches, loadKnockoutMatches, groupByStatus, currentRodada } = useMatchesBoard();
 const { fetchMyGuesses } = useGuesses();
 
-const phase = ref<'groups' | 'knockout'>('groups');
+// Padrão pós-fase de grupos: ao acessar /matches sem ?phase, abre o mata-mata.
+// A fase de grupos continua acessível pela aba e por ?phase=groups.
+const phase = ref<'groups' | 'knockout'>('knockout');
 const group = ref<string | null>(null);
 
 const phases = [
@@ -51,6 +53,9 @@ function toggleStage(id: string) {
 }
 
 async function initGroup(groupId: string) {
+  // Uma rota /matches/:id é sempre contexto de grupos — força a fase mesmo
+  // quando o padrão de /matches é o mata-mata.
+  phase.value = 'groups';
   const found = await loadGroup(groupId);
   if (found) {
     group.value = found.g;
@@ -65,13 +70,13 @@ function selectGroup(g: GroupFull) {
 function switchPhase(p: 'groups' | 'knockout') {
   phase.value = p;
   group.value = null;
-  router.push('/matches');
+  router.push(p === 'groups' ? { path: '/matches', query: { phase: 'groups' } } : '/matches');
   if (p === 'knockout') loadKnockoutMatches();
 }
 
 function goBack() {
   group.value = null;
-  router.push('/matches');
+  router.push({ path: '/matches', query: { phase: 'groups' } });
 }
 
 function palpitar(m: ApiMatch) {
@@ -80,12 +85,12 @@ function palpitar(m: ApiMatch) {
 
 function applyPhaseFromQuery() {
   group.value = null;
-  if (route.query.phase === 'knockout') {
-    phase.value = 'knockout';
-    loadKnockoutMatches();
-  } else {
+  if (route.query.phase === 'groups') {
     phase.value = 'groups';
     load(); // a lista de grupos precisa de todos os grupos, não só do último aberto
+  } else {
+    phase.value = 'knockout';
+    loadKnockoutMatches();
   }
 }
 

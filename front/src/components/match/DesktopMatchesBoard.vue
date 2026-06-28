@@ -30,11 +30,16 @@ function toggleStage(id: string) {
   openStages.value[id] = !openStages.value[id];
 }
 
-const phase = ref<'groups' | 'knockout'>('groups');
+// Padrão pós-fase de grupos: ao acessar /matches sem ?phase, abre o mata-mata.
+// A fase de grupos continua acessível pela aba e por ?phase=groups.
+const phase = ref<'groups' | 'knockout'>('knockout');
 const group = ref<string | null>(null);
 
 async function initGroup(groupId: string | undefined) {
   if (!groupId) return;
+  // Uma rota /matches/:id é sempre contexto de grupos — força a fase mesmo
+  // quando o padrão de /matches é o mata-mata.
+  phase.value = 'groups';
   const found = await loadGroup(groupId);
   if (found) {
     group.value = found.g;
@@ -44,12 +49,12 @@ async function initGroup(groupId: string | undefined) {
 
 function applyPhaseFromQuery() {
   group.value = null;
-  if (route.query.phase === 'knockout') {
-    phase.value = 'knockout';
-    loadKnockoutMatches();
-  } else {
+  if (route.query.phase === 'groups') {
     phase.value = 'groups';
     load(); // a lista de grupos precisa de todos os grupos, não só do último aberto
+  } else {
+    phase.value = 'knockout';
+    loadKnockoutMatches();
   }
 }
 
@@ -84,6 +89,7 @@ function switchPhase(p: 'groups' | 'knockout') {
   phase.value = p;
   group.value = null;
   if (p === 'knockout') loadKnockoutMatches();
+  else load(); // grupos não são carregados no mount quando o padrão é o mata-mata
 }
 
 function selectGroup(g: GroupFull) {
@@ -231,7 +237,7 @@ function palpitar(m: ApiMatch) {
             border: '1.5px solid var(--ink)', boxShadow: '2px 2px 0 var(--magenta)',
             cursor: 'pointer', borderRadius: '3px',
           }"
-          @click="router.push('/matches')"
+          @click="router.push({ path: '/matches', query: { phase: 'groups' } })"
         >← GRUPOS</button>
       </div>
 
