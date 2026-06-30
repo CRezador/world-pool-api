@@ -6,21 +6,24 @@ const guesses = ref<GuessEntry[]>([]);
 
 function mapGuess(g: any): GuessEntry {
     return {
-        id:         g.id,
-        matchId:    g.match_id,
-        homeScore:  g.home_score,
-        awayScore:  g.away_score,
-        points:     g.points ?? null,
+        id:           g.id,
+        matchId:      g.match_id,
+        homeScore:    g.home_score,
+        awayScore:    g.away_score,
+        points:       g.points ?? null,
         match: {
-            id:        g.match.id,
-            stage:     g.match.stage,
-            group:     g.match.group ?? null,
-            status:    g.match.status,
-            kickoffAt: g.match.kickoff_at ?? null,
-            homeScore: g.match.home_score ?? null,
-            awayScore: g.match.away_score ?? null,
-            homeTeam:  { code: g.match.home_team.code, flagUrl: g.match.home_team.flag_url ?? null },
-            awayTeam:  { code: g.match.away_team.code, flagUrl: g.match.away_team.flag_url ?? null },
+            id:            g.match.id,
+            stage:         g.match.stage,
+            group:         g.match.group ?? null,
+            status:        g.match.status,
+            kickoffAt:     g.match.kickoff_at ?? null,
+            homeScore:     g.match.home_score ?? null,
+            awayScore:     g.match.away_score ?? null,
+            homePenalties: g.match.home_penalties ?? null,
+            awayPenalties: g.match.away_penalties ?? null,
+            winnerTeamId:  g.match.winner_team_id ?? null,
+            homeTeam:  { id: g.match.home_team.id, code: g.match.home_team.code, flagUrl: g.match.home_team.flag_url ?? null },
+            awayTeam:  { id: g.match.away_team.id, code: g.match.away_team.code, flagUrl: g.match.away_team.flag_url ?? null },
         },
     };
 }

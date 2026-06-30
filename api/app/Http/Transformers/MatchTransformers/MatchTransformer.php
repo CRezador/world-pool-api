@@ -28,6 +28,9 @@ class MatchTransformer extends BaseTransformer
             'kickoff_at' => $match->kickoff_at === null ? null : $match->kickoff_at->copy()->setTimezone(config('app.display_timezone'))->format('d/m/Y H:i'),
             'home_score' => $match->home_score,
             'away_score' => $match->away_score,
+            'home_penalties' => $match->home_penalties,
+            'away_penalties' => $match->away_penalties,
+            'winner_team_id' => $match->winner_team_id,
         ];
     }
 

@@ -32,6 +32,9 @@ function mapApiMatch(m: any): ApiMatch {
         },
         homeScore: m.home_score,
         awayScore: m.away_score,
+        homePenalties: m.home_penalties ?? null,
+        awayPenalties: m.away_penalties ?? null,
+        winnerTeamId: m.winner_team_id ?? null,
     } satisfies ApiMatch;
 }
 

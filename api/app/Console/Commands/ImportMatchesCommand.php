@@ -90,22 +90,25 @@ class ImportMatchesCommand extends Command
             preg_match('/([A-L])$/', (string) ($match['group'] ?? ''), $m);
             $group = isset($m[1]) ? $groups->get($m[1]) : null;
 
-            $score = $match['score']['fullTime'] ?? [];
+            $scoreData = $this->resolveScoreData($match['score'] ?? [], $stage, $homeTeam, $awayTeam);
 
             $previousStatus = $previousStatusByExternal->get($match['id']);
 
             $matchModel = Matches::updateOrCreate(
                 ['external_id' => $match['id']],
                 [
-                    'kickoff_at'   => $match['utcDate'],
-                    'game_day'     => $match['matchday'],
-                    'stage'        => $stage->value,
-                    'group_id'     => $group?->id,
-                    'status'       => $status->value,
-                    'home_team_id' => $homeTeam->id,
-                    'away_team_id' => $awayTeam->id,
-                    'home_score'   => $score['home'] ?? null,
-                    'away_score'   => $score['away'] ?? null,
+                    'kickoff_at'     => $match['utcDate'],
+                    'game_day'       => $match['matchday'],
+                    'stage'          => $stage->value,
+                    'group_id'       => $group?->id,
+                    'status'         => $status->value,
+                    'home_team_id'   => $homeTeam->id,
+                    'away_team_id'   => $awayTeam->id,
+                    'home_score'     => $scoreData['home_score'],
+                    'away_score'     => $scoreData['away_score'],
+                    'home_penalties' => $scoreData['home_penalties'],
+                    'away_penalties' => $scoreData['away_penalties'],
+                    'winner_team_id' => $scoreData['winner_team_id'],
                 ]
             );
 
@@ -141,5 +144,77 @@ class ImportMatchesCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Normaliza o bloco `score` da API em placar do confronto + desempate por pênaltis
+     * + vencedor.
+     *
+     * Em jogos decididos nos pênaltis (`duration = PENALTY_SHOOTOUT`), o `fullTime` da
+     * API agrega as cobranças convertidas — não é o placar do jogo. O placar real é o do
+     * tempo normal somado à prorrogação (`regularTime + extraTime`), e as cobranças saem
+     * da diferença entre `fullTime` e esse placar.
+     *
+     * @return array{home_score:?int, away_score:?int, home_penalties:?int, away_penalties:?int, winner_team_id:?int}
+     */
+    private function resolveScoreData(array $score, MatchStage $stage, Team $home, Team $away): array
+    {
+        $fullTime  = $score['fullTime'] ?? [];
+        $homeScore = $fullTime['home'] ?? null;
+        $awayScore = $fullTime['away'] ?? null;
+        $homePenalties = null;
+        $awayPenalties = null;
+
+        if (($score['duration'] ?? null) === 'PENALTY_SHOOTOUT' && isset($score['regularTime'])) {
+            $extra   = $score['extraTime'] ?? [];
+            $regHome = ($score['regularTime']['home'] ?? 0) + ($extra['home'] ?? 0);
+            $regAway = ($score['regularTime']['away'] ?? 0) + ($extra['away'] ?? 0);
+
+            if ($homeScore !== null && $awayScore !== null) {
+                $homePenalties = $homeScore - $regHome;
+                $awayPenalties = $awayScore - $regAway;
+            }
+
+            $homeScore = $regHome;
+            $awayScore = $regAway;
+        }
+
+        return [
+            'home_score'     => $homeScore,
+            'away_score'     => $awayScore,
+            'home_penalties' => $homePenalties,
+            'away_penalties' => $awayPenalties,
+            'winner_team_id' => $this->resolveWinnerTeamId($score, $stage, $home, $away),
+        ];
+    }
+
+    /**
+     * Vencedor do confronto (apenas mata-mata). Usa o campo `winner` da API; quando ele
+     * vem nulo — comum em jogos decididos nos pênaltis — cai para o `fullTime`, que agrega
+     * as cobranças e portanto aponta o vencedor do desempate.
+     */
+    private function resolveWinnerTeamId(array $score, MatchStage $stage, Team $home, Team $away): ?int
+    {
+        if (!$stage->isKnockout()) {
+            return null;
+        }
+
+        return match ($score['winner'] ?? null) {
+            'HOME_TEAM' => $home->id,
+            'AWAY_TEAM' => $away->id,
+            default     => $this->winnerFromFullTime($score['fullTime'] ?? [], $home, $away),
+        };
+    }
+
+    private function winnerFromFullTime(array $fullTime, Team $home, Team $away): ?int
+    {
+        $h = $fullTime['home'] ?? null;
+        $a = $fullTime['away'] ?? null;
+
+        if ($h === null || $a === null || $h === $a) {
+            return null;
+        }
+
+        return $h > $a ? $home->id : $away->id;
     }
 }

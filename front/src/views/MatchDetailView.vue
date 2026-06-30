@@ -15,6 +15,7 @@ const match = computed(() => findMatch(matchId.value));
 const home = computed(() => TEAMS[match.value.home as string]);
 const away = computed(() => TEAMS[match.value.away as string]);
 const isLive = computed(() => match.value.status === 'IN_PROGRESS');
+const hasPenalties = computed(() => match.value.homePenalties != null && match.value.awayPenalties != null);
 
 const guesses = computed(() => {
   const fakes: [number, number][] = [[2,1],[1,1],[2,0],[0,2],[3,1],[1,2],[2,2],[1,0]];
@@ -73,7 +74,7 @@ const guesses = computed(() => {
             class="font-display"
             :style="{ fontSize: '64px', lineHeight: 1, color: 'var(--lime)' }"
           >
-            {{ match.homeScore }}<span :style="{ color: 'var(--paper)', opacity: 0.3 }">×</span>{{ match.awayScore }}
+            {{ match.homeScore }}<span v-if="hasPenalties" :style="{ fontSize: '32px', opacity: 0.7 }">({{ match.homePenalties }})</span><span :style="{ color: 'var(--paper)', opacity: 0.3 }">×</span><span v-if="hasPenalties" :style="{ fontSize: '32px', opacity: 0.7 }">({{ match.awayPenalties }})</span>{{ match.awayScore }}
           </div>
           <div :style="{ textAlign: 'center', flex: 1 }">
             <FlagImg

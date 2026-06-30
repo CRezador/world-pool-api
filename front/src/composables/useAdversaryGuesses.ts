@@ -4,10 +4,10 @@ import type { AdversaryGuess } from '@/types';
 
 function mapAdversary(g: any): AdversaryGuess {
   return {
-    id:        g.id,
-    homeScore: g.home_score,
-    awayScore: g.away_score,
-    points:    g.points ?? 0,
+    id:           g.id,
+    homeScore:    g.home_score,
+    awayScore:    g.away_score,
+    points:       g.points ?? 0,
     user: {
       id:       g.user.id,
       name:     g.user.name,
@@ -15,12 +15,17 @@ function mapAdversary(g: any): AdversaryGuess {
     },
     pools: (g.pools ?? []).map((p: any) => ({ id: p.id, name: p.name })),
     match: {
-      id:        g.match.id,
-      status:    g.match.status,
-      homeScore: g.match.home_score ?? null,
-      awayScore: g.match.away_score ?? null,
-      homeCode:  g.match.home_team.code,
-      awayCode:  g.match.away_team.code,
+      id:            g.match.id,
+      status:        g.match.status,
+      homeScore:     g.match.home_score ?? null,
+      awayScore:     g.match.away_score ?? null,
+      homePenalties: g.match.home_penalties ?? null,
+      awayPenalties: g.match.away_penalties ?? null,
+      winnerTeamId:  g.match.winner_team_id ?? null,
+      homeId:        g.match.home_team.id,
+      awayId:        g.match.away_team.id,
+      homeCode:      g.match.home_team.code,
+      awayCode:      g.match.away_team.code,
     },
   };
 }

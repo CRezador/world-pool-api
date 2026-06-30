@@ -46,6 +46,10 @@ export interface Match {
   away?: Team | string;
   homeScore?: number;
   awayScore?: number;
+  homePenalties?: number | null;
+  awayPenalties?: number | null;
+  /** Time vencedor do confronto (mata-mata); inclui desempate por pênaltis. */
+  winnerTeamId?: number | null;
   /** Knockout tie label, e.g. "1C × 2E" or "A GRANDE DECISÃO". */
   tie?: string;
   /** Bracket slot labels shown while the teams are still undefined (TBD). */
@@ -66,6 +70,10 @@ export interface ApiMatch {
   away: Team;
   homeScore?: number;
   awayScore?: number;
+  homePenalties?: number | null;
+  awayPenalties?: number | null;
+  /** Time vencedor do confronto (mata-mata); inclui desempate por pênaltis. */
+  winnerTeamId?: number | null;
 }
 
 export interface Member {
@@ -107,8 +115,11 @@ export interface GuessEntry {
     kickoffAt: string | null;
     homeScore: number | null;
     awayScore: number | null;
-    homeTeam: { code: string; flagUrl: string | null };
-    awayTeam: { code: string; flagUrl: string | null };
+    homePenalties: number | null;
+    awayPenalties: number | null;
+    winnerTeamId: number | null;
+    homeTeam: { id: number; code: string; flagUrl: string | null };
+    awayTeam: { id: number; code: string; flagUrl: string | null };
   };
 }
 
@@ -236,6 +247,11 @@ export interface AdversaryGuess {
     status: MatchStatus;
     homeScore: number | null;
     awayScore: number | null;
+    homePenalties: number | null;
+    awayPenalties: number | null;
+    winnerTeamId: number | null;
+    homeId: number;
+    awayId: number;
     homeCode: string;
     awayCode: string;
   };

@@ -33,6 +33,9 @@ class MatchRepository
               'matches.status',
               'matches.home_score',
               'matches.away_score',
+              'matches.home_penalties',
+              'matches.away_penalties',
+              'matches.winner_team_id',
           ])
           ->with([
               'homeTeam:id,name,code',
@@ -150,6 +153,9 @@ class MatchRepository
                 'matches.status',
                 'matches.home_score',
                 'matches.away_score',
+                'matches.home_penalties',
+                'matches.away_penalties',
+                'matches.winner_team_id',
             ])
             ->with([
                 'homeTeam:id,name,code,flag_code,group_id',
