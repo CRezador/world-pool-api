@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useGuesses } from '@/composables/useGuesses';
+import { formatScoreWithPenalties } from '@/utils/score';
 import type { GuessEntry } from '@/types';
 
 defineProps<{ poolId: string }>();
@@ -167,7 +168,7 @@ function goToGuess(g: GuessEntry) {
             <div :style="{ textAlign: 'right' }">
               <div class="font-mono" :style="{ fontSize: '9px', letterSpacing: '0.14em', opacity: 0.6 }">RESULTADO</div>
               <div class="font-display" :style="{ fontSize: '24px', lineHeight: 1 }">
-                {{ g.match.homeScore !== null ? `${g.match.homeScore} × ${g.match.awayScore}` : '— × —' }}
+                {{ g.match.homeScore !== null ? formatScoreWithPenalties(g.match.homeScore, g.match.awayScore, g.match.homePenalties, g.match.awayPenalties) : '— × —' }}
               </div>
             </div>
           </div>

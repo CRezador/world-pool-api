@@ -11,10 +11,11 @@ class AdversaryGuessTransformer extends BaseTransformer
         $m = $guess->match;
 
         return [
-            'id'         => $guess->id,
-            'home_score' => $guess->home_score,
-            'away_score' => $guess->away_score,
-            'points'     => $guess->points,
+            'id'             => $guess->id,
+            'home_score'     => $guess->home_score,
+            'away_score'     => $guess->away_score,
+            'winner_team_id' => $guess->winner_team_id,
+            'points'         => $guess->points,
             'user'       => [
                 'id'       => $guess->user->id,
                 'name'     => $guess->user->name,
@@ -23,12 +24,15 @@ class AdversaryGuessTransformer extends BaseTransformer
             // Bolões que esse adversário compartilha comigo (anotado no service).
             'pools'      => $guess->shared_pools ?? [],
             'match'      => [
-                'id'         => $m->id,
-                'status'     => $m->status->name,
-                'home_score' => $m->home_score,
-                'away_score' => $m->away_score,
-                'home_team'  => ['code' => $m->homeTeam->code],
-                'away_team'  => ['code' => $m->awayTeam->code],
+                'id'             => $m->id,
+                'status'         => $m->status->name,
+                'home_score'     => $m->home_score,
+                'away_score'     => $m->away_score,
+                'home_penalties' => $m->home_penalties,
+                'away_penalties' => $m->away_penalties,
+                'winner_team_id' => $m->winner_team_id,
+                'home_team'  => ['id' => $m->home_team_id, 'code' => $m->homeTeam->code],
+                'away_team'  => ['id' => $m->away_team_id, 'code' => $m->awayTeam->code],
             ],
         ];
     }

@@ -24,11 +24,16 @@ class Matches extends Model
         'away_team_id',
         'home_score',
         'away_score',
+        'home_penalties',
+        'away_penalties',
+        'winner_team_id',
     ];
     protected $casts = [
         'kickoff_at' => 'datetime',
         'home_score' => 'integer',
         'away_score' => 'integer',
+        'home_penalties' => 'integer',
+        'away_penalties' => 'integer',
         'stage' => MatchStage::class,
         'status' => MatchStatus::class,
     ];
@@ -47,5 +52,10 @@ class Matches extends Model
     public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class, 'group_id');
+    }
+
+    public function winnerTeam(): BelongsTo
+    {
+        return $this->belongsTo(Team::class, 'winner_team_id');
     }
 }

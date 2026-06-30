@@ -38,6 +38,9 @@ function mapApiMatch(m: any): ApiMatch {
     },
     homeScore: m.home_score ?? undefined,
     awayScore: m.away_score ?? undefined,
+    homePenalties: m.home_penalties ?? null,
+    awayPenalties: m.away_penalties ?? null,
+    winnerTeamId: m.winner_team_id ?? null,
   };
 }
 

@@ -23,6 +23,10 @@ const isStarted = computed(() => props.match.status !== 'SCHEDULED');
 
 const myGuess = computed(() => guesses.value.find(g => g.matchId === props.match.id) ?? null);
 
+const hasPenalties = computed(() => props.match.homePenalties != null && props.match.awayPenalties != null);
+const isHomeWinner = computed(() => props.match.winnerTeamId != null && props.match.winnerTeamId === props.match.home?.id);
+const isAwayWinner = computed(() => props.match.winnerTeamId != null && props.match.winnerTeamId === props.match.away?.id);
+
 const myGuessLabel = computed(() => {
   if (myGuess.value) return `MEU PALPITE: ${myGuess.value.homeScore} × ${myGuess.value.awayScore}`;
   return props.match.status === 'SCHEDULED' ? 'SEM PALPITE AINDA' : 'SEM PALPITE';
@@ -57,12 +61,14 @@ const myGuessLabel = computed(() => {
         </template>
         <template v-else>
           <FlagImg :flagCode="match.home.flag_code" :teamName="match.home.name" :size="20" :radius="2" />
-          <span class="font-display" :style="{ fontSize: '16px', flex: 1 }">{{ match.home.name }}</span>
+          <span class="font-display" :style="{ fontSize: '16px', flex: 1 }">
+            {{ match.home.name }}<span v-if="isHomeWinner" :title="'Classificado'" :style="{ color: accentVar }"> ✓</span>
+          </span>
           <span
             v-if="match.status !== 'SCHEDULED'"
             class="font-display"
             :style="{ fontSize: '22px' }"
-          >{{ match.homeScore ?? 0 }}</span>
+          >{{ match.homeScore ?? 0 }}<span v-if="hasPenalties" class="font-display" :style="{ fontSize: '13px', opacity: 0.7 }">({{ match.homePenalties }})</span></span>
         </template>
       </div>
       <!-- Visitante -->
@@ -73,12 +79,14 @@ const myGuessLabel = computed(() => {
         </template>
         <template v-else>
           <FlagImg :flagCode="match.away.flag_code" :teamName="match.away.name" :size="20" :radius="2" />
-          <span class="font-display" :style="{ fontSize: '16px', flex: 1 }">{{ match.away.name }}</span>
+          <span class="font-display" :style="{ fontSize: '16px', flex: 1 }">
+            {{ match.away.name }}<span v-if="isAwayWinner" :title="'Classificado'" :style="{ color: accentVar }"> ✓</span>
+          </span>
           <span
             v-if="match.status !== 'SCHEDULED'"
             class="font-display"
             :style="{ fontSize: '22px' }"
-          >{{ match.awayScore ?? 0 }}</span>
+          >{{ match.awayScore ?? 0 }}<span v-if="hasPenalties" class="font-display" :style="{ fontSize: '13px', opacity: 0.7 }">({{ match.awayPenalties }})</span></span>
         </template>
       </div>
     </div>

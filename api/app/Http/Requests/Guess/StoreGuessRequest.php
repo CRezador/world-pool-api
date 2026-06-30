@@ -26,6 +26,7 @@ class StoreGuessRequest extends FormRequest
             "match_id" => ["required", "integer", "exists:matches,id"],
             "home_score" => ["required", "integer", "min:0"],
             "away_score" => ["required", "integer", "min:0"],
+            "winner_team_id" => ["nullable", "integer", "exists:teams,id"],
         ];
     }
 
@@ -41,6 +42,8 @@ class StoreGuessRequest extends FormRequest
             "away_score.required" => "O campo away_score é obrigatório.",
             "away_score.integer" => "O campo away_score deve ser um inteiro.",
             "away_score.min" => "O campo away_score deve ser pelo menos 0.",
+            "winner_team_id.integer" => "O campo winner_team_id deve ser um inteiro.",
+            "winner_team_id.exists" => "O time escolhido como vencedor não existe.",
         ];
     }
 }

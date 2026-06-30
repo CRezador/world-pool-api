@@ -11,4 +11,10 @@ enum MatchStage: string
     case SEMI_FINALS = 'SEMI_FINALS';
     case THIRD_PLACE = 'THIRD_PLACE';
     case FINAL = 'FINAL';
+
+    /** Qualquer fase eliminatória (tudo que não é fase de grupos). */
+    public function isKnockout(): bool
+    {
+        return $this !== self::GROUP_STAGE;
+    }
 }

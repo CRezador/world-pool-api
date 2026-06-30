@@ -5,6 +5,7 @@ import StageBadge from '@/components/StageBadge.vue';
 import { toneVar } from '@/utils/tone';
 import { formatKickoffShort } from '@/utils/date';
 import { useGuesses } from '@/composables/useGuesses';
+import { formatScoreWithPenalties } from '@/utils/score';
 import { TBD_TEAM_CODE, type ApiMatch } from '@/types';
 
 const props = defineProps<{ match: ApiMatch }>();
@@ -25,6 +26,17 @@ const accent = computed(() =>
 const accentVar = computed(() => toneVar(accent.value));
 
 const myGuess = computed(() => guesses.value.find(g => g.matchId === props.match.id) ?? null);
+
+const hasPenalties = computed(() =>
+  props.match.homePenalties != null && props.match.awayPenalties != null,
+);
+const scoreLabel = computed(() =>
+  props.match.status === 'SCHEDULED'
+    ? 'VS'
+    : formatScoreWithPenalties(props.match.homeScore, props.match.awayScore, props.match.homePenalties, props.match.awayPenalties),
+);
+const isHomeWinner = computed(() => props.match.winnerTeamId != null && props.match.winnerTeamId === props.match.home?.id);
+const isAwayWinner = computed(() => props.match.winnerTeamId != null && props.match.winnerTeamId === props.match.away?.id);
 
 const kickoffLabel = computed(() => formatKickoffShort(props.match.kickoff));
 
@@ -72,7 +84,9 @@ const guessLabel = computed(() => {
           <template v-else>
             <FlagChip :flagCode="match.home.flag_code" :teamName="match.home.name" :teamCode="match.home.code" :size="36" :tone="accent" />
             <div>
-              <div class="font-display" :style="{ fontSize: '17px', lineHeight: 1 }">{{ match.home.code }}</div>
+              <div class="font-display" :style="{ fontSize: '17px', lineHeight: 1 }">
+                {{ match.home.code }}<span v-if="isHomeWinner" :title="'Classificado'" :style="{ color: accentVar }"> ✓</span>
+              </div>
               <div class="font-mono" :style="{ fontSize: '9px', opacity: 0.6, letterSpacing: '0.06em' }">
                 {{ match.home.name.toUpperCase() }}
               </div>
@@ -80,15 +94,16 @@ const guessLabel = computed(() => {
           </template>
         </div>
 
-        <!-- Placar / VS -->
+        <!-- Placar / VS (pênaltis entre parênteses, ex.: 1(4) × (5)1) -->
         <div
           class="font-display"
           :style="{
-            fontSize: match.status === 'SCHEDULED' ? '16px' : '26px',
+            fontSize: match.status === 'SCHEDULED' ? '16px' : (hasPenalties ? '18px' : '26px'),
             color: match.status === 'SCHEDULED' ? 'var(--ink)' : accentVar,
-            minWidth: '52px', textAlign: 'center', opacity: match.status === 'SCHEDULED' ? 0.4 : 1,
+            minWidth: '52px', textAlign: 'center', whiteSpace: 'nowrap',
+            opacity: match.status === 'SCHEDULED' ? 0.4 : 1,
           }"
-        >{{ match.status === 'SCHEDULED' ? 'VS' : `${match.homeScore ?? 0} × ${match.awayScore ?? 0}` }}</div>
+        >{{ scoreLabel }}</div>
 
         <!-- Away -->
         <div :style="{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }">
@@ -101,7 +116,9 @@ const guessLabel = computed(() => {
           </template>
           <template v-else>
             <div :style="{ textAlign: 'right' }">
-              <div class="font-display" :style="{ fontSize: '17px', lineHeight: 1 }">{{ match.away.code }}</div>
+              <div class="font-display" :style="{ fontSize: '17px', lineHeight: 1 }">
+                <span v-if="isAwayWinner" :title="'Classificado'" :style="{ color: accentVar }">✓ </span>{{ match.away.code }}
+              </div>
               <div class="font-mono" :style="{ fontSize: '9px', opacity: 0.6, letterSpacing: '0.06em' }">
                 {{ match.away.name.toUpperCase() }}
               </div>

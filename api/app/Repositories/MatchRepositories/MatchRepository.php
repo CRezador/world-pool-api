@@ -33,6 +33,9 @@ class MatchRepository
               'matches.status',
               'matches.home_score',
               'matches.away_score',
+              'matches.home_penalties',
+              'matches.away_penalties',
+              'matches.winner_team_id',
           ])
           ->with([
               'homeTeam:id,name,code',
@@ -150,6 +153,9 @@ class MatchRepository
                 'matches.status',
                 'matches.home_score',
                 'matches.away_score',
+                'matches.home_penalties',
+                'matches.away_penalties',
+                'matches.winner_team_id',
             ])
             ->with([
                 'homeTeam:id,name,code,flag_code,group_id',
@@ -195,6 +201,20 @@ class MatchRepository
     {
         if ($this->getStatusById($matchId) !== MatchStatus::FINISHED) {
             throw new \Exception('A partida ainda não foi finalizada.', 400);
+        }
+    }
+
+    /** O vencedor palpitado precisa ser uma das duas seleções da partida. */
+    public function assertValidWinnerTeam(int $matchId, ?int $winnerTeamId): void
+    {
+        if ($winnerTeamId === null) {
+            return;
+        }
+
+        $match = $this->findById($matchId);
+
+        if (!$match || !\in_array($winnerTeamId, [$match->home_team_id, $match->away_team_id], true)) {
+            throw new \Exception('O time escolhido como vencedor não participa desta partida.', 422);
         }
     }
 }

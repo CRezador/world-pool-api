@@ -16,11 +16,13 @@ class Guess extends Model
         'match_id',
         'home_score',
         'away_score',
+        'winner_team_id',
         'points',
     ];
     protected $casts = [
         'home_score' => 'integer',
         'away_score' => 'integer',
+        'winner_team_id' => 'integer',
         'points' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -35,5 +37,10 @@ class Guess extends Model
     public function match(): BelongsTo
     {
         return $this->belongsTo(Matches::class, 'match_id');
+    }
+
+    public function winnerTeam(): BelongsTo
+    {
+        return $this->belongsTo(Team::class, 'winner_team_id');
     }
 }

@@ -23,6 +23,8 @@ class GuessScoringService
 
     private function scoreGuess(Guess $guess, Matches $match): int
     {
+        // Placar é avaliado sobre o tempo normal/prorrogação (home_score/away_score);
+        // o desempate por pênaltis não influencia a pontuação.
         if ($match->home_score === $guess->home_score && $match->away_score === $guess->away_score) {
             return GuessPoints::EXACT->value;
         }

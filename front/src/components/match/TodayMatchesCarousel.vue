@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMatch } from '@/composables/useMatch';
 import { parseApiDate } from '@/utils/date';
+import { formatScoreWithPenalties } from '@/utils/score';
 import { toneVar } from '@/data/mock';
 import type { ApiMatch, MatchStatus } from '@/types';
 
@@ -101,7 +102,7 @@ onUnmounted(() => {
         :style="{ width: '20px', height: '14px', objectFit: 'cover', borderRadius: '2px' }"
       />
       {{ slide.home.code }}
-      <template v-if="hasScore">{{ slide.homeScore ?? 0 }} × {{ slide.awayScore ?? 0 }}</template>
+      <template v-if="hasScore">{{ formatScoreWithPenalties(slide.homeScore, slide.awayScore, slide.homePenalties, slide.awayPenalties) }}</template>
       <template v-else>×</template>
       {{ slide.away.code }}
       <img
