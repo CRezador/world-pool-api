@@ -11,11 +11,10 @@ class AdversaryGuessTransformer extends BaseTransformer
         $m = $guess->match;
 
         return [
-            'id'             => $guess->id,
-            'home_score'     => $guess->home_score,
-            'away_score'     => $guess->away_score,
-            'winner_team_id' => $guess->winner_team_id,
-            'points'         => $guess->points,
+            'id'         => $guess->id,
+            'home_score' => $guess->home_score,
+            'away_score' => $guess->away_score,
+            'points'     => $guess->points,
             'user'       => [
                 'id'       => $guess->user->id,
                 'name'     => $guess->user->name,

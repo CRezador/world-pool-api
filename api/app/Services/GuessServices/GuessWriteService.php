@@ -33,7 +33,6 @@ class GuessWriteService
     {
         $this->matchRepository->assertTeamsDefined($data['match_id']);
         $this->matchRepository->assertScheduled($data['match_id']);
-        $this->matchRepository->assertValidWinnerTeam($data['match_id'], $data['winner_team_id'] ?? null);
         return $this->guessRepository->create($data);
     }
 
@@ -43,7 +42,6 @@ class GuessWriteService
         $this->assertOwnership($guess, $userId);
         $this->matchRepository->assertTeamsDefined($guess->match_id);
         $this->matchRepository->assertScheduled($guess->match_id);
-        $this->matchRepository->assertValidWinnerTeam($guess->match_id, $data['winner_team_id'] ?? null);
         return $this->guessRepository->updateById($id, $data);
     }
 

@@ -106,8 +106,6 @@ export interface GuessEntry {
   matchId: number;
   homeScore: number;
   awayScore: number;
-  /** Time que o usuário palpitou como vencedor do confronto (mata-mata). */
-  winnerTeamId: number | null;
   points: number | null;
   match: {
     id: number;
@@ -241,7 +239,6 @@ export interface AdversaryGuess {
   id: number;
   homeScore: number;
   awayScore: number;
-  winnerTeamId: number | null;
   points: number;
   user: { id: number; name: string; initials: string };
   pools: AdversaryPool[];

@@ -9,12 +9,11 @@ class GuessTransformer extends BaseTransformer
     public function transform(mixed $guess): array
     {
         $data = [
-            'id'             => $guess->id,
-            'match_id'       => $guess->match_id,
-            'home_score'     => $guess->home_score,
-            'away_score'     => $guess->away_score,
-            'winner_team_id' => $guess->winner_team_id,
-            'points'         => $guess->points,
+            'id'         => $guess->id,
+            'match_id'   => $guess->match_id,
+            'home_score' => $guess->home_score,
+            'away_score' => $guess->away_score,
+            'points'     => $guess->points,
         ];
 
         if ($guess->relationLoaded('match') && $guess->match) {

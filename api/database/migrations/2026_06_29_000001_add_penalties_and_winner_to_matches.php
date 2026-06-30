@@ -18,21 +18,10 @@ return new class extends Migration {
             $table->foreignId('winner_team_id')->nullable()->after('away_penalties')
                 ->constrained('teams')->onDelete('set null');
         });
-
-        Schema::table('guesses', function (Blueprint $table) {
-            // Time que o usuário palpita como vencedor do confronto (mata-mata).
-            $table->foreignId('winner_team_id')->nullable()->after('away_score')
-                ->constrained('teams')->onDelete('set null');
-        });
     }
 
     public function down(): void
     {
-        Schema::table('guesses', function (Blueprint $table) {
-            $table->dropForeign(['winner_team_id']);
-            $table->dropColumn('winner_team_id');
-        });
-
         Schema::table('matches', function (Blueprint $table) {
             $table->dropForeign(['winner_team_id']);
             $table->dropColumn(['home_penalties', 'away_penalties', 'winner_team_id']);

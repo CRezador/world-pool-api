@@ -23,17 +23,11 @@ const emit = defineEmits<{
 
 const { guesses, fetchMyGuesses, createGuess, updateGuess } = useGuesses();
 
-// Fases em que vale o bônus por acertar o vencedor do confronto (oitavas+).
-const WINNER_BONUS_STAGES = ['ROUND_OF_16', 'QUARTER_FINALS', 'SEMI_FINALS', 'THIRD_PLACE', 'FINAL'];
-
 const home = ref(0);
 const away = ref(0);
-const winner = ref<number | null>(null);
 const saved = ref(false);
 const loadingGuess = ref(false);
 const submitError = ref<string | null>(null);
-
-const showWinnerPicker = computed(() => !!props.match && WINNER_BONUS_STAGES.includes(props.match.stage));
 
 const existingGuess = computed<GuessEntry | null>(() =>
   props.match ? (guesses.value.find(g => g.matchId === props.match!.id) ?? null) : null,
@@ -46,7 +40,6 @@ async function loadGuesses(matchId: number) {
     const found = guesses.value.find(g => g.matchId === matchId);
     home.value = found?.homeScore ?? 0;
     away.value = found?.awayScore ?? 0;
-    winner.value = found?.winnerTeamId ?? null;
   } finally {
     loadingGuess.value = false;
   }
@@ -58,7 +51,6 @@ watch(() => props.match?.id, async (id) => {
   submitError.value = null;
   home.value = 0;
   away.value = 0;
-  winner.value = null;
   await loadGuesses(id);
 });
 
@@ -75,11 +67,10 @@ async function accept() {
   submitError.value = null;
   saved.value = true;
   try {
-    const winnerPick = showWinnerPicker.value ? winner.value : null;
     if (existingGuess.value) {
-      await updateGuess(existingGuess.value.id, home.value, away.value, winnerPick);
+      await updateGuess(existingGuess.value.id, home.value, away.value);
     } else {
-      await createGuess(props.match.id, home.value, away.value, winnerPick);
+      await createGuess(props.match.id, home.value, away.value);
     }
     setTimeout(() => emit('close'), 700);
   } catch (e: any) {
@@ -205,30 +196,6 @@ async function accept() {
             </div>
           </div>
 
-          <!-- Quem se classifica (oitavas em diante) -->
-          <div v-if="showWinnerPicker" :style="{ marginTop: '12px' }">
-            <div
-              class="font-mono"
-              :style="{ fontSize: '10px', letterSpacing: '0.16em', fontWeight: 700, opacity: 0.75, marginBottom: '8px' }"
-            >QUEM SE CLASSIFICA? <span :style="{ opacity: 0.55 }">(PALPITE EXTRA)</span></div>
-            <div :style="{ display: 'flex', gap: '8px' }">
-              <button
-                type="button"
-                class="font-display winner-pick"
-                :class="{ active: winner === match.home.id }"
-                :disabled="loadingGuess"
-                @click="winner = winner === match.home.id ? null : match.home.id"
-              >{{ match.home.code }}</button>
-              <button
-                type="button"
-                class="font-display winner-pick"
-                :class="{ active: winner === match.away.id }"
-                :disabled="loadingGuess"
-                @click="winner = winner === match.away.id ? null : match.away.id"
-              >{{ match.away.code }}</button>
-            </div>
-          </div>
-
           <!-- Points info -->
           <div :style="{
             marginTop: '14px', padding: '10px 12px',
@@ -344,33 +311,6 @@ async function accept() {
 .modal-card.desktop .modal-cancel {
   padding: 12px 18px;
   font-size: 15px;
-}
-
-.winner-pick {
-  flex: 1;
-  background: var(--paper-2);
-  color: var(--ink);
-  border: 1.5px solid var(--ink);
-  box-shadow: 3px 3px 0 var(--ink);
-  padding: 10px 8px;
-  font-size: 16px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
-}
-.winner-pick.active {
-  background: var(--cobalt);
-  color: var(--paper);
-}
-.winner-pick:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--ink);
-}
-.winner-pick:disabled {
-  opacity: 0.5;
-  cursor: default;
 }
 
 .modal-enter-active, .modal-leave-active {

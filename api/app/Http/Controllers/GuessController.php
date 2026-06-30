@@ -40,9 +40,8 @@ class GuessController extends Controller
 
             if ($existing) {
                 $guess = $this->guessWriteService->updateGuess($existing->id, $userId, [
-                    'home_score'     => $data['home_score'],
-                    'away_score'     => $data['away_score'],
-                    'winner_team_id' => $data['winner_team_id'] ?? null,
+                    'home_score' => $data['home_score'],
+                    'away_score' => $data['away_score'],
                 ]);
                 $guess->load(['match.homeTeam', 'match.awayTeam']);
                 return response()->json(
@@ -52,11 +51,10 @@ class GuessController extends Controller
             }
 
             $guess = $this->guessWriteService->createGuess([
-                'user_id'        => $userId,
-                'match_id'       => $data['match_id'],
-                'home_score'     => $data['home_score'],
-                'away_score'     => $data['away_score'],
-                'winner_team_id' => $data['winner_team_id'] ?? null,
+                'user_id'    => $userId,
+                'match_id'   => $data['match_id'],
+                'home_score' => $data['home_score'],
+                'away_score' => $data['away_score'],
             ]);
             $guess->load(['match.homeTeam', 'match.awayTeam']);
         } catch (\Exception $e) {
@@ -75,9 +73,8 @@ class GuessController extends Controller
 
         try {
             $guess = $this->guessWriteService->updateGuess($guessId, $request->user()->id, [
-                'home_score'     => $data['home_score'],
-                'away_score'     => $data['away_score'],
-                'winner_team_id' => $data['winner_team_id'] ?? null,
+                'home_score' => $data['home_score'],
+                'away_score' => $data['away_score'],
             ]);
             $guess->load(['match.homeTeam', 'match.awayTeam']);
         } catch (\Exception $e) {

@@ -10,7 +10,6 @@ function mapGuess(g: any): GuessEntry {
         matchId:      g.match_id,
         homeScore:    g.home_score,
         awayScore:    g.away_score,
-        winnerTeamId: g.winner_team_id ?? null,
         points:       g.points ?? null,
         match: {
             id:            g.match.id,
@@ -36,27 +35,25 @@ export function useGuesses() {
         guesses.value = raw.map(mapGuess);
     };
 
-    const createGuess = async (matchId: number, homeScore: number, awayScore: number, winnerTeamId: number | null = null): Promise<GuessEntry> => {
+    const createGuess = async (matchId: number, homeScore: number, awayScore: number): Promise<GuessEntry> => {
         const res = await api.post('guesses', {
-            match_id:       matchId,
-            home_score:     homeScore,
-            away_score:     awayScore,
-            winner_team_id: winnerTeamId,
+            match_id:   matchId,
+            home_score: homeScore,
+            away_score: awayScore,
         });
         const created = mapGuess(res.data.data ?? res.data);
         guesses.value = [...guesses.value, created];
         return created;
     };
 
-    const updateGuess = async (guessId: number, homeScore: number, awayScore: number, winnerTeamId: number | null = null): Promise<void> => {
+    const updateGuess = async (guessId: number, homeScore: number, awayScore: number): Promise<void> => {
         await api.put(`guesses/${guessId}`, {
-            home_score:     homeScore,
-            away_score:     awayScore,
-            winner_team_id: winnerTeamId,
+            home_score: homeScore,
+            away_score: awayScore,
         });
         const idx = guesses.value.findIndex(g => g.id === guessId);
         if (idx !== -1) {
-            guesses.value[idx] = { ...guesses.value[idx], homeScore, awayScore, winnerTeamId };
+            guesses.value[idx] = { ...guesses.value[idx], homeScore, awayScore };
         }
     };
 

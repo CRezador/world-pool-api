@@ -7,7 +7,6 @@ function mapAdversary(g: any): AdversaryGuess {
     id:           g.id,
     homeScore:    g.home_score,
     awayScore:    g.away_score,
-    winnerTeamId: g.winner_team_id ?? null,
     points:       g.points ?? 0,
     user: {
       id:       g.user.id,
